@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ff6b2b">
+<title>MemeVault Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --card: #181818;
+  --fg: #f2f2f2;
+  --muted: #888;
+  --accent: #ff6b2b;
+  --green: #3ddc84;
+  --red: #ff4757;
+  --border: #222;
+  --radius: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  max-width: 480px;
+  width: 100%;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+
+.logo {
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #ff6b2b, #ff9f43);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.status-card {
+  background: rgba(255,107,43,.1);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-card i {
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.status-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.status-info p {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.status-card.success {
+  background: rgba(61,220,132,.1);
+  border-color: var(--green);
+}
+
+.status-card.success i {
+  color: var(--green);
+}
+
+.status-card.error {
+  background: rgba(255,71,87,.1);
+  border-color: var(--red);
+}
+
+.status-card.error i {
+  color: var(--red);
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), #e55039);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s, opacity .15s;
+  margin-bottom: 12px;
+}
+
+.btn:hover {
+  opacity: .9;
+}
+
+.btn:active {
+  transform: scale(.98);
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.stat-box {
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.log {
+  margin-top: 24px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,.3);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.log::-webkit-scrollbar {
+  width: 4px;
+}
+
+.log::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.log-entry {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+.log-entry.success {
+  color: var(--green);
+}
+
+.log-entry.error {
+  color: var(--red);
+}
+
+.footer {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">🔔 MemeVault</div>
+  <div class="subtitle">Push Notification Service</div>
+
+  <div class="status-card" id="statusCard">
+    <i class="fa-solid fa-circle-notch fa-spin"></i>
+    <div class="status-info">
+      <h3 id="statusTitle">Initializing...</h3>
+      <p id="statusDesc">Connecting to Firebase</p>
+    </div>
+  </div>
+
+  <button class="btn" id="enableBtn">
+    <i class="fa-solid fa-bell"></i> Enable Notifications
+  </button>
+
+  <button class="btn secondary" id="testBtn" style="display:none;">
+    <i class="fa-solid fa-vial"></i> Send Test Notification
+  </button>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-value" id="notifCount">0</div>
+      <div class="stat-label">Notifications Sent</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="memesCount">0</div>
+      <div class="stat-label">Memes Shared</div>
+    </div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="footer">
+    Monitoring MemeVault chat in real-time<br>
+    <a href="index.html">← Back to MemeVault</a>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getDatabase, ref, onChildAdded, query, limitToLast } 
+  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+import { getMessaging, getToken, onMessage } 
+  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
+
+// Firebase config (same as MemeVault)
+const fbApp = initializeApp({
+  apiKey: "AIzaSyCuyvT-xKIGMJyi3LTkoF5VLT1bRmcU0Rc",
+  authDomain: "memme-e5686.firebaseapp.com",
+  databaseURL: "https://memme-e5686-default-rtdb.firebaseio.com",
+  projectId: "memme-e5686",
+  storageBucket: "memme-e5686.firebasestorage.app",
+  messagingSenderId: "444149549078",
+  appId: "1:444149549078:web:50677ecdce29852ab94d37"
+});
+
+const db = getDatabase(fbApp);
+const chatRef = ref(db, "memeVault_chat");
+
+// VAPID Key
+const VAPID_KEY = "BEQKUwQc1u04iG8UHDdnVZlRiURcbAN1W3ien53PhkP56HATLS0gtUji_J-_Z6cEx89Cfv_-qGCFBbEWWvXNZR4";
+
+// State
+let messaging = null;
+let notifCount = 0;
+let memesCount = 0;
+let lastMessageId = null;
+let isFirstLoad = true;
+
+// DOM
+const $statusCard = document.getElementById("statusCard");
+const $statusTitle = document.getElementById("statusTitle");
+const $statusDesc = document.getElementById("statusDesc");
+const $enableBtn = document.getElementById("enableBtn");
+const $testBtn = document.getElementById("testBtn");
+const $notifCount = document.getElementById("notifCount");
+const $memesCount = document.getElementById("memesCount");
+const $log = document.getElementById("log");
+
+// Logging
+function log(msg, type = "info") {
+  const entry = document.createElement("div");
+  entry.className = `log-entry ${type}`;
+  entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  $log.insertBefore(entry, $log.firstChild);
+  console.log(msg);
+}
+
+// Update status
+function setStatus(title, desc, state = "loading") {
+  $statusTitle.textContent = title;
+  $statusDesc.textContent = desc;
+  $statusCard.className = `status-card ${state}`;
+  
+  const icons = {
+    loading: "fa-circle-notch fa-spin",
+    success: "fa-check-circle",
+    error: "fa-exclamation-circle"
+  };
+  
+  $statusCard.querySelector("i").className = `fa-solid ${icons[state]}`;
+}
+
+// Update stats
+function updateStats() {
+  $notifCount.textContent = notifCount;
+  $memesCount.textContent = memesCount;
+}
+
+// Request notification permission
+async function requestPermission() {
+  if (!("Notification" in window)) {
+    setStatus("Not Supported", "Your browser doesn't support notifications", "error");
+    log("Notifications not supported", "error");
+    return false;
+  }
+
+  if (Notification.permission === "granted") {
+    return true;
+  }
+
+  const permission = await Notification.requestPermission();
+  
+  if (permission === "granted") {
+    log("Notification permission granted", "success");
+    return true;
+  } else {
+    setStatus("Permission Denied", "Please enable notifications in settings", "error");
+    log("Notification permission denied", "error");
+    return false;
+  }
+}
+
+// Initialize FCM
+async function initMessaging() {
+  try {
+    messaging = getMessaging(fbApp);
+    
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+    
+    if (token) {
+      log(`FCM Token: ${token.substring(0, 20)}...`, "success");
+      localStorage.setItem("fcm_token", token);
+      return token;
+    } else {
+      throw new Error("No FCM token received");
+    }
+  } catch (error) {
+    log(`FCM Error: ${error.message}`, "error");
+    console.error(error);
+    return null;
+  }
+}
+
+// Send notification using Notification API
+function sendLocalNotification(title, body, icon) {
+  if (Notification.permission !== "granted") return;
+  
+  try {
+    const notif = new Notification(title, {
+      body: body,
+      icon: icon || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='75' font-size='75'%3E🔥%3C/text%3E%3C/svg%3E",
+      badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='75' font-size='75'%3E🔔%3C/text%3E%3C/svg%3E",
+      tag: "memevault-" + Date.now(),
+      requireInteraction: false,
+      silent: false
+    });
+    
+    notif.onclick = () => {
+      window.focus();
+      notif.close();
+    };
+    
+    notifCount++;
+    updateStats();
+    log(`Notification sent: ${title}`, "success");
+  } catch (error) {
+    log(`Notification error: ${error.message}`, "error");
+  }
+}
+
+// Listen to Firebase chat
+function listenToChat() {
+  log("Listening to MemeVault chat...", "success");
+  
+  onChildAdded(query(chatRef, limitToLast(1)), snapshot => {
+    const msg = snapshot.val();
+    const msgId = snapshot.key;
+    
+    if (!msg || !msg.username) return;
+    
+    // Skip first load
+    if (isFirstLoad) {
+      lastMessageId = msgId;
+      isFirstLoad = false;
+      log("Initial message loaded, monitoring new messages...", "info");
+      return;
+    }
+    
+    // Only process new messages
+    if (msgId === lastMessageId) return;
+    lastMessageId = msgId;
+    
+    // Handle meme shares
+    if (msg.type === "meme") {
+      memesCount++;
+      updateStats();
+      
+      const title = `🔥 ${msg.username} shared a meme!`;
+      const body = msg.title || "New meme in MemeVault chat";
+      
+      sendLocalNotification(title, body, msg.mediaUrl);
+      log(`Meme shared by ${msg.username}: ${msg.title}`, "success");
+    } 
+    // Handle text messages (optional - uncomment to enable)
+    /*
+    else if (msg.type === "text") {
+      const title = `💬 ${msg.username}`;
+      const body = msg.text || "";
+      sendLocalNotification(title, body);
+      log(`Message from ${msg.username}`, "info");
+    }
+    */
+  });
+}
+
+// Enable notifications
+$enableBtn.addEventListener("click", async () => {
+  $enableBtn.disabled = true;
+  $enableBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enabling...';
+  
+  setStatus("Requesting Permission...", "Please allow notifications", "loading");
+  
+  const hasPermission = await requestPermission();
+  
+  if (!hasPermission) {
+    $enableBtn.disabled = false;
+    $enableBtn.innerHTML = '<i class="fa-solid fa-bell"></i> Enable Notifications';
+    return;
+  }
+  
+  setStatus("Initializing...", "Setting up Firebase Cloud Messaging", "loading");
+  
+  const token = await initMessaging();
+  
+  if (token) {
+    setStatus("Active & Monitoring", "Notifications enabled successfully", "success");
+    $enableBtn.style.display = "none";
+    $testBtn.style.display = "block";
+    
+    listenToChat();
+  } else {
+    setStatus("Setup Failed", "Could not initialize messaging", "error");
+    $enableBtn.disabled = false;
+    $enableBtn.innerHTML = '<i class="fa-solid fa-bell"></i> Retry';
+  }
+});
+
+// Test notification
+$testBtn.addEventListener("click", () => {
+  sendLocalNotification(
+    "🧪 Test Notification",
+    "MemeVault notifications are working!",
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='75' font-size='75'%3E✅%3C/text%3E%3C/svg%3E"
+  );
+});
+
+// Listen for foreground messages
+onMessage(getMessaging(fbApp), (payload) => {
+  log("FCM message received (foreground)", "info");
+  console.log("FCM payload:", payload);
+});
+
+// Check initial state
+window.addEventListener("load", () => {
+  if (Notification.permission === "granted") {
+    log("Permission already granted", "success");
+    setStatus("Ready", "Click to start monitoring", "success");
+  } else if (Notification.permission === "denied") {
+    setStatus("Permission Denied", "Please enable in browser settings", "error");
+    log("Notifications blocked by user", "error");
+  } else {
+    setStatus("Ready to Setup", "Enable notifications to get started", "loading");
+    log("Waiting for user permission", "info");
+  }
+});
+
+// Auto-load stats from localStorage
+const savedNotifCount = parseInt(localStorage.getItem("notif_count") || "0");
+const savedMemesCount = parseInt(localStorage.getItem("memes_count") || "0");
+notifCount = savedNotifCount;
+memesCount = savedMemesCount;
+updateStats();
+
+// Save stats periodically
+setInterval(() => {
+  localStorage.setItem("notif_count", notifCount);
+  localStorage.setItem("memes_count", memesCount);
+}, 5000);
+
+</script>
+
+</body>
+</html>
