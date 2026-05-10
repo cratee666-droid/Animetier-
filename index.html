@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +68,10 @@
     @keyframes popIn {
       from { opacity: 0; transform: scale(0.85); }
       to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -600px 0; }
+      100% { background-position:  600px 0; }
     }
 
     /* ── Menu button ── */
@@ -237,7 +242,7 @@
     .search-submit svg { width: 18px; height: 18px; stroke-width: 2; }
     .search-submit:active { color: var(--text-primary); background: rgba(255,255,255,0.10); }
 
-    /* ── Recent searches (always visible) ── */
+    /* ── Recent searches ── */
     .recent-section {
       width: 100%; margin-top: 24px;
       animation: fadeUp 0.55s 0.14s cubic-bezier(0.22,1,0.36,1) both;
@@ -340,7 +345,6 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Delete badge */
     .shortcut-del-btn {
       position: absolute; top: -5px; right: -5px;
       width: 20px; height: 20px; border-radius: 50%;
@@ -362,7 +366,6 @@
       animation: none; transform: scale(0.91);
     }
 
-    /* Add button */
     .shortcut-add {
       display: flex; flex-direction: column; align-items: center; gap: 7px;
       cursor: pointer;
@@ -380,6 +383,89 @@
     }
     .shortcut-add-icon svg { width: 20px; height: 20px; color: rgba(255,255,255,0.22); }
     .shortcut-add-label { font-size: 11px; color: rgba(255,255,255,0.22); text-align: center; }
+
+    /* ── Trending Movies ── */
+    .trending-section {
+      width: 100%; margin-top: 28px;
+      animation: fadeUp 0.55s 0.22s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .trending-scroll {
+      display: flex; gap: 12px;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      padding-bottom: 4px;
+      -webkit-mask-image: linear-gradient(to right,transparent 0%,black 4%,black 94%,transparent 100%);
+      mask-image:         linear-gradient(to right,transparent 0%,black 4%,black 94%,transparent 100%);
+    }
+    .trending-scroll::-webkit-scrollbar { display: none; }
+
+    .movie-card {
+      flex-shrink: 0; width: 120px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 6px;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      animation: popIn 0.30s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .movie-poster {
+      width: 120px; height: 178px; border-radius: 12px;
+      overflow: hidden; position: relative;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.50);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .movie-card:active .movie-poster {
+      transform: scale(0.94);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.40);
+    }
+    .movie-poster img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; transition: opacity 0.35s ease;
+    }
+    .movie-poster img.loaded { opacity: 1; }
+    .movie-rank {
+      position: absolute; top: 6px; left: 6px;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+      border-radius: 6px; padding: 2px 7px;
+      font-size: 11px; font-weight: 500;
+      color: rgba(255,255,255,0.85); letter-spacing: 0.04em;
+    }
+    .movie-rating {
+      position: absolute; top: 6px; right: 6px;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+      border-radius: 6px; padding: 2px 6px;
+      font-size: 10px; font-weight: 500;
+      color: #f5c518; letter-spacing: 0.02em;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .movie-rating svg { width: 9px; height: 9px; fill: #f5c518; }
+    .movie-info { padding: 0 2px; }
+    .movie-title {
+      font-size: 11px; font-weight: 400; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .movie-year {
+      font-size: 10px; color: var(--text-dim); margin-top: 2px;
+    }
+
+    /* Skeleton shimmer */
+    .movie-skeleton {
+      flex-shrink: 0; width: 120px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .skeleton-poster {
+      width: 120px; height: 178px; border-radius: 12px;
+      background: linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.10) 50%,rgba(255,255,255,0.05) 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite linear;
+    }
+    .skeleton-line {
+      height: 10px; border-radius: 6px;
+      background: linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.10) 50%,rgba(255,255,255,0.05) 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite linear;
+    }
+    .skeleton-line.short { width: 55%; }
 
     /* ── Bottom Sheet ── */
     .sheet-backdrop {
@@ -638,7 +724,7 @@
       </div>
     </section>
 
-    <!-- Recent Searches (always visible) -->
+    <!-- Recent Searches -->
     <section class="recent-section" id="recentSection" aria-label="Recent searches">
       <div class="section-header">
         <span class="section-label">Recent</span>
@@ -655,6 +741,14 @@
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
     </section>
 
+    <!-- Trending Movies -->
+    <section class="trending-section" id="trendingSection" aria-label="Trending movies">
+      <div class="section-header">
+        <span class="section-label">Trending Movies</span>
+      </div>
+      <div class="trending-scroll" id="trendingScroll"></div>
+    </section>
+
   </main>
 </div>
 
@@ -663,7 +757,6 @@
   <div class="sheet" id="wpSheet">
     <div class="sheet-handle"></div>
     <p class="sheet-title">Wallpaper</p>
-
     <div class="wp-preview" id="wpPreview">
       <div class="wp-preview-placeholder" id="wpPreviewPlaceholder">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -673,7 +766,6 @@
       </div>
       <img id="wpPreviewImg" src="" alt="Wallpaper preview" />
     </div>
-
     <div class="wp-field">
       <label class="wp-field-label" for="wpUrlInput">Image URL</label>
       <input class="wp-url-input" id="wpUrlInput" type="text"
@@ -681,10 +773,8 @@
         inputmode="url" autocomplete="off" autocorrect="off"
         autocapitalize="off" spellcheck="false" enterkeyhint="go"/>
     </div>
-
     <span class="wp-saved-label" id="wpSavedLabel" style="display:none">Recent</span>
     <div class="wp-saved-urls" id="wpSavedUrls"></div>
-
     <div class="sheet-actions">
       <button class="btn btn-cancel" id="wpCancel" type="button">Cancel</button>
       <button class="btn btn-clear"  id="wpClear"  type="button">Clear</button>
@@ -698,7 +788,6 @@
   <div class="sheet" id="scSheet">
     <div class="sheet-handle"></div>
     <p class="sheet-title" id="scSheetTitle">Add Shortcut</p>
-
     <div class="sc-preview-row">
       <div class="sc-preview-icon" id="scPreviewIcon">
         <span class="sc-preview-letter" id="scPreviewLetter">?</span>
@@ -708,7 +797,6 @@
         <div class="sc-preview-url"  id="scPreviewUrl">—</div>
       </div>
     </div>
-
     <div class="sc-field">
       <label class="sc-label" for="scUrlInput">URL</label>
       <input class="sc-input" id="scUrlInput" type="text"
@@ -722,7 +810,6 @@
         placeholder="Auto-detected from URL"
         autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"/>
     </div>
-
     <div class="sheet-actions">
       <button class="btn btn-cancel" id="scCancel" type="button">Cancel</button>
       <button class="btn btn-apply"  id="scSave"   type="button" disabled>Save</button>
@@ -798,7 +885,6 @@
   }
   try { const u = localStorage.getItem('wallpaperUrl'); if (u) applyWallpaper(u); } catch(e) {}
 
-  /* Saved wallpaper URLs */
   const WP_URLS_KEY = 'savedWpUrls';
   const WP_URLS_MAX = 8;
   const loadSavedWpUrls  = () => { try { return JSON.parse(localStorage.getItem(WP_URLS_KEY) || '[]'); } catch(e) { return []; } };
@@ -806,7 +892,6 @@
   const addSavedWpUrl    = u  => { const a = loadSavedWpUrls().filter(x => x !== u); a.push(u); saveSavedWpUrls(a); };
   const removeSavedWpUrl = u  => saveSavedWpUrls(loadSavedWpUrls().filter(x => x !== u));
 
-  /* Wallpaper sheet */
   const wpBackdrop           = document.getElementById('wpBackdrop');
   const wpSheet              = document.getElementById('wpSheet');
   const wpUrlInput           = document.getElementById('wpUrlInput');
@@ -841,10 +926,7 @@
           wpPreviewPlaceholder.style.display = 'none';
         };
       };
-      t.onerror = () => {
-        wpPreviewImg.classList.remove('loaded');
-        wpPreviewPlaceholder.style.display = 'flex';
-      };
+      t.onerror = () => { wpPreviewImg.classList.remove('loaded'); wpPreviewPlaceholder.style.display = 'flex'; };
       t.src = url;
     }, 600);
   }
@@ -941,10 +1023,10 @@
   document.getElementById('dropShortcuts').addEventListener('click', () => { setMenuOpen(false); toggleEditMode(); });
 
   /* ════════════════════════════════════════
-     Recent Searches (always visible, max 5)
+     Recent Searches
   ════════════════════════════════════════ */
-  const RECENT_KEY = 'recentSearches';
-  const RECENT_MAX = 12;
+  const RECENT_KEY  = 'recentSearches';
+  const RECENT_MAX  = 12;
   const RECENT_SHOW = 5;
 
   const loadRecent  = ()   => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) { return []; } };
@@ -959,14 +1041,11 @@
   const clearRecent = ()   => saveRecent([]);
 
   const recentInlineList = document.getElementById('recentInlineList');
-  const recentSection    = document.getElementById('recentSection');
   const recentClearAll   = document.getElementById('recentClearAll');
 
   function renderRecentInline() {
     recentInlineList.innerHTML = '';
-    const all   = loadRecent();
-    const items = all.slice(0, RECENT_SHOW);
-
+    const items = loadRecent().slice(0, RECENT_SHOW);
     if (!items.length) {
       const empty = document.createElement('div');
       empty.className = 'recent-inline-empty';
@@ -974,12 +1053,10 @@
       recentInlineList.appendChild(empty);
       return;
     }
-
     items.forEach(term => {
       const row = document.createElement('div');
       row.className = 'recent-inline-item';
-      row.setAttribute('role', 'button');
-      row.setAttribute('tabindex', '0');
+      row.setAttribute('role', 'button'); row.setAttribute('tabindex', '0');
 
       const icon = document.createElement('div');
       icon.className = 'recent-inline-icon';
@@ -990,21 +1067,14 @@
       txt.textContent = term;
 
       const del = document.createElement('button');
-      del.className = 'recent-inline-del';
-      del.type = 'button';
+      del.className = 'recent-inline-del'; del.type = 'button';
       del.setAttribute('aria-label', `Remove "${term}"`);
       del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
-
-      del.addEventListener('click', e => {
-        e.stopPropagation();
-        rmRecent(term);
-        renderRecentInline();
-      });
+      del.addEventListener('click', e => { e.stopPropagation(); rmRecent(term); renderRecentInline(); });
 
       row.addEventListener('click', e => {
         if (del.contains(e.target)) return;
-        searchInputEl.value = term;
-        doSearch();
+        searchInputEl.value = term; doSearch();
       });
 
       row.append(icon, txt, del);
@@ -1012,10 +1082,7 @@
     });
   }
 
-  recentClearAll.addEventListener('click', () => {
-    clearRecent();
-    renderRecentInline();
-  });
+  recentClearAll.addEventListener('click', () => { clearRecent(); renderRecentInline(); });
 
   /* ════════════════════════════════════════
      Search engines
@@ -1030,10 +1097,10 @@
   };
 
   let activeEngine = 'google';
-  const engineRow    = document.getElementById('engineRow');
-  const badgeIcon    = document.getElementById('badgeIcon');
-  const searchInputEl= document.getElementById('searchInput');
-  const searchSubmit = document.getElementById('searchSubmit');
+  const engineRow     = document.getElementById('engineRow');
+  const badgeIcon     = document.getElementById('badgeIcon');
+  const searchInputEl = document.getElementById('searchInput');
+  const searchSubmit  = document.getElementById('searchSubmit');
 
   function setEngine(key) {
     if (!ENGINES[key]) return;
@@ -1054,8 +1121,7 @@
   function doSearch() {
     const q = searchInputEl.value.trim();
     if (!q) { searchInputEl.focus(); return; }
-    addRecent(q);
-    renderRecentInline();
+    addRecent(q); renderRecentInline();
     window.location.href = ENGINES[activeEngine].url(encodeURIComponent(q));
   }
   searchInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
@@ -1099,8 +1165,7 @@
     list.forEach((sc, i) => {
       const item = document.createElement('div');
       item.className = 'shortcut-item';
-      item.setAttribute('role', 'link');
-      item.setAttribute('tabindex', '0');
+      item.setAttribute('role', 'link'); item.setAttribute('tabindex', '0');
 
       const icon = document.createElement('div');
       icon.className = 'shortcut-icon';
@@ -1257,6 +1322,115 @@
   });
 
   /* ════════════════════════════════════════
+     Trending Movies (TMDB)
+  ════════════════════════════════════════ */
+  const TMDB_KEY      = 'd971d4b212180c43e0830d20c04a68b5';
+  const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w342';
+  const trendingScroll = document.getElementById('trendingScroll');
+
+  function renderMovieSkeletons(count) {
+    trendingScroll.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const sk = document.createElement('div');
+      sk.className = 'movie-skeleton';
+      sk.innerHTML = `
+        <div class="skeleton-poster"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>`;
+      trendingScroll.appendChild(sk);
+    }
+  }
+
+  function renderMovies(movies) {
+    trendingScroll.innerHTML = '';
+    movies.forEach((movie, idx) => {
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+      card.style.animationDelay = (idx * 0.04) + 's';
+      card.setAttribute('role', 'link');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', movie.title);
+
+      const year = movie.release_date ? movie.release_date.slice(0, 4) : '';
+      const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
+      const posterPath = movie.poster_path
+        ? TMDB_IMG_BASE + movie.poster_path
+        : null;
+
+      const poster = document.createElement('div');
+      poster.className = 'movie-poster';
+
+      const rankBadge = document.createElement('div');
+      rankBadge.className = 'movie-rank';
+      rankBadge.textContent = '#' + (idx + 1);
+
+      const ratingBadge = document.createElement('div');
+      ratingBadge.className = 'movie-rating';
+      ratingBadge.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>${rating}`;
+
+      if (posterPath) {
+        const img = document.createElement('img');
+        img.alt = movie.title;
+        img.loading = 'lazy';
+        img.onload  = () => img.classList.add('loaded');
+        img.onerror = () => { img.remove(); };
+        img.src = posterPath;
+        poster.append(img);
+      } else {
+        poster.style.background = 'rgba(255,255,255,0.04)';
+        poster.style.display = 'flex';
+        poster.style.alignItems = 'center';
+        poster.style.justifyContent = 'center';
+        const ph = document.createElement('span');
+        ph.style.cssText = 'font-size:28px;color:rgba(255,255,255,0.12)';
+        ph.textContent = '🎬';
+        poster.append(ph);
+      }
+
+      poster.append(rankBadge, ratingBadge);
+
+      const info = document.createElement('div');
+      info.className = 'movie-info';
+
+      const title = document.createElement('div');
+      title.className = 'movie-title';
+      title.textContent = movie.title;
+
+      const yearEl = document.createElement('div');
+      yearEl.className = 'movie-year';
+      yearEl.textContent = year;
+
+      info.append(title, yearEl);
+      card.append(poster, info);
+
+      card.addEventListener('click', () => {
+        const q = encodeURIComponent(movie.title + ' ' + year);
+        window.open('https://www.google.com/search?q=' + q, '_blank', 'noopener');
+      });
+
+      trendingScroll.appendChild(card);
+    });
+  }
+
+  async function fetchTrendingMovies() {
+    renderMovieSkeletons(8);
+    try {
+      const res  = await fetch(
+        `https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_KEY}&language=en-US`
+      );
+      if (!res.ok) throw new Error('TMDB request failed: ' + res.status);
+      const data = await res.json();
+      renderMovies((data.results || []).slice(0, 15));
+    } catch (err) {
+      trendingScroll.innerHTML = '';
+      const msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--text-dim);font-size:13px;padding:16px 4px;';
+      msg.textContent = 'Could not load trending movies.';
+      trendingScroll.appendChild(msg);
+    }
+  }
+
+  /* ════════════════════════════════════════
      Keyboard
   ════════════════════════════════════════ */
   document.addEventListener('keydown', e => {
@@ -1271,6 +1445,7 @@
   ════════════════════════════════════════ */
   renderRecentInline();
   renderShortcuts();
+  fetchTrendingMovies();
 </script>
 </body>
 </html>
