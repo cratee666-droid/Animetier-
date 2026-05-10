@@ -60,20 +60,13 @@
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.88) translateY(10px); }
-      to   { opacity: 1; transform: scale(1)    translateY(0); }
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    @keyframes wiggle {
-      from { transform: rotate(-1.8deg); }
-      to   { transform: rotate( 1.8deg); }
-    }
     @keyframes blink {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.15; }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
     }
 
     /* ── Menu button ── */
@@ -121,7 +114,6 @@
     }
     .drop-item:active { background: var(--surface-hover); }
     .drop-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--text-muted); }
-    .drop-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
     /* ── Scroll root ── */
     #scrollRoot {
@@ -223,8 +215,7 @@
       outline: none; appearance: none; -webkit-appearance: none;
       caret-color: var(--accent);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 24px rgba(0,0,0,0.50);
-      /* Only transition compositor-friendly props */
-      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s, border-radius 0.15s;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
       user-select: text; -webkit-user-select: text;
     }
     .search-input::placeholder { color: var(--text-muted); font-weight: 300; }
@@ -233,10 +224,6 @@
       box-shadow: 0 0 0 3px var(--glow-focus),
                   inset 0 1px 0 rgba(255,255,255,0.08),
                   0 6px 24px rgba(0,0,0,0.50);
-    }
-    .search-input.dropdown-open {
-      border-radius: 28px 28px 0 0;
-      border-bottom-color: transparent;
     }
 
     .search-submit {
@@ -250,203 +237,151 @@
     .search-submit svg { width: 18px; height: 18px; stroke-width: 2; }
     .search-submit:active { color: var(--text-primary); background: rgba(255,255,255,0.10); }
 
-    /* ══════════════════════════════════════════════════
-       RECENT-SEARCHES DROPDOWN
-       ─ Portalled to <body> → position:fixed → z-index:200
-       ─ GPU promoted via will-change BEFORE it becomes
-         visible (set on the element permanently so the
-         browser pre-promotes the layer)
-       ─ Enter: opacity 0→1 + translateY(-6px)→0
-         Exit:  instant hide (display:none) — no exit
-                animation needed on mobile; snappy is better
-       ─ transition on opacity+transform only (compositor)
-    ══════════════════════════════════════════════════ */
-    #recentDropdown {
-      position: fixed;
-      z-index: 200;
-      background: rgba(18,18,18,0.97);
-      border: 1px solid var(--border-focus);
-      border-top: none;
-      border-radius: 0 0 24px 24px;
-      overflow: hidden;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.70);
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      max-height: 60vh; overflow-y: auto; scrollbar-width: none;
-
-      /* GPU layer always promoted — eliminates the
-         "first frame lag" caused by layer promotion mid-animation */
-      will-change: transform, opacity;
-
-      /* Start hidden via opacity+transform (NOT display:none)
-         so the layer stays promoted and transitions are instant */
-      opacity: 0;
-      transform: translateY(-8px);
-      pointer-events: none;
-
-      /* Only compositor properties → runs on GPU thread */
-      transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.22,1,0.36,1);
+    /* ── Recent searches (always visible) ── */
+    .recent-section {
+      width: 100%; margin-top: 24px;
+      animation: fadeUp 0.55s 0.14s cubic-bezier(0.22,1,0.36,1) both;
     }
-    #recentDropdown::-webkit-scrollbar { display: none; }
-
-    /* Visible state — JS adds this class */
-    #recentDropdown.visible {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: all;
-    }
-
-    .recent-header {
+    .section-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 18px 6px;
-      position: sticky; top: 0;
-      background: rgba(18,18,18,0.97);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 8px; padding: 0 2px;
     }
-    .recent-header-label {
-      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    .section-label {
+      font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase;
       color: var(--text-dim); font-weight: 400;
     }
-    .recent-clear-all {
+    .section-clear {
       font-size: 11px; color: var(--text-muted);
       background: none; border: none; cursor: pointer;
-      font-family: 'Inter', sans-serif; padding: 4px 6px; border-radius: 6px;
+      font-family: 'Inter', sans-serif; padding: 4px 8px; border-radius: 8px;
       -webkit-tap-highlight-color: transparent;
       transition: color 0.15s, background 0.15s;
     }
-    .recent-clear-all:active { color: var(--danger); background: rgba(255,80,80,0.08); }
+    .section-clear:active { color: var(--danger); background: rgba(255,80,80,0.08); }
 
-    .recent-list { padding: 4px 8px 12px; display: flex; flex-direction: column; gap: 1px; }
-
-    .recent-item {
+    .recent-inline-list {
+      display: flex; flex-direction: column; gap: 1px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+    .recent-inline-empty {
+      padding: 18px 16px; font-size: 13px;
+      color: var(--text-dim); text-align: center;
+    }
+    .recent-inline-item {
       display: flex; align-items: center; gap: 10px;
-      padding: 11px 10px; border-radius: 12px; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      /* Use background transition only — cheap to animate */
+      padding: 13px 14px; cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
       transition: background 0.10s;
     }
-    .recent-item:active { background: var(--surface-hover); }
-    .recent-item-icon {
-      flex-shrink: 0; width: 18px; height: 18px;
+    .recent-inline-item:last-child { border-bottom: none; }
+    .recent-inline-item:active { background: var(--surface-hover); }
+    .recent-inline-icon {
+      flex-shrink: 0; width: 17px; height: 17px;
       display: flex; align-items: center; justify-content: center;
       color: var(--text-dim);
     }
-    .recent-item-icon svg { width: 15px; height: 15px; }
-    .recent-item-text {
+    .recent-inline-icon svg { width: 14px; height: 14px; }
+    .recent-inline-text {
       flex: 1; font-size: 14px; font-weight: 300; color: var(--text-muted);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      user-select: none; -webkit-user-select: none;
     }
-    .recent-item-del {
+    .recent-inline-del {
       flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
       background: none; border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       color: var(--text-dim); -webkit-tap-highlight-color: transparent;
       transition: color 0.12s, background 0.12s;
     }
-    .recent-item-del:active { color: var(--danger); background: rgba(255,80,80,0.10); }
-    .recent-item-del svg { width: 12px; height: 12px; }
-
-    .recent-empty {
-      padding: 16px 18px; font-size: 13px; color: var(--text-dim); text-align: center;
-    }
+    .recent-inline-del:active { color: var(--danger); background: rgba(255,80,80,0.10); }
+    .recent-inline-del svg { width: 11px; height: 11px; }
 
     /* ── Shortcuts ── */
     .shortcuts-section {
-      margin-top: 28px; width: 100%;
+      width: 100%; margin-top: 24px;
       animation: fadeUp 0.55s 0.18s cubic-bezier(0.22,1,0.36,1) both;
     }
     .shortcuts-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; justify-items: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 16px 12px; width: 100%;
     }
     .shortcut-item {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 6px; cursor: pointer; position: relative; transform-origin: center bottom;
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      cursor: pointer; position: relative;
       -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      animation: scaleIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
-      width: 100%;
+      animation: popIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
     }
     .shortcut-icon {
-      width: 100%; aspect-ratio: 1; max-width: 62px;
-      border-radius: 16px; border: 1px solid var(--border); background: var(--surface);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      width: 54px; height: 54px; border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       display: flex; align-items: center; justify-content: center;
-      overflow: visible; position: relative;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.40);
-      transition: transform 0.12s, border-color 0.2s;
-      will-change: transform;
+      overflow: hidden; position: relative;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.40);
     }
-    .shortcut-item:active .shortcut-icon { transform: scale(0.92); }
-    .shortcut-icon-inner {
-      width: 100%; height: 100%; border-radius: 16px;
-      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    .shortcut-item:active .shortcut-icon { transform: scale(0.91); }
+    .shortcut-icon img {
+      width: 28px; height: 28px; border-radius: 6px;
+      object-fit: contain; display: block;
     }
-    .shortcut-icon img { width: 52%; height: 52%; border-radius: 6px; object-fit: contain; }
-    .shortcut-letter {
-      width: 52%; height: 52%; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: 500; color: #fff; font-family: 'Inter', sans-serif;
+    .shortcut-icon .shortcut-letter {
+      font-size: 22px; font-weight: 500; color: var(--text-primary);
+      line-height: 1; text-transform: uppercase;
     }
     .shortcut-label {
       font-size: 11px; font-weight: 400; color: var(--text-muted);
-      text-align: center; width: 100%;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      letter-spacing: 0.01em; padding: 0 2px;
+      text-align: center; max-width: 72px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .shortcut-delete {
-      position: absolute; top: -7px; right: -7px;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--danger); border: 2px solid var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; opacity: 0;
-      transform: scale(0.5);
-      transition: opacity 0.18s, transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
-      will-change: transform, opacity;
-      z-index: 10; pointer-events: none;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    }
-    .shortcut-delete svg { width: 10px; height: 10px; }
-    .shortcuts-grid.edit-mode .shortcut-delete { opacity: 1; transform: scale(1); pointer-events: all; }
-    .shortcuts-grid.edit-mode .shortcut-item {
-      animation: wiggle 0.30s ease infinite alternate; transform-origin: center bottom;
-    }
-    .shortcuts-grid.edit-mode .shortcut-item:active { animation: none; }
 
+    /* Delete badge */
+    .shortcut-del-btn {
+      position: absolute; top: -5px; right: -5px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--danger); border: 2px solid var(--bg);
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 2;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .shortcut-del-btn svg { width: 8px; height: 8px; stroke: #fff; stroke-width: 2.5; }
+    .shortcuts-grid.edit-mode .shortcut-del-btn { display: flex; }
+    .shortcuts-grid.edit-mode .shortcut-icon {
+      animation: shortcutWiggle 0.5s ease infinite alternate;
+    }
+    @keyframes shortcutWiggle {
+      from { transform: rotate(-1.5deg); }
+      to   { transform: rotate(1.5deg); }
+    }
+    .shortcuts-grid.edit-mode .shortcut-item:active .shortcut-icon {
+      animation: none; transform: scale(0.91);
+    }
+
+    /* Add button */
     .shortcut-add {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 6px; cursor: pointer; width: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      cursor: pointer;
       -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
     .shortcut-add-icon {
-      width: 100%; aspect-ratio: 1; max-width: 62px; border-radius: 16px;
-      border: 1.5px dashed rgba(255,255,255,0.18); background: transparent;
+      width: 54px; height: 54px; border-radius: 16px;
+      background: transparent;
+      border: 1.5px dashed rgba(255,255,255,0.18);
       display: flex; align-items: center; justify-content: center;
-      transition: border-color 0.2s, background 0.2s, transform 0.12s;
-      will-change: transform;
+      transition: border-color 0.18s, background 0.18s;
     }
     .shortcut-add:active .shortcut-add-icon {
-      border-color: rgba(255,255,255,0.40); background: var(--surface); transform: scale(0.92);
+      border-color: rgba(255,255,255,0.40); background: var(--surface);
     }
-    .shortcut-add-icon svg { width: 22px; height: 22px; color: var(--text-muted); }
-    .shortcut-add-label { font-size: 11px; color: var(--text-dim); }
+    .shortcut-add-icon svg { width: 20px; height: 20px; color: rgba(255,255,255,0.22); }
+    .shortcut-add-label { font-size: 11px; color: rgba(255,255,255,0.22); text-align: center; }
 
-    .edit-hint {
-      text-align: center; font-size: 11px; color: var(--text-dim);
-      letter-spacing: 0.05em; margin-top: 12px;
-      opacity: 0; transition: opacity 0.25s; pointer-events: none;
-    }
-    .shortcuts-grid.edit-mode ~ .edit-hint { opacity: 1; }
-
-    .shortcut-item.pending .shortcut-icon { opacity: 0.55; }
-    .shortcut-item.pending .shortcut-icon::after {
-      content: ''; position: absolute; inset: 0; border-radius: 16px;
-      border: 2px solid transparent; border-top-color: var(--accent);
-      animation: spin 0.8s linear infinite;
-      will-change: transform;
-    }
-
-    /* ══════════════════════════════════════════════════
-       BOTTOM SHEET
-    ══════════════════════════════════════════════════ */
+    /* ── Bottom Sheet ── */
     .sheet-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.72);
@@ -464,8 +399,7 @@
       display: flex; flex-direction: column; gap: 14px;
       transform: translateY(100%);
       transition: transform 0.30s cubic-bezier(0.22,1,0.36,1);
-      overflow: hidden; touch-action: pan-y;
-      will-change: transform;
+      overflow: hidden; touch-action: pan-y; will-change: transform;
     }
     .sheet-backdrop.open .sheet { transform: translateY(0); }
     .sheet-handle {
@@ -473,57 +407,48 @@
       border-radius: 2px; margin: 0 auto -2px; flex-shrink: 0;
     }
     .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; }
+    .sheet-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn {
+      flex: 1; height: 50px; border-radius: 14px; border: none;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: transform 0.12s, background 0.15s; will-change: transform;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
+    .btn-cancel:active { background: rgba(255,255,255,0.12); }
+    .btn-apply  { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
+    .btn-apply:active   { background: rgba(138,180,248,0.28); }
+    .btn-apply:disabled { opacity: 0.38; }
+    .btn-clear  { background: rgba(255,80,80,0.12); color: var(--danger); border: 1px solid rgba(255,80,80,0.22); }
+    .btn-clear:active { background: rgba(255,80,80,0.22); }
 
     /* ── Wallpaper sheet ── */
-    .wp-search-row { display: flex; gap: 8px; flex-shrink: 0; }
-    .wp-search-input {
-      flex: 1; height: 44px; padding: 0 14px; border-radius: 12px;
-      border: 1px solid var(--border); background: rgba(255,255,255,0.05);
-      color: var(--text-primary); font-family: 'Inter', sans-serif;
-      font-size: 16px; font-weight: 300;
-      outline: none; appearance: none; -webkit-appearance: none;
-      caret-color: var(--accent); transition: border-color 0.2s;
-      user-select: text; -webkit-user-select: text;
-    }
-    .wp-search-input::placeholder { color: var(--text-dim); }
-    .wp-search-input:focus { border-color: var(--border-focus); }
-    .wp-search-btn {
-      height: 44px; padding: 0 18px; border-radius: 12px;
-      border: 1px solid var(--border-focus); background: rgba(138,180,248,0.14);
-      color: var(--accent); font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: background 0.15s;
-    }
-    .wp-search-btn:active { background: rgba(138,180,248,0.26); }
-    .wp-search-btn:disabled { opacity: 0.40; cursor: not-allowed; }
-
-    .wp-url-row { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
-    .wp-url-label {
-      font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase;
-      color: var(--text-dim); white-space: nowrap; flex-shrink: 0;
+    .wp-field { display: flex; flex-direction: column; gap: 6px; }
+    .wp-field-label {
+      font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 400;
     }
     .wp-url-input {
-      flex: 1; height: 40px; padding: 0 12px; border-radius: 10px;
-      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      width: 100%; height: 50px; padding: 0 14px;
+      border-radius: 14px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
       color: var(--text-primary); font-family: 'Inter', sans-serif;
-      font-size: 13px; font-weight: 300;
+      font-size: 15px; font-weight: 300;
       outline: none; appearance: none; -webkit-appearance: none;
-      caret-color: var(--accent); transition: border-color 0.2s;
+      caret-color: var(--accent);
+      transition: border-color 0.2s, background 0.2s;
       user-select: text; -webkit-user-select: text;
     }
     .wp-url-input::placeholder { color: var(--text-dim); }
-    .wp-url-input:focus { border-color: var(--border-focus); }
-    .wp-url-btn {
-      height: 40px; padding: 0 14px; border-radius: 10px;
-      border: 1px solid rgba(138,180,248,0.28); background: rgba(138,180,248,0.10);
-      color: var(--accent); font-family: 'Inter', sans-serif;
-      font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: background 0.15s;
-    }
-    .wp-url-btn:active { background: rgba(138,180,248,0.22); }
+    .wp-url-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
 
+    .wp-saved-label {
+      font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 400; flex-shrink: 0;
+    }
     .wp-saved-urls {
       display: flex; gap: 6px; overflow-x: auto; flex-shrink: 0;
       -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px;
@@ -536,7 +461,7 @@
       display: flex; align-items: center; gap: 6px;
       padding: 5px 10px 5px 12px; border-radius: var(--pill);
       border: 1px solid var(--border); background: rgba(255,255,255,0.04);
-      flex-shrink: 0; max-width: 180px; cursor: pointer;
+      flex-shrink: 0; max-width: 200px; cursor: pointer;
       -webkit-tap-highlight-color: transparent; touch-action: manipulation;
       transition: border-color 0.15s, background 0.15s;
     }
@@ -544,7 +469,6 @@
     .wp-saved-chip-label {
       font-size: 11px; color: var(--text-muted); white-space: nowrap;
       overflow: hidden; text-overflow: ellipsis; flex: 1;
-      user-select: none; -webkit-user-select: none;
     }
     .wp-saved-chip-del {
       flex-shrink: 0; background: none; border: none; cursor: pointer;
@@ -555,143 +479,65 @@
     .wp-saved-chip-del:active { color: var(--danger); }
     .wp-saved-chip-del svg { width: 10px; height: 10px; }
 
-    .wp-divider { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .wp-divider-line { flex: 1; height: 1px; background: var(--border); }
-    .wp-divider-label {
-      font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase;
-      color: var(--text-dim); white-space: nowrap;
+    .wp-preview {
+      flex-shrink: 0; width: 100%; height: 130px; border-radius: 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      position: relative;
     }
-
-    .wp-chips {
-      display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      flex-shrink: 0; padding-bottom: 2px;
-      -webkit-mask-image: linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%);
-      mask-image:         linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%);
+    .wp-preview img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; transition: opacity 0.3s ease;
     }
-    .wp-chips::-webkit-scrollbar { display: none; }
-    .wp-chip {
-      padding: 6px 14px; border-radius: var(--pill);
-      border: 1px solid var(--border); background: transparent;
-      color: var(--text-muted); font-family: 'Inter', sans-serif;
-      font-size: 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: color 0.15s, background 0.15s, border-color 0.15s;
-    }
-    .wp-chip:active { background: var(--surface-hover); }
-    .wp-chip.active { color: var(--text-primary); background: rgba(255,255,255,0.09); border-color: var(--border-focus); }
-
-    .wp-scroll-area {
-      flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden;
-      -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
-      scrollbar-width: none;
-      -webkit-mask-image: linear-gradient(to right,transparent 0%,black 3%,black 97%,transparent 100%);
-      mask-image:         linear-gradient(to right,transparent 0%,black 3%,black 97%,transparent 100%);
-    }
-    .wp-scroll-area::-webkit-scrollbar { display: none; }
-    .wp-list {
-      display: flex; flex-direction: row; gap: 10px; height: 100%;
-      padding: 6px 16px; align-items: center; min-width: max-content;
-    }
-    .wp-card {
-      flex-shrink: 0; width: 160px; height: 110px; border-radius: 14px;
-      overflow: hidden; border: 2.5px solid transparent;
-      cursor: pointer; position: relative; background: rgba(255,255,255,0.04);
-      transition: border-color 0.18s, transform 0.12s;
-      will-change: transform;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    }
-    .wp-card:active { transform: scale(0.95); }
-    .wp-card.selected { border-color: var(--accent); }
-    .wp-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .wp-res {
-      position: absolute; bottom: 5px; right: 6px; font-size: 9px;
-      color: rgba(255,255,255,0.70); background: rgba(0,0,0,0.60);
-      padding: 2px 5px; border-radius: 4px; letter-spacing: 0.03em;
-      font-family: 'JetBrains Mono', monospace; pointer-events: none;
-    }
-    .wp-check {
-      position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
-      border-radius: 50%; background: var(--accent);
-      display: none; align-items: center; justify-content: center; pointer-events: none;
-    }
-    .wp-card.selected .wp-check { display: flex; }
-    .wp-check svg { width: 12px; height: 12px; stroke: #000; stroke-width: 2.5; }
-    .wp-state {
+    .wp-preview img.loaded { opacity: 1; }
+    .wp-preview-placeholder {
+      position: absolute; inset: 0;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px; height: 100%; min-width: 100%; padding: 16px;
-      color: var(--text-muted); font-size: 14px; text-align: center;
+      gap: 8px; color: var(--text-dim); font-size: 12px; pointer-events: none;
     }
-    .wp-spinner {
-      width: 24px; height: 24px;
-      border: 2px solid rgba(255,255,255,0.10);
-      border-top-color: rgba(255,255,255,0.55);
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-      will-change: transform;
-    }
-    .wp-load-more {
-      flex-shrink: 0; width: 100px; height: 110px; border-radius: 14px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; cursor: pointer; color: var(--text-muted); font-size: 12px;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: background 0.15s; background: transparent;
-      border: none; font-family: 'Inter', sans-serif;
-    }
-    .wp-load-more:active { background: var(--surface); }
-    .wp-load-more:disabled { opacity: 0.40; cursor: not-allowed; }
-    .wp-load-more-icon {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 1.5px dashed rgba(255,255,255,0.25);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .wp-load-more-icon svg { width: 16px; height: 16px; color: var(--text-muted); }
-    .wp-load-more.loading .wp-load-more-icon svg { display: none; }
-    .wp-load-more.loading .wp-load-more-icon::after {
-      content: ''; width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.12);
-      border-top-color: rgba(255,255,255,0.55);
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-      will-change: transform;
-    }
+    .wp-preview-placeholder svg { width: 28px; height: 28px; }
 
-    .sheet-actions { display: flex; gap: 8px; flex-shrink: 0; }
-    .btn {
-      flex: 1; height: 50px; border-radius: 14px; border: none;
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 15px; font-weight: 500; cursor: pointer;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: transform 0.12s, background 0.15s;
-      will-change: transform;
+    /* ── Shortcut sheet ── */
+    .sc-field { display: flex; flex-direction: column; gap: 6px; }
+    .sc-label {
+      font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 400;
     }
-    .btn:active { transform: scale(0.96); }
-    .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
-    .btn-cancel:active { background: rgba(255,255,255,0.12); }
-    .btn-apply  { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
-    .btn-apply:active   { background: rgba(138,180,248,0.28); }
-    .btn-apply:disabled { opacity: 0.38; }
-    .btn-clear  { background: rgba(255,80,80,0.12); color: var(--danger); border: 1px solid rgba(255,80,80,0.22); }
-    .btn-clear:active   { background: rgba(255,80,80,0.22); }
-    .btn-save   { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
-    .btn-save:active:not(:disabled) { background: rgba(138,180,248,0.28); }
-    .btn-save:disabled  { opacity: 0.38; cursor: not-allowed; }
-
-    .sheet-field { display: flex; flex-direction: column; gap: 6px; }
-    .sheet-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-muted); }
-    .sheet-input {
-      width: 100%; height: 50px; padding: 0 16px; border-radius: 14px;
-      border: 1px solid var(--border); background: rgba(255,255,255,0.05);
-      color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif;
-      font-size: 16px; font-weight: 300;
+    .sc-input {
+      width: 100%; height: 48px; padding: 0 14px;
+      border-radius: 14px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary); font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 300;
       outline: none; appearance: none; -webkit-appearance: none;
-      caret-color: var(--accent); transition: border-color 0.2s, box-shadow 0.2s;
+      caret-color: var(--accent);
+      transition: border-color 0.2s, background 0.2s;
       user-select: text; -webkit-user-select: text;
     }
-    .sheet-input::placeholder { color: var(--text-dim); }
-    .sheet-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--glow-focus); }
-    .sheet-input.error { border-color: var(--danger); }
-    .field-error { font-size: 11px; color: var(--danger); display: none; margin-top: 2px; }
-    .sheet-input.error + .field-error { display: block; }
+    .sc-input::placeholder { color: var(--text-dim); }
+    .sc-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
 
+    .sc-preview-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px; border-radius: 14px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sc-preview-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; }
+    .sc-preview-icon .sc-preview-letter {
+      font-size: 20px; font-weight: 500; color: var(--text-primary); text-transform: uppercase;
+    }
+    .sc-preview-info { display: flex; flex-direction: column; gap: 3px; }
+    .sc-preview-name { font-size: 15px; font-weight: 400; color: var(--text-primary); }
+    .sc-preview-url  { font-size: 12px; color: var(--text-muted); word-break: break-all; }
+
+    /* ── Toast ── */
     .toast {
       position: fixed; bottom: calc(var(--safe-bot) + 28px); left: 50%;
       transform: translateX(-50%) translateY(16px);
@@ -700,8 +546,7 @@
       padding: 11px 22px; border-radius: var(--pill);
       white-space: nowrap; opacity: 0; pointer-events: none;
       transition: opacity 0.18s, transform 0.18s cubic-bezier(0.22,1,0.36,1);
-      will-change: transform, opacity;
-      z-index: 400;
+      will-change: transform, opacity; z-index: 400;
       backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       max-width: calc(100vw - 32px); text-align: center;
     }
@@ -712,19 +557,6 @@
 
 <div id="wallpaperLayer"></div>
 <div id="wallpaperDim"></div>
-
-<!--
-  Recent-searches dropdown lives at body root.
-  position:fixed + JS-measured coordinates mean it is never
-  clipped or covered by any scroll/stacking ancestor.
--->
-<div id="recentDropdown" role="listbox" aria-label="Recent searches">
-  <div class="recent-header">
-    <span class="recent-header-label">Recent</span>
-    <button class="recent-clear-all" id="recentClearAll" type="button">Clear all</button>
-  </div>
-  <div class="recent-list" id="recentList"></div>
-</div>
 
 <button id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -741,17 +573,12 @@
     </svg>
     Change Wallpaper
   </button>
-  <div class="drop-sep"></div>
-  <button class="drop-item" id="dropAddShortcut" role="menuitem">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Add Shortcut
-  </button>
-  <button class="drop-item" id="dropEditShortcuts" role="menuitem">
+  <button class="drop-item" id="dropShortcuts" role="menuitem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
     </svg>
     Edit Shortcuts
   </button>
@@ -760,6 +587,7 @@
 <div id="scrollRoot">
   <main class="page" role="main">
 
+    <!-- Clock -->
     <div class="clock-wrapper">
       <div class="clock" id="clock" aria-live="polite" aria-label="Current time">
         <span id="hrs">12</span><span class="clock-sep" aria-hidden="true">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span>
@@ -767,6 +595,7 @@
       <div class="date-label" id="date"></div>
     </div>
 
+    <!-- Search -->
     <section class="search-section" aria-label="Web search">
       <div class="engine-row" id="engineRow" role="group" aria-label="Choose search engine">
         <button class="engine-btn active" data-engine="google"     aria-pressed="true"  type="button">
@@ -799,8 +628,7 @@
           <input class="search-input" id="searchInput"
             type="search" inputmode="search"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            placeholder="Search the web…" aria-label="Search query" enterkeyhint="search"
-            aria-autocomplete="list" aria-controls="recentDropdown" aria-expanded="false"/>
+            placeholder="Search the web…" aria-label="Search query" enterkeyhint="search"/>
           <button class="search-submit" id="searchSubmit" aria-label="Submit search" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
@@ -810,59 +638,53 @@
       </div>
     </section>
 
-    <section class="shortcuts-section" aria-label="Shortcuts">
+    <!-- Recent Searches (always visible) -->
+    <section class="recent-section" id="recentSection" aria-label="Recent searches">
+      <div class="section-header">
+        <span class="section-label">Recent</span>
+        <button class="section-clear" id="recentClearAll" type="button">Clear all</button>
+      </div>
+      <div class="recent-inline-list" id="recentInlineList"></div>
+    </section>
+
+    <!-- Shortcuts -->
+    <section class="shortcuts-section" id="shortcutsSection" aria-label="Shortcuts">
+      <div class="section-header">
+        <span class="section-label">Shortcuts</span>
+      </div>
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
-      <p class="edit-hint">hold icon to enter edit mode · tap × to remove</p>
     </section>
 
   </main>
 </div>
 
-<!-- Wallpaper sheet -->
-<div class="sheet-backdrop" id="wpBackdrop" role="dialog" aria-modal="true" aria-label="Choose wallpaper">
+<!-- Wallpaper Sheet -->
+<div class="sheet-backdrop" id="wpBackdrop" role="dialog" aria-modal="true" aria-label="Change wallpaper">
   <div class="sheet" id="wpSheet">
     <div class="sheet-handle"></div>
     <p class="sheet-title">Wallpaper</p>
-    <div class="wp-url-row">
-      <span class="wp-url-label">URL</span>
+
+    <div class="wp-preview" id="wpPreview">
+      <div class="wp-preview-placeholder" id="wpPreviewPlaceholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+        </svg>
+        Preview
+      </div>
+      <img id="wpPreviewImg" src="" alt="Wallpaper preview" />
+    </div>
+
+    <div class="wp-field">
+      <label class="wp-field-label" for="wpUrlInput">Image URL</label>
       <input class="wp-url-input" id="wpUrlInput" type="text"
         placeholder="https://example.com/image.jpg"
-        inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off"
-        spellcheck="false" enterkeyhint="go"/>
-      <button class="wp-url-btn" id="wpUrlBtn" type="button">Set</button>
+        inputmode="url" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" enterkeyhint="go"/>
     </div>
+
+    <span class="wp-saved-label" id="wpSavedLabel" style="display:none">Recent</span>
     <div class="wp-saved-urls" id="wpSavedUrls"></div>
-    <div class="wp-divider">
-      <div class="wp-divider-line"></div>
-      <span class="wp-divider-label">Browse</span>
-      <div class="wp-divider-line"></div>
-    </div>
-    <div class="wp-search-row">
-      <input class="wp-search-input" id="wpSearchInput" type="text"
-        placeholder="Search wallpapers…" autocomplete="off" autocorrect="off" enterkeyhint="search"/>
-      <button class="wp-search-btn" id="wpSearchBtn" type="button">Search</button>
-    </div>
-    <div class="wp-chips" id="wpChips">
-      <button class="wp-chip" data-query="" data-category="111" data-purity="100">Trending</button>
-      <button class="wp-chip" data-query="" data-category="100" data-purity="100">General</button>
-      <button class="wp-chip" data-query="" data-category="010" data-purity="100">Anime</button>
-      <button class="wp-chip" data-query="nature"   data-category="100" data-purity="100">Nature</button>
-      <button class="wp-chip" data-query="space"    data-category="100" data-purity="100">Space</button>
-      <button class="wp-chip" data-query="minimal"  data-category="100" data-purity="100">Minimal</button>
-      <button class="wp-chip" data-query="city"     data-category="100" data-purity="100">City</button>
-      <button class="wp-chip" data-query="dark"     data-category="100" data-purity="100">Dark</button>
-      <button class="wp-chip" data-query="abstract" data-category="100" data-purity="100">Abstract</button>
-    </div>
-    <div class="wp-scroll-area" id="wpScrollArea">
-      <div class="wp-list" id="wpList">
-        <div class="wp-state" id="wpIdle">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
-          </svg>
-          <span style="color:var(--text-dim);font-size:13px;">Pick a category or search</span>
-        </div>
-      </div>
-    </div>
+
     <div class="sheet-actions">
       <button class="btn btn-cancel" id="wpCancel" type="button">Cancel</button>
       <button class="btn btn-clear"  id="wpClear"  type="button">Clear</button>
@@ -871,55 +693,49 @@
   </div>
 </div>
 
-<!-- Add shortcut sheet -->
-<div class="sheet-backdrop" id="addBackdrop" role="dialog" aria-modal="true" aria-label="Add shortcut">
-  <div class="sheet" id="addSheet">
+<!-- Shortcut Sheet -->
+<div class="sheet-backdrop" id="scBackdrop" role="dialog" aria-modal="true" aria-label="Add shortcut">
+  <div class="sheet" id="scSheet">
     <div class="sheet-handle"></div>
-    <p class="sheet-title">Add Shortcut</p>
-    <div class="sheet-field">
-      <label class="sheet-label" for="scName">Name</label>
-      <input class="sheet-input" id="scName" type="text"
-        placeholder="e.g. YouTube" maxlength="30"
-        autocomplete="off" autocorrect="off" autocapitalize="words" enterkeyhint="next"/>
-      <span class="field-error" id="scNameError">Please enter a name</span>
+    <p class="sheet-title" id="scSheetTitle">Add Shortcut</p>
+
+    <div class="sc-preview-row">
+      <div class="sc-preview-icon" id="scPreviewIcon">
+        <span class="sc-preview-letter" id="scPreviewLetter">?</span>
+      </div>
+      <div class="sc-preview-info">
+        <div class="sc-preview-name" id="scPreviewName">Enter a URL</div>
+        <div class="sc-preview-url"  id="scPreviewUrl">—</div>
+      </div>
     </div>
-    <div class="sheet-field">
-      <label class="sheet-label" for="scUrl">URL</label>
-      <input class="sheet-input" id="scUrl" type="text"
-        placeholder="youtube.com or https://youtube.com"
-        inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off"
-        spellcheck="false" enterkeyhint="done"/>
-      <span class="field-error" id="scUrlError">Please enter a valid URL</span>
+
+    <div class="sc-field">
+      <label class="sc-label" for="scUrlInput">URL</label>
+      <input class="sc-input" id="scUrlInput" type="text"
+        placeholder="https://example.com"
+        inputmode="url" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" enterkeyhint="next"/>
     </div>
+    <div class="sc-field">
+      <label class="sc-label" for="scNameInput">Name <span style="color:var(--text-dim)">(optional)</span></label>
+      <input class="sc-input" id="scNameInput" type="text"
+        placeholder="Auto-detected from URL"
+        autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"/>
+    </div>
+
     <div class="sheet-actions">
       <button class="btn btn-cancel" id="scCancel" type="button">Cancel</button>
-      <button class="btn btn-save"   id="scSave"   type="button" disabled>Add</button>
+      <button class="btn btn-apply"  id="scSave"   type="button" disabled>Save</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast" aria-live="polite" role="status"></div>
 
-<script type="module">
-  import { initializeApp }                           from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
-  const app = initializeApp({
-    apiKey:            "AIzaSyAM6T2eWpeqBd5XzcQNa2SGtCsovn_BxAM",
-    authDomain:        "citric-143b9.firebaseapp.com",
-    databaseURL:       "https://citric-143b9-default-rtdb.firebaseio.com",
-    projectId:         "citric-143b9",
-    storageBucket:     "citric-143b9.firebasestorage.app",
-    messagingSenderId: "75119245524",
-    appId:             "1:75119245524:web:d0006197a335457eb52341"
-  });
-  const db           = getDatabase(app);
-  const shortcutsRef = ref(db, 'shortcuts');
-
-  const WH_KEY    = 'PpuBn5b2aflHGhjMs7QqjMQ79TzFESfY';
-  const PAGE_SIZE = 10;
-
-  /* ── Toast ── */
+<script>
+  /* ════════════════════════════════════════
+     Toast
+  ════════════════════════════════════════ */
   const toastEl    = document.getElementById('toast');
   const toastQueue = [];
   let   toastBusy  = false;
@@ -932,7 +748,9 @@
   }
   function showToast(msg) { toastQueue.push(msg); if (!toastBusy) processToastQueue(); }
 
-  /* ── Clock ── */
+  /* ════════════════════════════════════════
+     Clock
+  ════════════════════════════════════════ */
   const hrsEl  = document.getElementById('hrs');
   const minsEl = document.getElementById('mins');
   const ampmEl = document.getElementById('ampm');
@@ -954,284 +772,278 @@
       (60 - now.getSeconds()) * 1000 - now.getMilliseconds());
   })();
 
-  /* ── Wallpaper ── */
+  /* ════════════════════════════════════════
+     Wallpaper
+  ════════════════════════════════════════ */
   const wallLayer = document.getElementById('wallpaperLayer');
   const wallDim   = document.getElementById('wallpaperDim');
+
   function applyWallpaper(url) {
     if (!url) {
-      wallLayer.style.backgroundImage = ''; wallLayer.classList.remove('loaded'); wallDim.classList.remove('loaded');
-      try { localStorage.removeItem('wallpaperUrl'); } catch(e) {} return;
+      wallLayer.style.backgroundImage = '';
+      wallLayer.classList.remove('loaded');
+      wallDim.classList.remove('loaded');
+      try { localStorage.removeItem('wallpaperUrl'); } catch(e) {}
+      return;
     }
     const img = new Image();
-    img.onload  = () => { wallLayer.style.backgroundImage = `url("${url}")`; wallLayer.classList.add('loaded'); wallDim.classList.add('loaded'); };
+    img.onload = () => {
+      wallLayer.style.backgroundImage = `url("${url}")`;
+      wallLayer.classList.add('loaded');
+      wallDim.classList.add('loaded');
+    };
     img.onerror = () => showToast('Could not load wallpaper image');
     img.src = url;
     try { localStorage.setItem('wallpaperUrl', url); } catch(e) {}
   }
   try { const u = localStorage.getItem('wallpaperUrl'); if (u) applyWallpaper(u); } catch(e) {}
 
-  /* ── Saved wallpaper URLs ── */
-  const WP_URLS_KEY = 'savedWpUrls', WP_URLS_MAX = 8;
-  const loadSavedWpUrls    = () => { try { return JSON.parse(localStorage.getItem(WP_URLS_KEY) || '[]'); } catch(e) { return []; } };
-  const saveSavedWpUrls    = a  => { try { localStorage.setItem(WP_URLS_KEY, JSON.stringify(a.slice(-WP_URLS_MAX))); } catch(e) {} };
-  const addSavedWpUrl      = u  => { const a = loadSavedWpUrls().filter(x => x !== u); a.push(u); saveSavedWpUrls(a); };
-  const removeSavedWpUrl   = u  => saveSavedWpUrls(loadSavedWpUrls().filter(x => x !== u));
+  /* Saved wallpaper URLs */
+  const WP_URLS_KEY = 'savedWpUrls';
+  const WP_URLS_MAX = 8;
+  const loadSavedWpUrls  = () => { try { return JSON.parse(localStorage.getItem(WP_URLS_KEY) || '[]'); } catch(e) { return []; } };
+  const saveSavedWpUrls  = a  => { try { localStorage.setItem(WP_URLS_KEY, JSON.stringify(a.slice(-WP_URLS_MAX))); } catch(e) {} };
+  const addSavedWpUrl    = u  => { const a = loadSavedWpUrls().filter(x => x !== u); a.push(u); saveSavedWpUrls(a); };
+  const removeSavedWpUrl = u  => saveSavedWpUrls(loadSavedWpUrls().filter(x => x !== u));
 
-  const wpSavedUrlsEl = document.getElementById('wpSavedUrls');
+  /* Wallpaper sheet */
+  const wpBackdrop           = document.getElementById('wpBackdrop');
+  const wpSheet              = document.getElementById('wpSheet');
+  const wpUrlInput           = document.getElementById('wpUrlInput');
+  const wpApply              = document.getElementById('wpApply');
+  const wpClear              = document.getElementById('wpClear');
+  const wpCancel             = document.getElementById('wpCancel');
+  const wpSavedUrlsEl        = document.getElementById('wpSavedUrls');
+  const wpSavedLabel         = document.getElementById('wpSavedLabel');
+  const wpPreviewImg         = document.getElementById('wpPreviewImg');
+  const wpPreviewPlaceholder = document.getElementById('wpPreviewPlaceholder');
+
+  let wpPreviewTimer = null;
+
+  function updateWpPreview(url) {
+    clearTimeout(wpPreviewTimer);
+    if (!url) {
+      wpPreviewImg.classList.remove('loaded');
+      wpPreviewImg.src = '';
+      wpPreviewPlaceholder.style.display = 'flex';
+      wpApply.disabled = true;
+      return;
+    }
+    wpApply.disabled = false;
+    wpPreviewTimer = setTimeout(() => {
+      wpPreviewImg.classList.remove('loaded');
+      wpPreviewPlaceholder.style.display = 'flex';
+      const t = new Image();
+      t.onload = () => {
+        wpPreviewImg.src = url;
+        wpPreviewImg.onload = () => {
+          wpPreviewImg.classList.add('loaded');
+          wpPreviewPlaceholder.style.display = 'none';
+        };
+      };
+      t.onerror = () => {
+        wpPreviewImg.classList.remove('loaded');
+        wpPreviewPlaceholder.style.display = 'flex';
+      };
+      t.src = url;
+    }, 600);
+  }
+
   function renderSavedWpUrls() {
     wpSavedUrlsEl.innerHTML = '';
-    loadSavedWpUrls().slice().reverse().forEach(url => {
+    const saved = loadSavedWpUrls().slice().reverse();
+    wpSavedLabel.style.display = saved.length ? '' : 'none';
+    saved.forEach(url => {
       let label = url;
-      try { label = new URL(url).pathname.split('/').pop() || new URL(url).hostname; } catch(e) {}
-      if (label.length > 28) label = label.slice(0,26) + '…';
-      const chip = document.createElement('div'); chip.className = 'wp-saved-chip';
-      chip.setAttribute('role','button'); chip.setAttribute('tabindex','0'); chip.title = url;
+      try { label = new URL(url).hostname.replace(/^www\./, ''); } catch(e) {}
+      if (label.length > 32) label = label.slice(0, 30) + '…';
+      const chip = document.createElement('div');
+      chip.className = 'wp-saved-chip';
+      chip.setAttribute('role', 'button'); chip.setAttribute('tabindex', '0'); chip.title = url;
       const lbl = document.createElement('span'); lbl.className = 'wp-saved-chip-label'; lbl.textContent = label;
-      const del = document.createElement('button'); del.className = 'wp-saved-chip-del'; del.type = 'button'; del.setAttribute('aria-label','Remove');
+      const del = document.createElement('button'); del.className = 'wp-saved-chip-del'; del.type = 'button'; del.setAttribute('aria-label', 'Remove');
       del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
       del.addEventListener('click', e => { e.stopPropagation(); removeSavedWpUrl(url); renderSavedWpUrls(); });
       chip.append(lbl, del);
-      chip.addEventListener('click', e => { if (del.contains(e.target)) return; applyWallpaper(url); showToast('Wallpaper applied ✓'); closeSheet(wpBackdrop); });
+      chip.addEventListener('click', e => {
+        if (del.contains(e.target)) return;
+        wpUrlInput.value = url; updateWpPreview(url);
+      });
       wpSavedUrlsEl.appendChild(chip);
     });
   }
 
-  /* ── Three-dot menu ── */
-  const menuBtn  = document.getElementById('menuBtn');
-  const dropMenu = document.getElementById('dropMenu');
-  let menuOpen = false;
-  function setMenuOpen(on) { menuOpen = on; dropMenu.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', String(on)); }
-  menuBtn.addEventListener('click', e => { e.stopPropagation(); setMenuOpen(!menuOpen); });
-  document.addEventListener('click', e => { if (menuOpen && !dropMenu.contains(e.target) && e.target !== menuBtn) setMenuOpen(false); });
-  document.getElementById('dropWallpaper')   .addEventListener('click', () => { setMenuOpen(false); openWpSheet(); });
-  document.getElementById('dropAddShortcut') .addEventListener('click', () => { setMenuOpen(false); openAddSheet(); });
-  document.getElementById('dropEditShortcuts').addEventListener('click',() => { setMenuOpen(false); setEditMode(true); });
+  function openWpSheet() {
+    const current = localStorage.getItem('wallpaperUrl') || '';
+    wpUrlInput.value = current;
+    wpPreviewImg.classList.remove('loaded');
+    wpPreviewImg.src = '';
+    wpPreviewPlaceholder.style.display = 'flex';
+    wpApply.disabled = !current;
+    if (current) updateWpPreview(current);
+    renderSavedWpUrls();
+    openSheet(wpBackdrop, () => wpUrlInput.focus());
+  }
 
-  /* ── Sheet helpers ── */
-  function openSheet(backdrop, cb) { backdrop.classList.add('open'); backdrop.removeAttribute('aria-hidden'); if (cb) setTimeout(cb, 310); }
-  function closeSheet(backdrop)    { backdrop.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); }
+  wpUrlInput.addEventListener('input', () => {
+    let url = wpUrlInput.value.trim();
+    if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+    updateWpPreview(url);
+  });
+  wpUrlInput.addEventListener('keydown', e => { if (e.key === 'Enter') wpApply.click(); });
+  wpApply.addEventListener('click', () => {
+    let url = wpUrlInput.value.trim();
+    if (!url) { showToast('Enter an image URL first'); return; }
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { new URL(url); } catch(e) { showToast('Invalid URL'); return; }
+    addSavedWpUrl(url); applyWallpaper(url); showToast('Wallpaper applied ✓'); closeSheet(wpBackdrop);
+  });
+  wpClear.addEventListener('click',  () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
+  wpCancel.addEventListener('click', () => closeSheet(wpBackdrop));
+  wpBackdrop.addEventListener('click', e => { if (e.target === wpBackdrop) closeSheet(wpBackdrop); });
+
+  /* ════════════════════════════════════════
+     Sheet helpers
+  ════════════════════════════════════════ */
+  function openSheet(backdrop, cb) {
+    backdrop.classList.add('open');
+    backdrop.removeAttribute('aria-hidden');
+    if (cb) setTimeout(cb, 310);
+  }
+  function closeSheet(backdrop) {
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
   function addSwipeDismiss(sheet, backdrop) {
     let sY = 0, cY = 0, on = false;
     sheet.addEventListener('touchstart', e => { sY = e.touches[0].clientY; cY = sY; on = true; }, { passive: true });
     sheet.addEventListener('touchmove',  e => { if (!on) return; cY = e.touches[0].clientY; const d = cY - sY; if (d > 0) sheet.style.transform = `translateY(${d}px)`; }, { passive: true });
     sheet.addEventListener('touchend',   () => { on = false; const d = cY - sY; sheet.style.transform = ''; if (d > 90) closeSheet(backdrop); });
   }
-
-  /* ── Wallpaper picker ── */
-  const wpBackdrop    = document.getElementById('wpBackdrop');
-  const wpSheet       = document.getElementById('wpSheet');
-  const wpList        = document.getElementById('wpList');
-  const wpIdle        = document.getElementById('wpIdle');
-  const wpChips       = document.getElementById('wpChips');
-  const wpSearchInput = document.getElementById('wpSearchInput');
-  const wpSearchBtn   = document.getElementById('wpSearchBtn');
-  const wpApply       = document.getElementById('wpApply');
-  const wpClear       = document.getElementById('wpClear');
-  const wpCancel      = document.getElementById('wpCancel');
-  const wpUrlInput    = document.getElementById('wpUrlInput');
-  const wpUrlBtn      = document.getElementById('wpUrlBtn');
   addSwipeDismiss(wpSheet, wpBackdrop);
 
-  let wpAllItems = [], wpShown = 0, wpSelected = null, wpFetching = false;
-  let wpQuery = '', wpCategory = '111', wpPurity = '100';
-
-  const WP_CACHE_KEY = 'wpResultsCache', WP_CACHE_MAX = 20, WP_CACHE_TTL = 30*60*1000;
-  const loadWpCache = () => { try { return JSON.parse(localStorage.getItem(WP_CACHE_KEY) || '{}'); } catch(e) { return {}; } };
-  const saveWpCache = cache => { try { localStorage.setItem(WP_CACHE_KEY, JSON.stringify(Object.fromEntries(Object.entries(cache).sort((a,b)=>a[1].ts-b[1].ts).slice(-WP_CACHE_MAX)))); } catch(e) {} };
-  const wpKey = (q,c,p) => `${q}|${c}|${p}`;
-  const getCached = (q,c,p) => { const e = loadWpCache()[wpKey(q,c,p)]; return (e && Date.now()-e.ts < WP_CACHE_TTL) ? e.items : null; };
-  const setCached = (q,c,p,items) => { const cache = loadWpCache(); cache[wpKey(q,c,p)] = {ts:Date.now(),items}; saveWpCache(cache); };
-
-  function buildWpUrl(q,c,p) {
-    const ps = new URLSearchParams({apikey:WH_KEY,categories:c,purity:p,sorting:q?'relevance':'toplist',page:'1',atleast:'1920x1080'});
-    if (q) ps.set('q',q); return `https://wallhaven.cc/api/v1/search?${ps}`;
+  /* ════════════════════════════════════════
+     Three-dot menu
+  ════════════════════════════════════════ */
+  const menuBtn  = document.getElementById('menuBtn');
+  const dropMenu = document.getElementById('dropMenu');
+  let menuOpen = false;
+  function setMenuOpen(on) {
+    menuOpen = on;
+    dropMenu.classList.toggle('open', on);
+    menuBtn.setAttribute('aria-expanded', String(on));
   }
-  async function fetchWpApi(q,c,p) {
-    const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(buildWpUrl(q,c,p))}`);
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    return JSON.parse((await r.json()).contents).data || [];
-  }
-  function wpShowState(html) { wpList.innerHTML=''; const d=document.createElement('div'); d.className='wp-state'; d.innerHTML=html; wpList.appendChild(d); }
-
-  function appendWpCards() {
-    wpList.querySelector('.wp-load-more')?.remove();
-    wpAllItems.slice(wpShown, wpShown+PAGE_SIZE).forEach(item => {
-      const card=document.createElement('div'); card.className='wp-card';
-      if (wpSelected?.id===item.id) card.classList.add('selected');
-      const img=document.createElement('img'); img.src=item.thumbs.small; img.alt=''; img.loading='lazy'; img.decoding='async';
-      const res=document.createElement('div'); res.className='wp-res'; res.textContent=`${item.dimension_x}×${item.dimension_y}`;
-      const chk=document.createElement('div'); chk.className='wp-check';
-      chk.innerHTML=`<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
-      card.append(img,res,chk);
-      card.addEventListener('click',()=>{ wpList.querySelectorAll('.wp-card.selected').forEach(c=>c.classList.remove('selected')); card.classList.add('selected'); wpSelected={id:item.id,url:item.path}; wpApply.disabled=false; });
-      wpList.appendChild(card);
-    });
-    wpShown += Math.min(PAGE_SIZE, wpAllItems.length-wpShown);
-    if (wpShown < wpAllItems.length) {
-      const btn=document.createElement('button'); btn.className='wp-load-more'; btn.type='button';
-      btn.innerHTML=`<div class="wp-load-more-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span>More</span>`;
-      btn.addEventListener('click',()=>{ btn.classList.add('loading'); btn.disabled=true; setTimeout(appendWpCards,120); });
-      wpList.appendChild(btn);
-    }
-  }
-
-  async function loadWpResults(q,c,p) {
-    if (wpFetching) return; wpFetching=true; wpSearchBtn.disabled=true;
-    wpAllItems=[]; wpShown=0; wpSelected=null; wpApply.disabled=true;
-    wpShowState('<div class="wp-spinner"></div><span>Loading…</span>');
-    try {
-      const cached=getCached(q,c,p);
-      wpAllItems = cached || await fetchWpApi(q,c,p);
-      if (!cached && wpAllItems.length) setCached(q,c,p,wpAllItems);
-      if (!wpAllItems.length) wpShowState('No wallpapers found.');
-      else { wpList.innerHTML=''; appendWpCards(); document.getElementById('wpScrollArea').scrollLeft=0; }
-    } catch(e) { wpShowState('Failed to load. Check your connection.'); }
-    finally { wpFetching=false; wpSearchBtn.disabled=false; }
-  }
-
-  function openWpSheet() {
-    wpAllItems=[]; wpShown=0; wpSelected=null; wpApply.disabled=true;
-    wpSearchInput.value=''; wpUrlInput.value='';
-    wpChips.querySelectorAll('.wp-chip').forEach(c=>c.classList.remove('active'));
-    wpList.innerHTML=''; wpList.appendChild(wpIdle); renderSavedWpUrls(); openSheet(wpBackdrop);
-  }
-
-  wpUrlBtn.addEventListener('click', () => {
-    let url = wpUrlInput.value.trim(); if (!url) { showToast('Enter an image URL first'); return; }
-    if (!/^https?:\/\//i.test(url)) url='https://'+url;
-    try { new URL(url); } catch(e) { showToast('Invalid URL'); return; }
-    addSavedWpUrl(url); applyWallpaper(url); showToast('Wallpaper applied ✓'); closeSheet(wpBackdrop);
+  menuBtn.addEventListener('click', e => { e.stopPropagation(); setMenuOpen(!menuOpen); });
+  document.addEventListener('click', e => {
+    if (menuOpen && !dropMenu.contains(e.target) && e.target !== menuBtn) setMenuOpen(false);
   });
-  wpUrlInput.addEventListener('keydown', e => { if (e.key==='Enter') wpUrlBtn.click(); });
-  wpChips.addEventListener('click', e => {
-    const chip = e.target.closest('.wp-chip'); if (!chip) return;
-    wpChips.querySelectorAll('.wp-chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
-    wpSearchInput.value=''; wpQuery=chip.dataset.query||''; wpCategory=chip.dataset.category||'111'; wpPurity=chip.dataset.purity||'100';
-    loadWpResults(wpQuery,wpCategory,wpPurity);
-  });
-  function doWpSearch() { const q=wpSearchInput.value.trim(); if (!q) return; wpChips.querySelectorAll('.wp-chip').forEach(c=>c.classList.remove('active')); wpQuery=q; wpCategory='111'; wpPurity='100'; loadWpResults(q,wpCategory,wpPurity); }
-  wpSearchBtn.addEventListener('click', doWpSearch);
-  wpSearchInput.addEventListener('keydown', e => { if (e.key==='Enter') doWpSearch(); });
-  wpApply.addEventListener('click',  () => { if (!wpSelected) return; applyWallpaper(wpSelected.url); showToast('Wallpaper applied ✓'); closeSheet(wpBackdrop); });
-  wpClear.addEventListener('click',  () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
-  wpCancel.addEventListener('click', () => closeSheet(wpBackdrop));
-  wpBackdrop.addEventListener('click', e => { if (e.target===wpBackdrop) closeSheet(wpBackdrop); });
+  document.getElementById('dropWallpaper').addEventListener('click', () => { setMenuOpen(false); openWpSheet(); });
+  document.getElementById('dropShortcuts').addEventListener('click', () => { setMenuOpen(false); toggleEditMode(); });
 
-  /* ══════════════════════════════════════════════════
-     RECENT SEARCHES
-     Key insight: the dropdown is NEVER hidden with
-     display:none after first render. Instead we keep
-     it as opacity:0 / pointer-events:none so the GPU
-     layer stays alive between opens, making every
-     subsequent open feel truly instant.
-  ══════════════════════════════════════════════════ */
-  const RECENT_KEY = 'recentSearches', RECENT_MAX = 12;
-  const loadRecent  = ()    => { try { return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]'); } catch(e) { return []; } };
-  const saveRecent  = arr   => { try { localStorage.setItem(RECENT_KEY, JSON.stringify(arr)); } catch(e) {} };
-  const addRecent   = term  => { if (!term.trim()) return; const a=loadRecent().filter(t=>t.toLowerCase()!==term.toLowerCase()); a.unshift(term); saveRecent(a.slice(0,RECENT_MAX)); };
-  const rmRecent    = term  => saveRecent(loadRecent().filter(t=>t!==term));
-  const clearRecent = ()    => saveRecent([]);
+  /* ════════════════════════════════════════
+     Recent Searches (always visible, max 5)
+  ════════════════════════════════════════ */
+  const RECENT_KEY = 'recentSearches';
+  const RECENT_MAX = 12;
+  const RECENT_SHOW = 5;
 
-  const searchInputEl  = document.getElementById('searchInput');
-  const recentDropdown = document.getElementById('recentDropdown');
-  const recentListEl   = document.getElementById('recentList');
-  const recentClearAll = document.getElementById('recentClearAll');
-  let   dropOpen       = false;
+  const loadRecent  = ()   => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) { return []; } };
+  const saveRecent  = arr  => { try { localStorage.setItem(RECENT_KEY, JSON.stringify(arr)); } catch(e) {} };
+  const addRecent   = term => {
+    if (!term.trim()) return;
+    const a = loadRecent().filter(t => t.toLowerCase() !== term.toLowerCase());
+    a.unshift(term);
+    saveRecent(a.slice(0, RECENT_MAX));
+  };
+  const rmRecent    = term => saveRecent(loadRecent().filter(t => t !== term));
+  const clearRecent = ()   => saveRecent([]);
 
-  /* Align dropdown to search input using getBoundingClientRect */
-  function positionDropdown() {
-    const r = searchInputEl.getBoundingClientRect();
-    recentDropdown.style.left  = r.left   + 'px';
-    recentDropdown.style.top   = (r.bottom - 1) + 'px';
-    recentDropdown.style.width = r.width  + 'px';
-    recentDropdown.style.right = 'auto';
-  }
+  const recentInlineList = document.getElementById('recentInlineList');
+  const recentSection    = document.getElementById('recentSection');
+  const recentClearAll   = document.getElementById('recentClearAll');
 
-  function renderRecentList(filter = '') {
-    recentListEl.innerHTML = '';
-    const items = filter
-      ? loadRecent().filter(t => t.toLowerCase().includes(filter.toLowerCase()))
-      : loadRecent();
+  function renderRecentInline() {
+    recentInlineList.innerHTML = '';
+    const all   = loadRecent();
+    const items = all.slice(0, RECENT_SHOW);
 
     if (!items.length) {
-      const el = document.createElement('div'); el.className = 'recent-empty';
-      el.textContent = filter ? 'No matches' : 'No recent searches';
-      recentListEl.appendChild(el); return;
+      const empty = document.createElement('div');
+      empty.className = 'recent-inline-empty';
+      empty.textContent = 'No recent searches yet';
+      recentInlineList.appendChild(empty);
+      return;
     }
+
     items.forEach(term => {
-      const row  = document.createElement('div'); row.className = 'recent-item'; row.setAttribute('role','option');
-      const icon = document.createElement('div'); icon.className = 'recent-item-icon';
+      const row = document.createElement('div');
+      row.className = 'recent-inline-item';
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+
+      const icon = document.createElement('div');
+      icon.className = 'recent-inline-icon';
       icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>`;
-      const txt = document.createElement('span'); txt.className = 'recent-item-text'; txt.textContent = term;
-      const del = document.createElement('button'); del.className = 'recent-item-del'; del.type = 'button'; del.setAttribute('aria-label',`Remove "${term}"`);
+
+      const txt = document.createElement('span');
+      txt.className = 'recent-inline-text';
+      txt.textContent = term;
+
+      const del = document.createElement('button');
+      del.className = 'recent-inline-del';
+      del.type = 'button';
+      del.setAttribute('aria-label', `Remove "${term}"`);
       del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
-      del.addEventListener('pointerdown', e => { e.preventDefault(); rmRecent(term); renderRecentList(searchInputEl.value.trim()); });
-      row.addEventListener('pointerdown', e => {
+
+      del.addEventListener('click', e => {
+        e.stopPropagation();
+        rmRecent(term);
+        renderRecentInline();
+      });
+
+      row.addEventListener('click', e => {
         if (del.contains(e.target)) return;
-        e.preventDefault();
-        searchInputEl.value = term; hideDropdown(); doSearch();
+        searchInputEl.value = term;
+        doSearch();
       });
-      row.append(icon, txt, del); recentListEl.appendChild(row);
+
+      row.append(icon, txt, del);
+      recentInlineList.appendChild(row);
     });
   }
 
-  function showDropdown() {
-    positionDropdown();
-    renderRecentList(searchInputEl.value.trim());
-    /*
-      Two-rAF pattern:
-      1st rAF: browser has calculated layout, element is in the DOM
-      2nd rAF: painting is scheduled — now safe to add .visible
-               so the transition starts from a promoted layer
-    */
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        recentDropdown.classList.add('visible');
-        searchInputEl.classList.add('dropdown-open');
-        searchInputEl.setAttribute('aria-expanded', 'true');
-        dropOpen = true;
-      });
-    });
-  }
-
-  function hideDropdown() {
-    recentDropdown.classList.remove('visible');
-    searchInputEl.classList.remove('dropdown-open');
-    searchInputEl.setAttribute('aria-expanded', 'false');
-    dropOpen = false;
-  }
-
-  searchInputEl.addEventListener('focus', showDropdown);
-  searchInputEl.addEventListener('input', () => {
-    if (!dropOpen) showDropdown(); else renderRecentList(searchInputEl.value.trim());
+  recentClearAll.addEventListener('click', () => {
+    clearRecent();
+    renderRecentInline();
   });
-  /* 150 ms grace period so pointerdown on list items fires before blur hides */
-  searchInputEl.addEventListener('blur', () => setTimeout(hideDropdown, 150));
 
-  recentClearAll.addEventListener('click', () => { clearRecent(); renderRecentList(''); });
-  window.addEventListener('resize', () => { if (dropOpen) positionDropdown(); });
-
-  /* ── Search engines ── */
+  /* ════════════════════════════════════════
+     Search engines
+  ════════════════════════════════════════ */
   const ENGINES = {
-    google:    { label:'Google',     url:q=>'https://www.google.com/search?q='+q,      svg:'<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>' },
-    bing:      { label:'Bing',       url:q=>'https://www.bing.com/search?q='+q,        svg:'<svg viewBox="0 0 24 24"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>' },
-    duckduckgo:{ label:'DuckDuckGo', url:q=>'https://duckduckgo.com/?q='+q,            svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>' },
-    brave:     { label:'Brave',      url:q=>'https://search.brave.com/search?q='+q,   svg:'<svg viewBox="0 0 24 24"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>' },
-    ecosia:    { label:'Ecosia',     url:q=>'https://www.ecosia.org/search?q='+q,     svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>' },
-    startpage: { label:'Startpage',  url:q=>'https://www.startpage.com/search?q='+q,  svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>' },
+    google:    { label: 'Google',     url: q => 'https://www.google.com/search?q=' + q,     svg: '<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>' },
+    bing:      { label: 'Bing',       url: q => 'https://www.bing.com/search?q=' + q,       svg: '<svg viewBox="0 0 24 24"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>' },
+    duckduckgo:{ label: 'DuckDuckGo', url: q => 'https://duckduckgo.com/?q=' + q,           svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>' },
+    brave:     { label: 'Brave',      url: q => 'https://search.brave.com/search?q=' + q,  svg: '<svg viewBox="0 0 24 24"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>' },
+    ecosia:    { label: 'Ecosia',     url: q => 'https://www.ecosia.org/search?q=' + q,    svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+    startpage: { label: 'Startpage',  url: q => 'https://www.startpage.com/search?q=' + q, svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>' },
   };
 
   let activeEngine = 'google';
   const engineRow    = document.getElementById('engineRow');
   const badgeIcon    = document.getElementById('badgeIcon');
+  const searchInputEl= document.getElementById('searchInput');
   const searchSubmit = document.getElementById('searchSubmit');
 
   function setEngine(key) {
-    if (!ENGINES[key]) return; activeEngine = key;
+    if (!ENGINES[key]) return;
+    activeEngine = key;
     badgeIcon.innerHTML = ENGINES[key].svg;
     searchInputEl.placeholder = 'Search ' + ENGINES[key].label + '…';
     engineRow.querySelectorAll('.engine-btn').forEach(btn => {
-      const on = btn.dataset.engine === key; btn.classList.toggle('active', on); btn.setAttribute('aria-pressed', String(on));
+      const on = btn.dataset.engine === key;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', String(on));
     });
     try { localStorage.setItem('engine', key); } catch(e) {}
   }
@@ -1240,124 +1052,225 @@
   engineRow.addEventListener('click', e => { const b = e.target.closest('.engine-btn'); if (b) setEngine(b.dataset.engine); });
 
   function doSearch() {
-    const q = searchInputEl.value.trim(); if (!q) { searchInputEl.focus(); return; }
-    addRecent(q); window.location.href = ENGINES[activeEngine].url(encodeURIComponent(q));
+    const q = searchInputEl.value.trim();
+    if (!q) { searchInputEl.focus(); return; }
+    addRecent(q);
+    renderRecentInline();
+    window.location.href = ENGINES[activeEngine].url(encodeURIComponent(q));
   }
-  searchInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hideDropdown(); doSearch(); } });
-  searchSubmit.addEventListener('click', () => { hideDropdown(); doSearch(); });
+  searchInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+  searchSubmit.addEventListener('click', doSearch);
 
-  /* ── Favicon cache ── */
-  const faviconCache = (() => { try { return JSON.parse(localStorage.getItem('faviconCache')||'{}'); } catch(e) { return {}; } })();
-  function saveFaviconCache() { try { localStorage.setItem('faviconCache', JSON.stringify(Object.fromEntries(Object.entries(faviconCache).slice(-50)))); } catch(e) {} }
-  function faviconUrl(url) {
-    try { const h=new URL(url).hostname; if (!faviconCache[h]) { faviconCache[h]=`https://www.google.com/s2/favicons?domain=${h}&sz=64`; saveFaviconCache(); } return faviconCache[h]; }
-    catch(e) { return null; }
+  /* ════════════════════════════════════════
+     Shortcuts
+  ════════════════════════════════════════ */
+  const SC_KEY = 'shortcuts';
+  const SC_MAX = 20;
+  const scGrid     = document.getElementById('shortcutsGrid');
+  const scBackdrop = document.getElementById('scBackdrop');
+  const scSheet    = document.getElementById('scSheet');
+  addSwipeDismiss(scSheet, scBackdrop);
+
+  let scEditMode  = false;
+  let scEditIndex = -1;
+
+  function loadShortcuts() {
+    try { return JSON.parse(localStorage.getItem(SC_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function saveShortcuts(arr) {
+    try { localStorage.setItem(SC_KEY, JSON.stringify(arr)); } catch(e) {}
+  }
+  function getFaviconUrl(url) {
+    try { return `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(new URL(url).origin)}`; }
+    catch(e) { return ''; }
+  }
+  function nameFromUrl(url) {
+    try {
+      const h = new URL(url).hostname.replace(/^www\./, '');
+      const p = h.split('.')[0];
+      return p.charAt(0).toUpperCase() + p.slice(1);
+    } catch(e) { return url; }
   }
 
-  /* ── URL normalisation ── */
-  function normalizeUrl(raw) {
-    if (!raw) return null;
-    raw = raw.trim().replace(/^["'`]+|["'`]+$/g,'').trim();
-    if (!raw) return null;
-    if (!/^https?:\/\//i.test(raw)) raw = 'https://'+raw;
-    try { const p=new URL(raw); return (p.hostname==='localhost'||p.hostname.includes('.')) ? p.href : null; } catch(e) { return null; }
-  }
+  function renderShortcuts() {
+    scGrid.innerHTML = '';
+    const list = loadShortcuts();
 
-  /* ── Colour hash ── */
-  const PALETTE=['#E53935','#D81B60','#8E24AA','#3949AB','#1E88E5','#00897B','#43A047','#FB8C00','#F4511E','#6D4C41','#546E7A','#757575'];
-  function colorForName(n) { let h=0; for (const c of n) h=(h*31+c.charCodeAt(0))>>>0; return PALETTE[h%PALETTE.length]; }
+    list.forEach((sc, i) => {
+      const item = document.createElement('div');
+      item.className = 'shortcut-item';
+      item.setAttribute('role', 'link');
+      item.setAttribute('tabindex', '0');
 
-  /* ── Shortcuts ── */
-  const grid = document.getElementById('shortcutsGrid');
-  let editMode=false, longPressTimer=null, justEnteredEditMode=false;
-  function setEditMode(on) { editMode=on; grid.classList.toggle('edit-mode',on); }
-  function makeLetterIcon(name) {
-    const el=document.createElement('div'); el.className='shortcut-letter';
-    el.style.background=colorForName(name); el.textContent=(name.trim()[0]||'?').toUpperCase(); return el;
-  }
-  function makeShortcutEl(key, data, pending=false) {
-    const item=document.createElement('div'); item.className='shortcut-item'+(pending?' pending':'');
-    if (key) item.dataset.key=key;
-    const iconWrap=document.createElement('div'); iconWrap.className='shortcut-icon';
-    const inner=document.createElement('div'); inner.className='shortcut-icon-inner';
-    const fav=faviconUrl(data.url);
-    if (fav) { const img=document.createElement('img'); img.src=fav; img.alt=''; img.onerror=function(){this.replaceWith(makeLetterIcon(data.name));}; inner.appendChild(img); }
-    else inner.appendChild(makeLetterIcon(data.name));
-    const del=document.createElement('button'); del.className='shortcut-delete'; del.type='button'; del.setAttribute('aria-label','Remove '+data.name);
-    del.innerHTML=`<svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
-    del.addEventListener('click', e => { e.stopPropagation(); if (!key) return; remove(ref(db,'shortcuts/'+key)).then(()=>showToast('Shortcut removed')).catch(()=>showToast('Could not remove')); });
-    iconWrap.append(inner,del);
-    const label=document.createElement('span'); label.className='shortcut-label'; label.textContent=data.name;
-    item.append(iconWrap,label);
-    if (!pending) {
-      item.addEventListener('click', ()=>{ if (editMode||justEnteredEditMode) return; window.location.href=data.url; });
-      item.addEventListener('pointerdown', ()=>{ longPressTimer=setTimeout(()=>{ setEditMode(true); justEnteredEditMode=true; setTimeout(()=>{justEnteredEditMode=false;},300); },500); });
-      item.addEventListener('pointerup',    ()=>clearTimeout(longPressTimer));
-      item.addEventListener('pointerleave', ()=>clearTimeout(longPressTimer));
+      const icon = document.createElement('div');
+      icon.className = 'shortcut-icon';
+      const favUrl = getFaviconUrl(sc.url);
+      if (favUrl) {
+        const img = document.createElement('img'); img.src = favUrl; img.alt = '';
+        img.onerror = () => {
+          img.remove();
+          const ltr = document.createElement('span'); ltr.className = 'shortcut-letter';
+          ltr.textContent = (sc.name || nameFromUrl(sc.url)).charAt(0);
+          icon.appendChild(ltr);
+        };
+        icon.appendChild(img);
+      } else {
+        const ltr = document.createElement('span'); ltr.className = 'shortcut-letter';
+        ltr.textContent = (sc.name || nameFromUrl(sc.url)).charAt(0);
+        icon.appendChild(ltr);
+      }
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'shortcut-del-btn'; delBtn.type = 'button';
+      delBtn.setAttribute('aria-label', 'Delete');
+      delBtn.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="2.5" y1="2.5" x2="7.5" y2="7.5"/><line x1="7.5" y1="2.5" x2="2.5" y2="7.5"/></svg>`;
+      delBtn.addEventListener('click', e => { e.stopPropagation(); deleteShortcut(i); });
+
+      const lbl = document.createElement('div');
+      lbl.className = 'shortcut-label';
+      lbl.textContent = sc.name || nameFromUrl(sc.url);
+
+      item.append(icon, delBtn, lbl);
+
+      item.addEventListener('click', () => {
+        if (scEditMode) { openScSheet(i); return; }
+        let url = sc.url;
+        if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+        window.open(url, '_blank', 'noopener');
+      });
+
+      let lpTimer;
+      item.addEventListener('pointerdown', () => { lpTimer = setTimeout(() => { if (!scEditMode) toggleEditMode(); }, 600); });
+      item.addEventListener('pointerup',    () => clearTimeout(lpTimer));
+      item.addEventListener('pointerleave', () => clearTimeout(lpTimer));
+
+      scGrid.appendChild(item);
+    });
+
+    if (list.length < SC_MAX) {
+      const addBtn = document.createElement('div');
+      addBtn.className = 'shortcut-add';
+      addBtn.setAttribute('role', 'button'); addBtn.setAttribute('tabindex', '0'); addBtn.setAttribute('aria-label', 'Add shortcut');
+      addBtn.innerHTML = `
+        <div class="shortcut-add-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <span class="shortcut-add-label">Add</span>`;
+      addBtn.addEventListener('click', () => openScSheet(-1));
+      scGrid.appendChild(addBtn);
     }
-    return item;
-  }
-  function makeAddButton() {
-    const w=document.createElement('div'); w.className='shortcut-add'; w.id='shortcutAddBtn';
-    w.setAttribute('role','button'); w.setAttribute('tabindex','0'); w.setAttribute('aria-label','Add shortcut');
-    w.innerHTML=`<div class="shortcut-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="shortcut-add-label">Add</span>`;
-    w.addEventListener('click',()=>{ setEditMode(false); openAddSheet(); });
-    return w;
-  }
-  function renderShortcuts(snapshot) {
-    grid.innerHTML='';
-    if (snapshot?.exists()) snapshot.forEach(child=>grid.appendChild(makeShortcutEl(child.key,child.val())));
-    grid.appendChild(makeAddButton());
-  }
-  onValue(shortcutsRef, renderShortcuts);
 
-  document.addEventListener('click', e=>{ if (!editMode) return; if (!e.target.closest('.shortcut-item')&&!e.target.closest('.shortcut-add')) setEditMode(false); });
-  document.addEventListener('keydown', e=>{
-    if (e.key!=='Escape') return;
-    if      (wpBackdrop.classList.contains('open'))  closeSheet(wpBackdrop);
-    else if (addBackdrop.classList.contains('open')) closeSheet(addBackdrop);
-    else if (dropOpen)  hideDropdown();
-    else if (editMode)  setEditMode(false);
+    scGrid.classList.toggle('edit-mode', scEditMode);
+  }
+
+  function deleteShortcut(index) {
+    const list = loadShortcuts(); list.splice(index, 1);
+    saveShortcuts(list); renderShortcuts(); showToast('Shortcut removed');
+  }
+
+  function toggleEditMode() {
+    scEditMode = !scEditMode;
+    scGrid.classList.toggle('edit-mode', scEditMode);
+    showToast(scEditMode ? 'Tap × to remove · tap icon to edit' : 'Done editing');
+    if (!scEditMode) renderShortcuts();
+  }
+
+  /* Shortcut sheet */
+  const scSheetTitle  = document.getElementById('scSheetTitle');
+  const scUrlInput    = document.getElementById('scUrlInput');
+  const scNameInput   = document.getElementById('scNameInput');
+  const scSave        = document.getElementById('scSave');
+  const scCancel      = document.getElementById('scCancel');
+  const scPreviewIcon = document.getElementById('scPreviewIcon');
+  const scPreviewName = document.getElementById('scPreviewName');
+  const scPreviewUrl  = document.getElementById('scPreviewUrl');
+
+  let scPreviewTimer = null;
+
+  function updateScPreview() {
+    const rawUrl  = scUrlInput.value.trim();
+    const rawName = scNameInput.value.trim();
+    let url = rawUrl;
+    if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+    scSave.disabled = !rawUrl;
+    if (!rawUrl) {
+      scPreviewIcon.innerHTML = '<span class="sc-preview-letter">?</span>';
+      scPreviewName.textContent = 'Enter a URL'; scPreviewUrl.textContent = '—'; return;
+    }
+    const displayName = rawName || nameFromUrl(url);
+    scPreviewName.textContent = displayName; scPreviewUrl.textContent = url;
+    const firstChar = displayName.charAt(0).toUpperCase();
+    clearTimeout(scPreviewTimer);
+    scPreviewTimer = setTimeout(() => {
+      const favUrl = getFaviconUrl(url);
+      if (favUrl) {
+        const img = new Image();
+        img.onload = () => { scPreviewIcon.innerHTML = ''; const el = document.createElement('img'); el.src = favUrl; el.alt = ''; scPreviewIcon.appendChild(el); };
+        img.onerror = () => { scPreviewIcon.innerHTML = `<span class="sc-preview-letter">${firstChar}</span>`; };
+        img.src = favUrl;
+      } else { scPreviewIcon.innerHTML = `<span class="sc-preview-letter">${firstChar}</span>`; }
+    }, 500);
+  }
+
+  function openScSheet(index) {
+    scEditIndex = index;
+    const list = loadShortcuts();
+    if (index >= 0 && list[index]) {
+      scSheetTitle.textContent = 'Edit Shortcut';
+      scUrlInput.value = list[index].url; scNameInput.value = list[index].name || '';
+    } else {
+      scSheetTitle.textContent = 'Add Shortcut';
+      scUrlInput.value = ''; scNameInput.value = '';
+    }
+    updateScPreview();
+    openSheet(scBackdrop, () => scUrlInput.focus());
+  }
+
+  scUrlInput.addEventListener('input',  updateScPreview);
+  scNameInput.addEventListener('input', updateScPreview);
+  scUrlInput.addEventListener('keydown',  e => { if (e.key === 'Enter') scNameInput.focus(); });
+  scNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') scSave.click(); });
+
+  scSave.addEventListener('click', () => {
+    let url = scUrlInput.value.trim(); const name = scNameInput.value.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { new URL(url); } catch(e) { showToast('Invalid URL'); return; }
+    const list = loadShortcuts();
+    if (scEditIndex >= 0 && list[scEditIndex]) { list[scEditIndex] = { url, name }; }
+    else { list.push({ url, name }); }
+    saveShortcuts(list); renderShortcuts(); closeSheet(scBackdrop);
+    showToast(scEditIndex >= 0 ? 'Shortcut updated ✓' : 'Shortcut added ✓');
   });
 
-  /* ── Add shortcut sheet ── */
-  const addBackdrop=document.getElementById('addBackdrop');
-  const addSheet=document.getElementById('addSheet');
-  const scName=document.getElementById('scName');
-  const scUrl=document.getElementById('scUrl');
-  const scSave=document.getElementById('scSave');
-  const scCancel=document.getElementById('scCancel');
-  addSwipeDismiss(addSheet,addBackdrop);
+  scCancel.addEventListener('click', () => closeSheet(scBackdrop));
+  scBackdrop.addEventListener('click', e => { if (e.target === scBackdrop) closeSheet(scBackdrop); });
 
-  function resetAddSheet() { scName.value=''; scUrl.value=''; scSave.disabled=true; scName.classList.remove('error'); scUrl.classList.remove('error'); delete scName.dataset.touched; delete scUrl.dataset.touched; }
-  function openAddSheet() { resetAddSheet(); openSheet(addBackdrop,()=>scName.focus()); }
-  function validateAdd() {
-    const nOk=scName.value.trim().length>0, uOk=normalizeUrl(scUrl.value)!==null;
-    scSave.disabled=!(nOk&&uOk);
-    if (scName.dataset.touched) scName.classList.toggle('error',!nOk);
-    if (scUrl.dataset.touched)  scUrl.classList.toggle('error', !uOk);
-  }
-  scName.addEventListener('input', validateAdd); scUrl.addEventListener('input', validateAdd);
-  scName.addEventListener('blur',()=>{ scName.dataset.touched='1'; validateAdd(); });
-  scUrl.addEventListener('blur', ()=>{ scUrl.dataset.touched='1';  validateAdd(); });
-  scCancel.addEventListener('click',()=>closeSheet(addBackdrop));
-  addBackdrop.addEventListener('click',e=>{ if (e.target===addBackdrop) closeSheet(addBackdrop); });
-  scSave.addEventListener('click', saveShortcut);
-  scUrl.addEventListener('keydown', e=>{ if (e.key==='Enter'&&!scSave.disabled) saveShortcut(); });
-  scName.addEventListener('keydown',e=>{ if (e.key==='Enter') scUrl.focus(); });
+  document.addEventListener('click', e => {
+    if (scEditMode && !scGrid.contains(e.target) &&
+        !scBackdrop.classList.contains('open') &&
+        !dropMenu.contains(e.target)) {
+      scEditMode = false; scGrid.classList.remove('edit-mode');
+    }
+  });
 
-  function saveShortcut() {
-    const name=scName.value.trim(), url=normalizeUrl(scUrl.value);
-    if (!name) { scName.dataset.touched='1'; scName.classList.add('error'); scName.focus(); return; }
-    if (!url)  { scUrl.dataset.touched='1';  scUrl.classList.add('error');  scUrl.focus();  return; }
-    closeSheet(addBackdrop);
-    const pe=makeShortcutEl(null,{name,url},true); pe.id='pendingShortcut';
-    grid.insertBefore(pe,document.getElementById('shortcutAddBtn'));
-    scSave.disabled=true;
-    push(shortcutsRef,{name,url})
-      .then(()=>showToast(name+' added ✓'))
-      .catch(err=>{ document.getElementById('pendingShortcut')?.remove(); showToast('Failed — '+(err.message||'check connection')); });
-  }
+  /* ════════════════════════════════════════
+     Keyboard
+  ════════════════════════════════════════ */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if      (scBackdrop.classList.contains('open')) closeSheet(scBackdrop);
+    else if (wpBackdrop.classList.contains('open')) closeSheet(wpBackdrop);
+    else if (scEditMode) { scEditMode = false; scGrid.classList.remove('edit-mode'); }
+  });
+
+  /* ════════════════════════════════════════
+     Init
+  ════════════════════════════════════════ */
+  renderRecentInline();
+  renderShortcuts();
 </script>
 </body>
 </html>
