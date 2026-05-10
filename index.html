@@ -25,32 +25,24 @@
       --accent:        rgba(138,180,248,0.85);
       --danger:        rgba(255,80,80,0.90);
       --pill:          9999px;
-      --bar-w:         calc(100vw - 32px);
       --safe-top:      env(safe-area-inset-top, 0px);
       --safe-bot:      env(safe-area-inset-bottom, 0px);
     }
 
-    html {
-      height: 100%;
-      overscroll-behavior: none;
-    }
+    html { height: 100%; overscroll-behavior: none; }
 
     body {
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
+      height: 100%; width: 100%; overflow: hidden;
       background-color: var(--bg);
       font-family: 'Inter', system-ui, sans-serif;
       color: var(--text-primary);
       -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
       -webkit-touch-callout: none;
-      user-select: none;
-      -webkit-user-select: none;
+      user-select: none; -webkit-user-select: none;
     }
 
-    /* ── Wallpaper ───────────────────────────────────────────────── */
+    /* ── Wallpaper ── */
     #wallpaperLayer {
       position: fixed; inset: 0; z-index: 0;
       background-size: cover; background-position: center; background-repeat: no-repeat;
@@ -64,7 +56,7 @@
     }
     #wallpaperDim.loaded { opacity: 1; }
 
-    /* ── Animations ──────────────────────────────────────────────── */
+    /* ── Animations ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -82,13 +74,8 @@
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.15; }
     }
-    @keyframes popIn {
-      0%   { opacity: 0; transform: scale(0.7); }
-      70%  { transform: scale(1.08); }
-      100% { opacity: 1; transform: scale(1); }
-    }
 
-    /* ── Three-dot menu button ───────────────────────────────────── */
+    /* ── Menu button ── */
     #menuBtn {
       position: fixed;
       top: calc(var(--safe-top) + 12px); right: 16px;
@@ -107,7 +94,7 @@
     #menuBtn:active { color: var(--text-primary); background: rgba(40,40,40,0.80); }
     #menuBtn svg { width: 20px; height: 20px; }
 
-    /* ── Drop-down ───────────────────────────────────────────────── */
+    /* ── Drop-down ── */
     #dropMenu {
       position: fixed;
       top: calc(var(--safe-top) + 60px); right: 16px;
@@ -137,7 +124,7 @@
     .drop-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--text-muted); }
     .drop-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
-    /* ── Scroll root ─────────────────────────────────────────────── */
+    /* ── Scroll root ── */
     #scrollRoot {
       position: relative; z-index: 2;
       height: 100%; width: 100%;
@@ -151,14 +138,14 @@
     }
     #scrollRoot::-webkit-scrollbar { display: none; }
 
-    /* ── Page ────────────────────────────────────────────────────── */
+    /* ── Page ── */
     .page {
       display: flex; flex-direction: column; align-items: center;
       width: 100%;
       animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both;
     }
 
-    /* ── Clock ───────────────────────────────────────────────────── */
+    /* ── Clock ── */
     .clock-wrapper {
       display: flex; flex-direction: column; align-items: center;
       gap: 6px; margin-bottom: 32px;
@@ -184,7 +171,7 @@
       letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted);
     }
 
-    /* ── Search ──────────────────────────────────────────────────── */
+    /* ── Search ── */
     .search-section {
       display: flex; flex-direction: column; align-items: center;
       gap: 10px; width: 100%;
@@ -253,7 +240,7 @@
     .search-submit svg { width: 18px; height: 18px; stroke-width: 2; }
     .search-submit:active { color: var(--text-primary); background: rgba(255,255,255,0.10); }
 
-    /* ── Shortcuts ───────────────────────────────────────────────── */
+    /* ── Shortcuts ── */
     .shortcuts-section {
       margin-top: 28px; width: 100%;
       animation: fadeUp 0.55s 0.18s cubic-bezier(0.22,1,0.36,1) both;
@@ -338,7 +325,6 @@
     }
     .shortcuts-grid.edit-mode ~ .edit-hint { opacity: 1; }
 
-    /* ── Pending shortcut (optimistic UI) ───────────────────────── */
     .shortcut-item.pending .shortcut-icon { opacity: 0.55; }
     .shortcut-item.pending .shortcut-icon::after {
       content: '';
@@ -348,9 +334,9 @@
       animation: spin 0.8s linear infinite;
     }
 
-    /* ══════════════════════════════════════════════════════════════
-       BOTTOM SHEET  (shared)
-    ══════════════════════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════════════
+       BOTTOM SHEET
+    ══════════════════════════════════════════════════════ */
     .sheet-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.72);
@@ -366,7 +352,7 @@
     .sheet {
       background: #181818; border: 1px solid var(--border);
       border-radius: 24px 24px 0 0;
-      width: 100%; max-height: 90svh;
+      width: 100%; max-height: 92svh;
       padding: 20px 18px calc(var(--safe-bot) + 20px);
       display: flex; flex-direction: column; gap: 14px;
       transform: translateY(100%);
@@ -380,8 +366,12 @@
     }
     .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; }
 
-    /* ── Wallpaper sheet ─────────────────────────────────────────── */
-    .wp-search-row { display: flex; gap: 8px; flex-shrink: 0; }
+    /* ── Wallpaper sheet ── */
+
+    /* Search row — input + button side by side */
+    .wp-search-row {
+      display: flex; gap: 8px; flex-shrink: 0;
+    }
     .wp-search-input {
       flex: 1; height: 44px; padding: 0 14px; border-radius: 12px;
       border: 1px solid var(--border); background: rgba(255,255,255,0.05);
@@ -404,6 +394,7 @@
     .wp-search-btn:active { background: rgba(138,180,248,0.26); }
     .wp-search-btn:disabled { opacity: 0.40; cursor: not-allowed; }
 
+    /* Preset chips */
     .wp-chips {
       display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden;
       -webkit-overflow-scrolling: touch; scrollbar-width: none;
@@ -421,42 +412,77 @@
       transition: color 0.15s, background 0.15s, border-color 0.15s;
     }
     .wp-chip:active { background: var(--surface-hover); }
-    .wp-chip.active { color: var(--text-primary); background: rgba(255,255,255,0.09); border-color: var(--border-focus); }
-
-    .wp-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      overflow-y: auto; flex: 1; min-height: 0;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      overscroll-behavior-y: contain;
+    .wp-chip.active {
+      color: var(--text-primary); background: rgba(255,255,255,0.09);
+      border-color: var(--border-focus);
     }
-    .wp-grid::-webkit-scrollbar { display: none; }
-    .wp-thumb {
-      position: relative; aspect-ratio: 16/9; border-radius: 12px;
-      overflow: hidden; cursor: pointer; border: 2.5px solid transparent;
-      transition: border-color 0.18s, transform 0.12s;
+
+    /* ── Horizontal scroll list ── */
+    .wp-scroll-area {
+      flex: 1; min-height: 0;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      /* fade edges */
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+      mask-image:         linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+    }
+    .wp-scroll-area::-webkit-scrollbar { display: none; }
+
+    .wp-list {
+      display: flex; flex-direction: row;
+      gap: 10px; height: 100%;
+      /* enough vertical padding so selected ring isn't clipped */
+      padding: 6px 16px;
+      align-items: center;
+      min-width: max-content; /* let it grow horizontally */
+    }
+
+    /* Individual card */
+    .wp-card {
+      flex-shrink: 0;
+      width: 160px; height: 110px;
+      border-radius: 14px; overflow: hidden;
+      border: 2.5px solid transparent;
+      cursor: pointer; position: relative;
       background: rgba(255,255,255,0.04);
+      transition: border-color 0.18s, transform 0.12s;
       -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
-    .wp-thumb:active { transform: scale(0.96); }
-    .wp-thumb.selected { border-color: var(--accent); }
-    .wp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .wp-thumb .wp-res {
+    .wp-card:active { transform: scale(0.95); }
+    .wp-card.selected { border-color: var(--accent); }
+
+    .wp-card img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      /* skeleton shimmer until loaded */
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* resolution badge */
+    .wp-res {
       position: absolute; bottom: 5px; right: 6px; font-size: 9px;
-      color: rgba(255,255,255,0.65); background: rgba(0,0,0,0.55);
+      color: rgba(255,255,255,0.70); background: rgba(0,0,0,0.60);
       padding: 2px 5px; border-radius: 4px; letter-spacing: 0.03em;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'JetBrains Mono', monospace; pointer-events: none;
     }
-    .wp-thumb .wp-check {
+
+    /* selected checkmark */
+    .wp-check {
       position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
-      border-radius: 50%; background: var(--accent); display: none;
-      align-items: center; justify-content: center;
+      border-radius: 50%; background: var(--accent);
+      display: none; align-items: center; justify-content: center;
+      pointer-events: none;
     }
-    .wp-thumb.selected .wp-check { display: flex; }
+    .wp-card.selected .wp-check { display: flex; }
     .wp-check svg { width: 12px; height: 12px; stroke: #000; stroke-width: 2.5; }
+
+    /* state messages (empty / loading / error) */
     .wp-state {
-      grid-column: 1 / -1; display: flex; flex-direction: column;
+      display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 10px;
-      padding: 36px 0; color: var(--text-muted); font-size: 14px; text-align: center;
+      height: 100%; min-width: 100%; padding: 16px;
+      color: var(--text-muted); font-size: 14px; text-align: center;
     }
     .wp-spinner {
       width: 24px; height: 24px;
@@ -464,23 +490,41 @@
       border-top-color: rgba(255,255,255,0.55);
       border-radius: 50%; animation: spin 0.7s linear infinite;
     }
-    .wp-pagination {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0; gap: 8px;
-    }
-    .wp-page-btn {
-      flex: 1; height: 40px; border-radius: 11px;
-      border: 1px solid var(--border); background: var(--surface);
-      color: var(--text-primary); font-family: 'Inter', sans-serif;
-      font-size: 13px; cursor: pointer;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: background 0.15s;
-    }
-    .wp-page-btn:active:not(:disabled) { background: var(--surface-hover); }
-    .wp-page-btn:disabled { opacity: 0.32; cursor: not-allowed; }
-    .wp-page-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; text-align: center; flex-shrink: 0; }
 
-    /* ── Shared sheet actions ────────────────────────────────────── */
+    /* Load More sentinel card */
+    .wp-load-more {
+      flex-shrink: 0;
+      width: 100px; height: 110px;
+      border-radius: 14px;
+      border: 1.5px dashed rgba(255,255,255,0.18);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer;
+      color: var(--text-muted); font-size: 12px;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: border-color 0.2s, background 0.2s;
+      background: transparent;
+      border: none; /* reset <button> defaults */
+      font-family: 'Inter', sans-serif;
+    }
+    .wp-load-more:active { background: var(--surface); }
+    .wp-load-more:disabled { opacity: 0.40; cursor: not-allowed; }
+    .wp-load-more-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px dashed rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .wp-load-more-icon svg { width: 16px; height: 16px; color: var(--text-muted); }
+    .wp-load-more.loading .wp-load-more-icon svg { display: none; }
+    .wp-load-more.loading .wp-load-more-icon::after {
+      content: '';
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-top-color: rgba(255,255,255,0.55);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+
+    /* ── Shared sheet actions ── */
     .sheet-actions { display: flex; gap: 8px; flex-shrink: 0; }
     .btn {
       flex: 1; height: 50px; border-radius: 14px; border: none;
@@ -492,16 +536,16 @@
     .btn:active { transform: scale(0.96); }
     .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
     .btn-cancel:active { background: rgba(255,255,255,0.12); }
-    .btn-apply { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
+    .btn-apply  { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
     .btn-apply:active { background: rgba(138,180,248,0.28); }
     .btn-apply:disabled { opacity: 0.38; }
-    .btn-clear { background: rgba(255,80,80,0.12); color: var(--danger); border: 1px solid rgba(255,80,80,0.22); }
+    .btn-clear  { background: rgba(255,80,80,0.12); color: var(--danger); border: 1px solid rgba(255,80,80,0.22); }
     .btn-clear:active { background: rgba(255,80,80,0.22); }
-    .btn-save { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
-    .btn-save:active:not(:disabled) { background: rgba(138,180,248,0.28); }
+    .btn-save   { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
+    .btn-save:active:not(:disabled)  { background: rgba(138,180,248,0.28); }
     .btn-save:disabled { opacity: 0.38; cursor: not-allowed; }
 
-    /* ── Add-shortcut sheet ──────────────────────────────────────── */
+    /* ── Add-shortcut sheet ── */
     .sheet-field { display: flex; flex-direction: column; gap: 6px; }
     .sheet-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-muted); }
     .sheet-input {
@@ -515,13 +559,11 @@
     }
     .sheet-input::placeholder { color: var(--text-dim); }
     .sheet-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--glow-focus); }
-
-    /* validation error state */
     .sheet-input.error { border-color: var(--danger); }
     .field-error { font-size: 11px; color: var(--danger); display: none; margin-top: 2px; }
     .sheet-input.error + .field-error { display: block; }
 
-    /* ── Toast ───────────────────────────────────────────────────── */
+    /* ── Toast ── */
     .toast {
       position: fixed;
       bottom: calc(var(--safe-bot) + 28px); left: 50%;
@@ -542,7 +584,6 @@
 <div id="wallpaperLayer"></div>
 <div id="wallpaperDim"></div>
 
-<!-- Three-dot menu -->
 <button id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <circle cx="12" cy="5"  r="1.8"/>
@@ -588,49 +629,28 @@
 
     <section class="search-section" aria-label="Web search">
       <div class="engine-row" id="engineRow" role="group" aria-label="Choose search engine">
-        <button class="engine-btn active" data-engine="google" aria-pressed="true" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
+        <button class="engine-btn active" data-engine="google"     aria-pressed="true"  type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
           Google
         </button>
-        <button class="engine-btn" data-engine="bing" aria-pressed="false" type="button">
+        <button class="engine-btn" data-engine="bing"        aria-pressed="false" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>
           Bing
         </button>
-        <button class="engine-btn" data-engine="duckduckgo" aria-pressed="false" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="12" fill="#DE5833"/>
-            <path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/>
-            <circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/>
-            <circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/>
-          </svg>
+        <button class="engine-btn" data-engine="duckduckgo"  aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>
           DDG
         </button>
-        <button class="engine-btn" data-engine="brave" aria-pressed="false" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/>
-            <path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
+        <button class="engine-btn" data-engine="brave"       aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
           Brave
         </button>
-        <button class="engine-btn" data-engine="ecosia" aria-pressed="false" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="12" fill="#1D8348"/>
-            <path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/>
-            <path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
+        <button class="engine-btn" data-engine="ecosia"      aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
           Ecosia
         </button>
-        <button class="engine-btn" data-engine="startpage" aria-pressed="false" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="12" fill="#4A76EE"/>
-            <path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
-            <circle cx="12" cy="12" r="1.2" fill="#fff"/>
-          </svg>
+        <button class="engine-btn" data-engine="startpage"   aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>
           Start
         </button>
       </div>
@@ -640,12 +660,10 @@
           <div class="badge-icon" id="badgeIcon"></div>
           <div class="badge-sep"></div>
         </div>
-        <input
-          class="search-input" id="searchInput"
+        <input class="search-input" id="searchInput"
           type="search" inputmode="search"
           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-          placeholder="Search the web…" aria-label="Search query" enterkeyhint="search"
-        />
+          placeholder="Search the web…" aria-label="Search query" enterkeyhint="search"/>
         <button class="search-submit" id="searchSubmit" aria-label="Submit search" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
@@ -667,13 +685,17 @@
   <div class="sheet" id="wpSheet">
     <div class="sheet-handle"></div>
     <p class="sheet-title">Wallpaper</p>
+
+    <!-- Search: only fires on button click / Enter -->
     <div class="wp-search-row">
       <input class="wp-search-input" id="wpSearchInput" type="text"
-        placeholder="Search…" autocomplete="off" autocorrect="off" enterkeyhint="search"/>
+        placeholder="Search wallpapers…" autocomplete="off" autocorrect="off" enterkeyhint="search"/>
       <button class="wp-search-btn" id="wpSearchBtn" type="button">Search</button>
     </div>
+
+    <!-- Preset chips — each tap triggers a fresh fetch -->
     <div class="wp-chips" id="wpChips">
-      <button class="wp-chip active" data-query="" data-category="111" data-purity="100">Trending</button>
+      <button class="wp-chip" data-query="" data-category="111" data-purity="100">Trending</button>
       <button class="wp-chip" data-query="" data-category="100" data-purity="100">General</button>
       <button class="wp-chip" data-query="" data-category="010" data-purity="100">Anime</button>
       <button class="wp-chip" data-query="nature"   data-category="100" data-purity="100">Nature</button>
@@ -683,12 +705,18 @@
       <button class="wp-chip" data-query="dark"     data-category="100" data-purity="100">Dark</button>
       <button class="wp-chip" data-query="abstract" data-category="100" data-purity="100">Abstract</button>
     </div>
-    <div class="wp-grid" id="wpGrid"></div>
-    <div class="wp-pagination">
-      <button class="wp-page-btn" id="wpPrev" disabled>← Prev</button>
-      <span class="wp-page-label" id="wpPageLabel">Page 1</span>
-      <button class="wp-page-btn" id="wpNext" disabled>Next →</button>
+
+    <!-- Horizontal scroll area — images rendered here -->
+    <div class="wp-scroll-area" id="wpScrollArea">
+      <div class="wp-list" id="wpList">
+        <!-- Idle placeholder — shown until user picks a chip -->
+        <div class="wp-state" id="wpIdle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span style="color:var(--text-dim);font-size:13px;">Pick a category above<br>or search to browse wallpapers</span>
+        </div>
+      </div>
     </div>
+
     <div class="sheet-actions">
       <button class="btn btn-cancel" id="wpCancel" type="button">Cancel</button>
       <button class="btn btn-clear"  id="wpClear"  type="button">Clear</button>
@@ -707,8 +735,7 @@
       <label class="sheet-label" for="scName">Name</label>
       <input class="sheet-input" id="scName" type="text"
         placeholder="e.g. YouTube" maxlength="30"
-        autocomplete="off" autocorrect="off" autocapitalize="words"
-        enterkeyhint="next"/>
+        autocomplete="off" autocorrect="off" autocapitalize="words" enterkeyhint="next"/>
       <span class="field-error" id="scNameError">Please enter a name</span>
     </div>
 
@@ -735,7 +762,7 @@
   import { initializeApp }                           from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
   import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-  /* ── Firebase ────────────────────────────────────────────────── */
+  /* ── Firebase ── */
   const app = initializeApp({
     apiKey:            "AIzaSyAM6T2eWpeqBd5XzcQNa2SGtCsovn_BxAM",
     authDomain:        "citric-143b9.firebaseapp.com",
@@ -748,11 +775,15 @@
   const db = getDatabase(app);
   const shortcutsRef = ref(db, 'shortcuts');
 
-  const WH_KEY = 'PpuBn5b2aflHGhjMs7QqjMQ79TzFESfY';
+  const WH_KEY    = 'PpuBn5b2aflHGhjMs7QqjMQ79TzFESfY';
+  const PAGE_SIZE = 10;   /* items shown per "page" (append window) */
+  /* We always fetch 24 from the API (minimum Wallhaven allows)
+     and slice locally so we never hit the network more than needed */
+  const WH_PER_PAGE = 24;
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      TOAST
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const toastEl    = document.getElementById('toast');
   const toastQueue = [];
   let   toastBusy  = false;
@@ -762,19 +793,13 @@
     toastBusy = true;
     toastEl.textContent = toastQueue.shift();
     toastEl.classList.add('show');
-    setTimeout(() => {
-      toastEl.classList.remove('show');
-      setTimeout(processToastQueue, 220);
-    }, 2200);
+    setTimeout(() => { toastEl.classList.remove('show'); setTimeout(processToastQueue, 220); }, 2200);
   }
-  function showToast(msg) {
-    toastQueue.push(msg);
-    if (!toastBusy) processToastQueue();
-  }
+  function showToast(msg) { toastQueue.push(msg); if (!toastBusy) processToastQueue(); }
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      CLOCK
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const hrsEl  = document.getElementById('hrs');
   const minsEl = document.getElementById('mins');
   const ampmEl = document.getElementById('ampm');
@@ -800,9 +825,9 @@
       (60 - now.getSeconds()) * 1000 - now.getMilliseconds());
   })();
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      WALLPAPER
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const wallLayer = document.getElementById('wallpaperLayer');
   const wallDim   = document.getElementById('wallpaperDim');
 
@@ -826,11 +851,11 @@
   }
   try { const u = localStorage.getItem('wallpaperUrl'); if (u) applyWallpaper(u); } catch(e) {}
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      THREE-DOT MENU
-  ══════════════════════════════════════════════════════════════ */
-  const menuBtn           = document.getElementById('menuBtn');
-  const dropMenu          = document.getElementById('dropMenu');
+  ══════════════════════════════════════════════════════ */
+  const menuBtn  = document.getElementById('menuBtn');
+  const dropMenu = document.getElementById('dropMenu');
   let menuOpen = false;
 
   function setMenuOpen(on) {
@@ -842,16 +867,13 @@
   document.addEventListener('click', e => {
     if (menuOpen && !dropMenu.contains(e.target) && e.target !== menuBtn) setMenuOpen(false);
   });
-  document.getElementById('dropWallpaper').addEventListener('click',
-    () => { setMenuOpen(false); openWpSheet(); });
-  document.getElementById('dropAddShortcut').addEventListener('click',
-    () => { setMenuOpen(false); openAddSheet(); });
-  document.getElementById('dropEditShortcuts').addEventListener('click',
-    () => { setMenuOpen(false); setEditMode(true); });
+  document.getElementById('dropWallpaper')   .addEventListener('click', () => { setMenuOpen(false); openWpSheet(); });
+  document.getElementById('dropAddShortcut') .addEventListener('click', () => { setMenuOpen(false); openAddSheet(); });
+  document.getElementById('dropEditShortcuts').addEventListener('click', () => { setMenuOpen(false); setEditMode(true); });
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      SHEET HELPERS
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   function openSheet(backdrop, afterOpen) {
     backdrop.classList.add('open');
     backdrop.removeAttribute('aria-hidden');
@@ -862,159 +884,278 @@
     backdrop.setAttribute('aria-hidden', 'true');
   }
 
-  /* Swipe-down to dismiss */
   function addSwipeDismiss(sheet, backdrop) {
     let startY = 0, curY = 0, active = false;
-    sheet.addEventListener('touchstart', e => {
-      startY = e.touches[0].clientY; curY = startY; active = true;
-    }, { passive: true });
-    sheet.addEventListener('touchmove', e => {
-      if (!active) return;
-      curY = e.touches[0].clientY;
-      const dy = curY - startY;
-      if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
-    }, { passive: true });
-    sheet.addEventListener('touchend', () => {
-      active = false;
-      const dy = curY - startY;
-      sheet.style.transform = '';
-      if (dy > 90) closeSheet(backdrop);
-    });
+    sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; curY = startY; active = true; }, { passive: true });
+    sheet.addEventListener('touchmove',  e => { if (!active) return; curY = e.touches[0].clientY; const dy = curY - startY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    sheet.addEventListener('touchend',   () => { active = false; const dy = curY - startY; sheet.style.transform = ''; if (dy > 90) closeSheet(backdrop); });
   }
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      WALLPAPER PICKER
-  ══════════════════════════════════════════════════════════════ */
+     ─ Images only load on chip tap or Search button
+     ─ 10 cards shown at a time, "Load More" appends next 10
+     ─ Results cached in localStorage keyed by query string
+  ══════════════════════════════════════════════════════ */
   const wpBackdrop    = document.getElementById('wpBackdrop');
   const wpSheet       = document.getElementById('wpSheet');
-  const wpGrid        = document.getElementById('wpGrid');
+  const wpList        = document.getElementById('wpList');
+  const wpIdle        = document.getElementById('wpIdle');
   const wpChips       = document.getElementById('wpChips');
   const wpSearchInput = document.getElementById('wpSearchInput');
   const wpSearchBtn   = document.getElementById('wpSearchBtn');
-  const wpPrev        = document.getElementById('wpPrev');
-  const wpNext        = document.getElementById('wpNext');
-  const wpPageLabel   = document.getElementById('wpPageLabel');
   const wpApply       = document.getElementById('wpApply');
   const wpClear       = document.getElementById('wpClear');
   const wpCancel      = document.getElementById('wpCancel');
 
   addSwipeDismiss(wpSheet, wpBackdrop);
 
-  let wpPage = 1, wpLastPage = 1;
-  let wpQuery = '', wpCategory = '111', wpPurity = '100';
-  let wpSelected = null, wpLoading = false;
+  /* State */
+  let wpAllItems  = [];   /* full result set for current query */
+  let wpShown     = 0;    /* how many cards have been appended so far */
+  let wpSelected  = null; /* { id, url } */
+  let wpFetching  = false;
+  let wpQuery     = '';
+  let wpCategory  = '111';
+  let wpPurity    = '100';
 
-  function buildWpUrl(page) {
+  /* ── localStorage cache ── */
+  const WP_CACHE_KEY    = 'wpResultsCache';
+  const WP_CACHE_MAX    = 20;   /* max cache entries before evicting oldest */
+  const WP_CACHE_TTL_MS = 30 * 60 * 1000; /* 30 min */
+
+  function loadWpCache() {
+    try { return JSON.parse(localStorage.getItem(WP_CACHE_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function saveWpCache(cache) {
+    /* Evict oldest entries when over limit */
+    const entries = Object.entries(cache).sort((a, b) => a[1].ts - b[1].ts);
+    const trimmed = Object.fromEntries(entries.slice(-WP_CACHE_MAX));
+    try { localStorage.setItem(WP_CACHE_KEY, JSON.stringify(trimmed)); } catch(e) {}
+  }
+
+  function getCacheKey(q, cat, pur) { return `${q}|${cat}|${pur}`; }
+
+  function getCachedResults(q, cat, pur) {
+    const cache = loadWpCache();
+    const entry = cache[getCacheKey(q, cat, pur)];
+    if (!entry) return null;
+    if (Date.now() - entry.ts > WP_CACHE_TTL_MS) return null; /* expired */
+    return entry.items;
+  }
+
+  function setCachedResults(q, cat, pur, items) {
+    const cache = loadWpCache();
+    cache[getCacheKey(q, cat, pur)] = { ts: Date.now(), items };
+    saveWpCache(cache);
+  }
+
+  /* ── Build Wallhaven API URL ── */
+  function buildWpUrl(q, cat, pur) {
     const p = new URLSearchParams({
-      apikey: WH_KEY, categories: wpCategory,
-      purity: wpPurity, sorting: wpQuery ? 'relevance' : 'toplist',
-      page: String(page),
+      apikey:     WH_KEY,
+      categories: cat,
+      purity:     pur,
+      sorting:    q ? 'relevance' : 'toplist',
+      page:       '1',
+      atleast:    '1920x1080',
     });
-    if (wpQuery) p.set('q', wpQuery);
+    if (q) p.set('q', q);
     return `https://wallhaven.cc/api/v1/search?${p}`;
   }
 
-  async function fetchWallpapers(page = 1) {
-    if (wpLoading) return;
-    wpLoading = true;
-    wpSearchBtn.disabled = wpPrev.disabled = wpNext.disabled = true;
-    wpGrid.innerHTML = '<div class="wp-state"><div class="wp-spinner"></div><span>Loading…</span></div>';
-    try {
-      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(buildWpUrl(page))}`;
-      const res   = await fetch(proxy);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const outer = await res.json();
-      const data  = JSON.parse(outer.contents);
-      if (!data.data?.length) {
-        wpGrid.innerHTML = '<div class="wp-state"><span>No wallpapers found.</span></div>';
-      } else {
-        wpPage = data.meta.current_page;
-        wpLastPage = data.meta.last_page;
-        renderWpGrid(data.data);
-        wpPageLabel.textContent = `Page ${wpPage} / ${wpLastPage}`;
-        wpPrev.disabled = wpPage <= 1;
-        wpNext.disabled = wpPage >= wpLastPage;
-      }
-    } catch(err) {
-      wpGrid.innerHTML = `<div class="wp-state"><span>Failed to load.<br><small>${err.message}</small></span></div>`;
-    }
-    wpLoading = false;
-    wpSearchBtn.disabled = false;
+  /* ── Fetch from API (with proxy) ── */
+  async function fetchFromApi(q, cat, pur) {
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(buildWpUrl(q, cat, pur))}`;
+    const res   = await fetch(proxy);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const outer = await res.json();
+    const data  = JSON.parse(outer.contents);
+    return data.data || [];
   }
 
-  function renderWpGrid(items) {
-    wpGrid.innerHTML = '';
-    items.forEach(item => {
-      const thumb = document.createElement('div');
-      thumb.className = 'wp-thumb';
-      if (wpSelected?.id === item.id) thumb.classList.add('selected');
+  /* ── Show spinner in list ── */
+  function showWpSpinner() {
+    wpList.innerHTML = '';
+    const state = document.createElement('div');
+    state.className = 'wp-state';
+    state.innerHTML = `<div class="wp-spinner"></div><span>Loading…</span>`;
+    wpList.appendChild(state);
+  }
+
+  /* ── Show error in list ── */
+  function showWpError(msg) {
+    wpList.innerHTML = '';
+    const state = document.createElement('div');
+    state.className = 'wp-state';
+    state.textContent = msg;
+    wpList.appendChild(state);
+  }
+
+  /* ── Append next PAGE_SIZE cards ── */
+  function appendWpCards() {
+    /* Remove existing "Load More" button before appending */
+    const existingBtn = wpList.querySelector('.wp-load-more');
+    if (existingBtn) existingBtn.remove();
+
+    const slice = wpAllItems.slice(wpShown, wpShown + PAGE_SIZE);
+    if (!slice.length) return;
+
+    slice.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'wp-card';
+      if (wpSelected?.id === item.id) card.classList.add('selected');
+
       const img = document.createElement('img');
-      img.src = item.thumbs.small; img.alt = item.id; img.loading = 'lazy';
+      img.src     = item.thumbs.small;
+      img.alt     = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+
       const res = document.createElement('div');
-      res.className = 'wp-res';
+      res.className   = 'wp-res';
       res.textContent = `${item.dimension_x}×${item.dimension_y}`;
+
       const check = document.createElement('div');
       check.className = 'wp-check';
       check.innerHTML = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
-      thumb.append(img, res, check);
-      thumb.addEventListener('click', () => {
-        wpGrid.querySelectorAll('.wp-thumb.selected').forEach(el => el.classList.remove('selected'));
-        thumb.classList.add('selected');
+
+      card.append(img, res, check);
+      card.addEventListener('click', () => {
+        wpList.querySelectorAll('.wp-card.selected').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
         wpSelected = { id: item.id, url: item.path };
         wpApply.disabled = false;
       });
-      wpGrid.appendChild(thumb);
+
+      wpList.appendChild(card);
     });
+
+    wpShown += slice.length;
+
+    /* Add "Load More" if there are more items */
+    if (wpShown < wpAllItems.length) {
+      const moreBtn = document.createElement('button');
+      moreBtn.className = 'wp-load-more';
+      moreBtn.type = 'button';
+      moreBtn.setAttribute('aria-label', 'Load more wallpapers');
+      moreBtn.innerHTML = `
+        <div class="wp-load-more-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <span>More</span>`;
+      moreBtn.addEventListener('click', () => {
+        moreBtn.classList.add('loading');
+        moreBtn.disabled = true;
+        /* Small delay so the spinner is visible before DOM work */
+        setTimeout(() => { appendWpCards(); }, 120);
+      });
+      wpList.appendChild(moreBtn);
+    }
   }
 
+  /* ── Master load function ── */
+  async function loadWpResults(q, cat, pur) {
+    if (wpFetching) return;
+    wpFetching = true;
+    wpSearchBtn.disabled = true;
+
+    /* Reset state */
+    wpAllItems = [];
+    wpShown    = 0;
+    wpSelected = null;
+    wpApply.disabled = true;
+
+    showWpSpinner();
+
+    try {
+      /* Check cache first */
+      const cached = getCachedResults(q, cat, pur);
+      if (cached) {
+        wpAllItems = cached;
+      } else {
+        wpAllItems = await fetchFromApi(q, cat, pur);
+        if (wpAllItems.length) setCachedResults(q, cat, pur, wpAllItems);
+      }
+
+      if (!wpAllItems.length) {
+        showWpError('No wallpapers found.');
+      } else {
+        wpList.innerHTML = ''; /* clear spinner */
+        appendWpCards();
+        /* Scroll to start */
+        document.getElementById('wpScrollArea').scrollLeft = 0;
+      }
+    } catch(err) {
+      showWpError('Failed to load. Check your connection.');
+      console.error(err);
+    } finally {
+      wpFetching = false;
+      wpSearchBtn.disabled = false;
+    }
+  }
+
+  /* ── Open sheet (no auto-fetch — wait for user input) ── */
   function openWpSheet() {
-    wpSelected = null; wpApply.disabled = true;
+    /* Reset to idle state */
+    wpAllItems = []; wpShown = 0; wpSelected = null; wpApply.disabled = true;
+    wpSearchInput.value = '';
+    wpChips.querySelectorAll('.wp-chip').forEach(c => c.classList.remove('active'));
+
+    /* Show idle placeholder */
+    wpList.innerHTML = '';
+    wpList.appendChild(wpIdle);
+
     openSheet(wpBackdrop);
-    fetchWallpapers(1);
   }
 
+  /* ── Chip tap → fetch that category ── */
   wpChips.addEventListener('click', e => {
     const chip = e.target.closest('.wp-chip');
     if (!chip) return;
     wpChips.querySelectorAll('.wp-chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
-    wpQuery = chip.dataset.query || '';
-    wpCategory = chip.dataset.category || '111';
-    wpPurity = chip.dataset.purity || '100';
     wpSearchInput.value = '';
-    fetchWallpapers(1);
+    wpQuery    = chip.dataset.query    || '';
+    wpCategory = chip.dataset.category || '111';
+    wpPurity   = chip.dataset.purity   || '100';
+    loadWpResults(wpQuery, wpCategory, wpPurity);
   });
 
+  /* ── Search button / Enter → fetch custom query ── */
   function doWpSearch() {
-    wpQuery = wpSearchInput.value.trim();
-    wpCategory = '111'; wpPurity = '100';
+    const q = wpSearchInput.value.trim();
+    if (!q) return;
     wpChips.querySelectorAll('.wp-chip').forEach(c => c.classList.remove('active'));
-    fetchWallpapers(1);
+    wpQuery = q; wpCategory = '111'; wpPurity = '100';
+    loadWpResults(wpQuery, wpCategory, wpPurity);
   }
   wpSearchBtn.addEventListener('click', doWpSearch);
   wpSearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doWpSearch(); });
-  wpPrev.addEventListener('click', () => { if (wpPage > 1) fetchWallpapers(wpPage - 1); });
-  wpNext.addEventListener('click', () => { if (wpPage < wpLastPage) fetchWallpapers(wpPage + 1); });
+
+  /* ── Apply / Clear / Cancel ── */
   wpApply.addEventListener('click', () => {
     if (!wpSelected) return;
     applyWallpaper(wpSelected.url);
     showToast('Wallpaper applied ✓');
     closeSheet(wpBackdrop);
   });
-  wpClear.addEventListener('click', () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
+  wpClear.addEventListener('click',  () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
   wpCancel.addEventListener('click', () => closeSheet(wpBackdrop));
   wpBackdrop.addEventListener('click', e => { if (e.target === wpBackdrop) closeSheet(wpBackdrop); });
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      SEARCH ENGINES
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const ENGINES = {
-    google:    { label:'Google',     url: q=>'https://www.google.com/search?q='+q,        svg:'<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>' },
-    bing:      { label:'Bing',       url: q=>'https://www.bing.com/search?q='+q,          svg:'<svg viewBox="0 0 24 24"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>' },
-    duckduckgo:{ label:'DuckDuckGo', url: q=>'https://duckduckgo.com/?q='+q,              svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>' },
-    brave:     { label:'Brave',      url: q=>'https://search.brave.com/search?q='+q,     svg:'<svg viewBox="0 0 24 24"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>' },
-    ecosia:    { label:'Ecosia',     url: q=>'https://www.ecosia.org/search?q='+q,       svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>' },
-    startpage: { label:'Startpage',  url: q=>'https://www.startpage.com/search?q='+q,    svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>' },
+    google:    { label:'Google',     url: q => 'https://www.google.com/search?q=' + q,       svg: '<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>' },
+    bing:      { label:'Bing',       url: q => 'https://www.bing.com/search?q=' + q,         svg: '<svg viewBox="0 0 24 24"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>' },
+    duckduckgo:{ label:'DuckDuckGo', url: q => 'https://duckduckgo.com/?q=' + q,             svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>' },
+    brave:     { label:'Brave',      url: q => 'https://search.brave.com/search?q=' + q,    svg: '<svg viewBox="0 0 24 24"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>' },
+    ecosia:    { label:'Ecosia',     url: q => 'https://www.ecosia.org/search?q=' + q,      svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+    startpage: { label:'Startpage',  url: q => 'https://www.startpage.com/search?q=' + q,   svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>' },
   };
 
   let activeEngine = 'google';
@@ -1038,10 +1179,8 @@
   try { const s = localStorage.getItem('engine'); if (s && ENGINES[s]) activeEngine = s; } catch(e) {}
   setEngine(activeEngine);
 
-  engineRow.addEventListener('click', e => {
-    const btn = e.target.closest('.engine-btn');
-    if (btn) setEngine(btn.dataset.engine);
-  });
+  engineRow.addEventListener('click', e => { const btn = e.target.closest('.engine-btn'); if (btn) setEngine(btn.dataset.engine); });
+
   function doSearch() {
     const q = searchInput.value.trim();
     if (!q) { searchInput.focus(); return; }
@@ -1050,14 +1189,16 @@
   searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   searchSubmit.addEventListener('click', doSearch);
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      FAVICON CACHE
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const faviconCache = (() => {
     try { return JSON.parse(localStorage.getItem('faviconCache') || '{}'); } catch(e) { return {}; }
   })();
   function saveFaviconCache() {
-    try { localStorage.setItem('faviconCache', JSON.stringify(faviconCache)); } catch(e) {}
+    const entries = Object.entries(faviconCache);
+    const trimmed = Object.fromEntries(entries.slice(-50));
+    try { localStorage.setItem('faviconCache', JSON.stringify(trimmed)); } catch(e) {}
   }
   function faviconUrl(url) {
     try {
@@ -1068,30 +1209,24 @@
     } catch(e) { return null; }
   }
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      URL NORMALISATION
-     Accepts bare domains like "youtube.com" — the most common
-     thing a mobile user types.
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   function normalizeUrl(raw) {
     if (!raw) return null;
-    raw = raw.trim();
+    raw = raw.trim().replace(/^["'`]+|["'`]+$/g, '').trim();
     if (!raw) return null;
-    /* Strip any leading/trailing quotes that mobile keyboards add */
-    raw = raw.replace(/^["'`]+|["'`]+$/g, '').trim();
-    /* Prepend scheme if missing */
     if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
     try {
       const p = new URL(raw);
-      /* Must have at least one dot in hostname (real domain) or be localhost */
       if (p.hostname !== 'localhost' && !p.hostname.includes('.')) return null;
-      return p.href; /* normalized, with trailing slash etc. */
+      return p.href;
     } catch(e) { return null; }
   }
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      COLOUR HASH
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const PALETTE = ['#E53935','#D81B60','#8E24AA','#3949AB','#1E88E5','#00897B','#43A047','#FB8C00','#F4511E','#6D4C41','#546E7A','#757575'];
   function colorForName(name) {
     let h = 0;
@@ -1099,16 +1234,13 @@
     return PALETTE[h % PALETTE.length];
   }
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      SHORTCUTS
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const grid = document.getElementById('shortcutsGrid');
   let editMode = false, longPressTimer = null, justEnteredEditMode = false;
 
-  function setEditMode(on) {
-    editMode = on;
-    grid.classList.toggle('edit-mode', on);
-  }
+  function setEditMode(on) { editMode = on; grid.classList.toggle('edit-mode', on); }
 
   function makeLetterIcon(name) {
     const el = document.createElement('div');
@@ -1145,9 +1277,9 @@
     del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
     del.addEventListener('click', e => {
       e.stopPropagation();
-      if (!key) return; /* pending item — not yet in DB */
+      if (!key) return;
       remove(ref(db, 'shortcuts/' + key))
-        .then(()  => showToast('Shortcut removed'))
+        .then(() => showToast('Shortcut removed'))
         .catch(() => showToast('Could not remove'));
     });
 
@@ -1158,10 +1290,7 @@
     item.append(iconWrap, label);
 
     if (!pending) {
-      item.addEventListener('click', () => {
-        if (editMode || justEnteredEditMode) return;
-        window.location.href = data.url;
-      });
+      item.addEventListener('click', () => { if (editMode || justEnteredEditMode) return; window.location.href = data.url; });
       item.addEventListener('pointerdown', () => {
         longPressTimer = setTimeout(() => {
           setEditMode(true);
@@ -1172,7 +1301,6 @@
       item.addEventListener('pointerup',    () => clearTimeout(longPressTimer));
       item.addEventListener('pointerleave', () => clearTimeout(longPressTimer));
     }
-
     return item;
   }
 
@@ -1215,54 +1343,29 @@
     else if (editMode)                               setEditMode(false);
   });
 
-  /* ══════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      ADD SHORTCUT SHEET
-     Root cause of the original bug:
-     • type="url" on mobile causes the keyboard to add spaces /
-       format the value in ways that break URL parsing.
-       Fixed: use type="text" with inputmode="url".
-     • The sheet was closed BEFORE the Firebase push resolved,
-       so if the network was slow the user saw nothing happen.
-       Fixed: close sheet immediately (optimistic UI) and show
-       a pending tile in the grid while the write is in-flight.
-     • Validation fired onChange but not onBlur, so pasting a URL
-       with no prior typing left the button disabled.
-       Fixed: validate on both input AND blur.
-  ══════════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   const addBackdrop = document.getElementById('addBackdrop');
   const addSheet    = document.getElementById('addSheet');
   const scName      = document.getElementById('scName');
   const scUrl       = document.getElementById('scUrl');
   const scSave      = document.getElementById('scSave');
   const scCancel    = document.getElementById('scCancel');
-  const scNameError = document.getElementById('scNameError');
-  const scUrlError  = document.getElementById('scUrlError');
 
   addSwipeDismiss(addSheet, addBackdrop);
 
   function resetAddSheet() {
-    scName.value = '';
-    scUrl.value  = '';
-    scSave.disabled = true;
-    scName.classList.remove('error');
-    scUrl.classList.remove('error');
+    scName.value = ''; scUrl.value = ''; scSave.disabled = true;
+    scName.classList.remove('error'); scUrl.classList.remove('error');
+    delete scName.dataset.touched; delete scUrl.dataset.touched;
   }
-
-  function openAddSheet() {
-    resetAddSheet();
-    openSheet(addBackdrop, () => {
-      /* Delay focus so the sheet slide animation completes first,
-         preventing layout shift from the keyboard appearing mid-animation */
-      scName.focus();
-    });
-  }
+  function openAddSheet() { resetAddSheet(); openSheet(addBackdrop, () => scName.focus()); }
 
   function validateAdd() {
     const nameOk = scName.value.trim().length > 0;
     const urlOk  = normalizeUrl(scUrl.value) !== null;
     scSave.disabled = !(nameOk && urlOk);
-
-    /* Only show red border after user has touched the field */
     if (scName.dataset.touched) scName.classList.toggle('error', !nameOk);
     if (scUrl.dataset.touched)  scUrl.classList.toggle('error',  !urlOk);
     return { nameOk, urlOk };
@@ -1270,62 +1373,32 @@
 
   scName.addEventListener('input', validateAdd);
   scUrl.addEventListener('input',  validateAdd);
-
-  /* Mark touched on blur so we don't show errors before user interacts */
   scName.addEventListener('blur', () => { scName.dataset.touched = '1'; validateAdd(); });
   scUrl.addEventListener('blur',  () => { scUrl.dataset.touched  = '1'; validateAdd(); });
 
-  scCancel.addEventListener('click', () => { closeSheet(addBackdrop); });
+  scCancel.addEventListener('click', () => closeSheet(addBackdrop));
   addBackdrop.addEventListener('click', e => { if (e.target === addBackdrop) closeSheet(addBackdrop); });
-
   scSave.addEventListener('click', saveShortcut);
   scUrl.addEventListener('keydown',  e => { if (e.key === 'Enter' && !scSave.disabled) saveShortcut(); });
   scName.addEventListener('keydown', e => { if (e.key === 'Enter') scUrl.focus(); });
 
   function saveShortcut() {
-    /* Re-read values at click time — not captured at sheet-open time */
     const name = scName.value.trim();
     const url  = normalizeUrl(scUrl.value);
+    if (!name) { scName.dataset.touched = '1'; scName.classList.add('error'); scName.focus(); return; }
+    if (!url)  { scUrl.dataset.touched  = '1'; scUrl.classList.add('error');  scUrl.focus();  return; }
 
-    /* Final validation check — covers edge-case where button became
-       enabled but user then cleared a field */
-    if (!name) {
-      scName.dataset.touched = '1';
-      scName.classList.add('error');
-      scName.focus();
-      return;
-    }
-    if (!url) {
-      scUrl.dataset.touched = '1';
-      scUrl.classList.add('error');
-      scUrl.focus();
-      return;
-    }
-
-    /* ── Optimistic UI ──────────────────────────────────────────
-       Close the sheet and immediately show a dimmed pending tile
-       in the grid. When Firebase confirms, onValue fires and
-       replaces the pending tile with the real one automatically.
-       If Firebase fails, we remove the pending tile and toast. */
     closeSheet(addBackdrop);
 
     const pendingEl = makeShortcutEl(null, { name, url }, true);
     pendingEl.id = 'pendingShortcut';
-    /* Insert before the add button */
     const addBtn = document.getElementById('shortcutAddBtn');
     grid.insertBefore(pendingEl, addBtn);
-
-    /* Disable save to prevent double-tap duplicates */
     scSave.disabled = true;
 
     push(shortcutsRef, { name, url })
-      .then(() => {
-        /* onValue will fire and renderShortcuts() will replace the
-           pending tile — nothing extra needed here */
-        showToast(name + ' added ✓');
-      })
+      .then(() => showToast(name + ' added ✓'))
       .catch(err => {
-        /* Remove optimistic tile on failure */
         document.getElementById('pendingShortcut')?.remove();
         showToast('Failed to save — ' + (err.message || 'check connection'));
       });
