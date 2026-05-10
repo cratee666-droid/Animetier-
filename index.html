@@ -14,710 +14,729 @@
 
     :root {
       --bg:            #0a0a0a;
-      --surface:       rgba(255,255,255,0.045);
-      --surface-hover: rgba(255,255,255,0.075);
-      --border:        rgba(255,255,255,0.09);
-      --border-focus:  rgba(255,255,255,0.28);
+      --surface:       rgba(255,255,255,0.055);
+      --surface-hover: rgba(255,255,255,0.085);
+      --border:        rgba(255,255,255,0.10);
+      --border-focus:  rgba(255,255,255,0.30);
       --text-primary:  rgba(255,255,255,0.92);
-      --text-muted:    rgba(255,255,255,0.38);
-      --text-dim:      rgba(255,255,255,0.18);
+      --text-muted:    rgba(255,255,255,0.42);
+      --text-dim:      rgba(255,255,255,0.20);
       --glow-focus:    rgba(255,255,255,0.10);
-      --accent:        rgba(138,180,248,0.8);
-      --danger:        rgba(255,80,80,0.85);
+      --accent:        rgba(138,180,248,0.85);
+      --danger:        rgba(255,80,80,0.90);
       --pill:          9999px;
-      --bar-w:         min(92vw, 540px);
+      --bar-w:         calc(100vw - 32px);
+      --safe-top:      env(safe-area-inset-top, 0px);
+      --safe-bot:      env(safe-area-inset-bottom, 0px);
     }
 
-    html, body { height: 100%; width: 100%; overflow: hidden; }
+    html {
+      height: 100%;
+      overscroll-behavior: none;
+    }
 
     body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
       background-color: var(--bg);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
-      background-repeat: repeat;
-      background-size: 200px 200px;
       font-family: 'Inter', system-ui, sans-serif;
       color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    /* ── Fade-in ──────────────────────────────────────────────────── */
+    /* ── Wallpaper ───────────────────────────────────────────────── */
+    #wallpaperLayer {
+      position: fixed; inset: 0; z-index: 0;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+      opacity: 0; transition: opacity 0.8s ease; pointer-events: none;
+    }
+    #wallpaperLayer.loaded { opacity: 1; }
+    #wallpaperDim {
+      position: fixed; inset: 0; z-index: 1;
+      background: rgba(0,0,0,0.45);
+      opacity: 0; transition: opacity 0.8s ease; pointer-events: none;
+    }
+    #wallpaperDim.loaded { opacity: 1; }
+
+    /* ── Animations ──────────────────────────────────────────────── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
+      from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
     @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      from { opacity: 0; transform: scale(0.88) translateY(10px); }
       to   { opacity: 1; transform: scale(1) translateY(0); }
     }
-
-    /* ── Page ─────────────────────────────────────────────────────── */
-    .page {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      padding: 0 12px env(safe-area-inset-bottom, 12px);
-      animation: fadeUp 0.65s cubic-bezier(0.22,1,0.36,1) both;
-    }
-
-    /* ── Clock ────────────────────────────────────────────────────── */
-    .clock-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 36px;
-      gap: 9px;
-      user-select: none;
-      -webkit-user-select: none;
-      animation: fadeUp 0.65s 0.04s cubic-bezier(0.22,1,0.36,1) both;
-    }
-
-    .clock {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 300;
-      font-size: clamp(64px, 16vw, 100px);
-      letter-spacing: -0.03em;
-      line-height: 1;
-      color: var(--text-primary);
-      text-shadow: 0 0 80px rgba(255,255,255,0.04), 0 2px 6px rgba(0,0,0,0.7);
-      font-variant-numeric: tabular-nums;
-      display: flex;
-      align-items: baseline;
-    }
-
-    .clock-sep {
-      animation: blink 1s step-start infinite;
-      margin: 0 2px;
+    @keyframes spin  { to { transform: rotate(360deg); } }
+    @keyframes wiggle {
+      from { transform: rotate(-1.8deg); }
+      to   { transform: rotate(1.8deg); }
     }
     @keyframes blink {
-      0%,100% { opacity: 1; }
-      50%      { opacity: 0.15; }
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.15; }
+    }
+    @keyframes popIn {
+      0%   { opacity: 0; transform: scale(0.7); }
+      70%  { transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
-    .clock-ampm {
-      font-size: clamp(16px, 4vw, 26px);
-      font-weight: 300;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      align-self: flex-end;
-      margin-bottom: 0.14em;
-      margin-left: 8px;
-    }
-
-    .date-label {
-      font-weight: 300;
-      font-size: clamp(10px, 2.6vw, 13px);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    /* ── Search section ───────────────────────────────────────────── */
-    .search-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      animation: fadeUp 0.65s 0.10s cubic-bezier(0.22,1,0.36,1) both;
-    }
-
-    /* ── Engine row ───────────────────────────────────────────────── */
-    .engine-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      width: 100%;
-      max-width: var(--bar-w);
-      row-gap: 6px;
-    }
-
-    .engine-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      padding: 5px 10px;
-      border-radius: var(--pill);
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--text-muted);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: clamp(10px, 2.6vw, 12px);
-      font-weight: 400;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: color 0.2s, background 0.2s, border-color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    .engine-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .engine-btn:hover { color: rgba(255,255,255,0.65); background: var(--surface-hover); }
-    .engine-btn.active {
-      color: var(--text-primary);
-      background: rgba(255,255,255,0.07);
-      border-color: var(--border-focus);
-    }
-
-    .engine-dot {
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: var(--text-dim);
-      flex-shrink: 0;
-      opacity: 0.4;
-      pointer-events: none;
-      align-self: center;
-      margin: 0 1px;
-    }
-
-    /* ── Search bar ───────────────────────────────────────────────── */
-    .search-bar {
-      position: relative;
-      width: var(--bar-w);
-      display: flex;
-      align-items: center;
-    }
-
-    .search-badge {
-      position: absolute;
-      left: 16px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      pointer-events: none;
-      z-index: 2;
-    }
-    .badge-icon { width: 16px; height: 16px; display: flex; align-items: center; }
-    .badge-icon svg { width: 16px; height: 16px; }
-    .badge-sep { width: 1px; height: 14px; background: var(--border); margin-left: 1px; }
-
-    .search-input {
-      width: 100%;
-      height: 52px;
-      padding: 0 50px 0 46px;
-      border-radius: var(--pill);
+    /* ── Three-dot menu button ───────────────────────────────────── */
+    #menuBtn {
+      position: fixed;
+      top: calc(var(--safe-top) + 12px); right: 16px;
+      z-index: 60;
+      width: 40px; height: 40px; border-radius: 50%;
       border: 1px solid var(--border);
+      background: rgba(10,10,10,0.60);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-muted);
+      padding: 0; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: color 0.2s, background 0.2s;
+    }
+    #menuBtn:active { color: var(--text-primary); background: rgba(40,40,40,0.80); }
+    #menuBtn svg { width: 20px; height: 20px; }
+
+    /* ── Drop-down ───────────────────────────────────────────────── */
+    #dropMenu {
+      position: fixed;
+      top: calc(var(--safe-top) + 60px); right: 16px;
+      z-index: 61;
+      background: rgba(22,22,22,0.96);
+      border: 1px solid var(--border); border-radius: 16px;
+      padding: 6px; display: flex; flex-direction: column; gap: 2px;
+      min-width: 200px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.70);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      opacity: 0; pointer-events: none;
+      transform: scale(0.92) translateY(-10px); transform-origin: top right;
+      transition: opacity 0.20s ease, transform 0.20s cubic-bezier(0.22,1,0.36,1);
+    }
+    #dropMenu.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
+
+    .drop-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 14px; border-radius: 11px;
+      cursor: pointer; font-size: 15px; font-weight: 400;
+      color: var(--text-primary); background: transparent; border: none;
+      width: 100%; text-align: left; font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: background 0.15s;
+    }
+    .drop-item:active { background: var(--surface-hover); }
+    .drop-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--text-muted); }
+    .drop-sep { height: 1px; background: var(--border); margin: 3px 0; }
+
+    /* ── Scroll root ─────────────────────────────────────────────── */
+    #scrollRoot {
+      position: relative; z-index: 2;
+      height: 100%; width: 100%;
+      overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      padding-top: calc(var(--safe-top) + 64px);
+      padding-bottom: calc(var(--safe-bot) + 24px);
+      padding-left: 16px; padding-right: 16px;
+      scrollbar-width: none;
+    }
+    #scrollRoot::-webkit-scrollbar { display: none; }
+
+    /* ── Page ────────────────────────────────────────────────────── */
+    .page {
+      display: flex; flex-direction: column; align-items: center;
+      width: 100%;
+      animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ── Clock ───────────────────────────────────────────────────── */
+    .clock-wrapper {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; margin-bottom: 32px;
+      animation: fadeUp 0.55s 0.04s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .clock {
+      font-family: 'JetBrains Mono', monospace; font-weight: 300;
+      font-size: clamp(72px, 22vw, 110px);
+      letter-spacing: -0.04em; line-height: 1;
+      color: var(--text-primary);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.70);
+      font-variant-numeric: tabular-nums;
+      display: flex; align-items: baseline;
+    }
+    .clock-sep { animation: blink 1s step-start infinite; margin: 0 3px; }
+    .clock-ampm {
+      font-size: clamp(18px, 5vw, 28px); font-weight: 300;
+      letter-spacing: 0.06em; color: var(--text-muted);
+      align-self: flex-end; margin-bottom: 0.12em; margin-left: 8px;
+    }
+    .date-label {
+      font-weight: 300; font-size: clamp(11px, 3.2vw, 14px);
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted);
+    }
+
+    /* ── Search ──────────────────────────────────────────────────── */
+    .search-section {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 10px; width: 100%;
+      animation: fadeUp 0.55s 0.10s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .engine-row {
+      display: flex; overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      width: 100%; gap: 4px; padding-bottom: 2px;
+      -webkit-mask-image: linear-gradient(to right,transparent 0%,black 5%,black 95%,transparent 100%);
+      mask-image: linear-gradient(to right,transparent 0%,black 5%,black 95%,transparent 100%);
+    }
+    .engine-row::-webkit-scrollbar { display: none; }
+    .engine-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 13px; border-radius: var(--pill);
+      border: 1px solid transparent; background: transparent;
+      color: var(--text-muted);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px; font-weight: 400; letter-spacing: 0.02em;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .engine-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .engine-btn:active { color: rgba(255,255,255,0.70); background: var(--surface-hover); }
+    .engine-btn.active { color: var(--text-primary); background: rgba(255,255,255,0.08); border-color: var(--border-focus); }
+
+    .search-bar { position: relative; width: 100%; display: flex; align-items: center; }
+    .search-badge {
+      position: absolute; left: 16px;
+      display: flex; align-items: center; gap: 6px;
+      pointer-events: none; z-index: 2;
+    }
+    .badge-icon { width: 17px; height: 17px; display: flex; align-items: center; }
+    .badge-icon svg { width: 17px; height: 17px; }
+    .badge-sep { width: 1px; height: 15px; background: var(--border); }
+    .search-input {
+      width: 100%; height: 56px; padding: 0 54px 0 50px;
+      border-radius: var(--pill); border: 1px solid var(--border);
       background: var(--surface);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
       color: var(--text-primary);
       font-family: 'Inter', system-ui, sans-serif;
-      font-size: 16px;
-      font-weight: 300;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
+      font-size: 16px; font-weight: 300;
+      outline: none; appearance: none; -webkit-appearance: none;
       caret-color: var(--accent);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 24px rgba(0,0,0,0.50);
       transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      user-select: text; -webkit-user-select: text;
     }
     .search-input::placeholder { color: var(--text-muted); font-weight: 300; }
     .search-input:focus {
-      border-color: var(--border-focus);
-      background: rgba(255,255,255,0.065);
-      box-shadow:
-        0 0 0 3px var(--glow-focus),
-        0 0 28px rgba(255,255,255,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 8px 32px rgba(0,0,0,0.45);
+      border-color: var(--border-focus); background: rgba(255,255,255,0.07);
+      box-shadow: 0 0 0 3px var(--glow-focus), inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 24px rgba(0,0,0,0.50);
     }
-
     .search-submit {
-      position: absolute;
-      right: 6px;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      border: none;
-      background: transparent;
+      position: absolute; right: 7px; width: 42px; height: 42px;
+      border-radius: 50%; border: none; background: transparent;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      color: var(--text-muted);
+      cursor: pointer; color: var(--text-muted);
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
       transition: color 0.2s, background 0.2s;
-      -webkit-tap-highlight-color: transparent;
     }
-    .search-submit svg { width: 17px; height: 17px; stroke-width: 2; }
-    .search-submit:hover, .search-submit:active { color: var(--text-primary); background: rgba(255,255,255,0.08); }
-    .search-bar:focus-within .search-submit { color: rgba(255,255,255,0.5); }
+    .search-submit svg { width: 18px; height: 18px; stroke-width: 2; }
+    .search-submit:active { color: var(--text-primary); background: rgba(255,255,255,0.10); }
 
-    .hint {
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.06em;
-      opacity: 0;
-      transform: translateY(4px);
-      transition: opacity 0.25s, transform 0.25s;
-      user-select: none;
-      -webkit-user-select: none;
-      pointer-events: none;
-    }
-    .search-section:focus-within .hint { opacity: 1; transform: translateY(0); }
-
-    /* ══════════════════════════════════════════════════════════════
-       SHORTCUTS
-    ══════════════════════════════════════════════════════════════ */
+    /* ── Shortcuts ───────────────────────────────────────────────── */
     .shortcuts-section {
-      margin-top: 28px;
-      width: 100%;
-      max-width: var(--bar-w);
-      animation: fadeUp 0.65s 0.18s cubic-bezier(0.22,1,0.36,1) both;
+      margin-top: 28px; width: 100%;
+      animation: fadeUp 0.55s 0.18s cubic-bezier(0.22,1,0.36,1) both;
     }
-
-    /* Grid of shortcut tiles + add button */
     .shortcuts-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px 8px; justify-items: center;
     }
-
-    /* Individual shortcut tile */
     .shortcut-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      position: relative;
-      -webkit-tap-highlight-color: transparent;
-      animation: scaleIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; cursor: pointer; position: relative;
+      transform-origin: center bottom;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      animation: scaleIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
+      width: 100%;
     }
-
     .shortcut-icon {
-      width: 52px; height: 52px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
+      width: 100%; aspect-ratio: 1; max-width: 62px;
+      border-radius: 16px; border: 1px solid var(--border);
       background: var(--surface);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
-      transition: border-color 0.2s, background 0.2s, transform 0.15s;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-      position: relative;
+      overflow: visible; position: relative;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.40);
+      transition: transform 0.12s, border-color 0.2s;
     }
-    .shortcut-item:hover .shortcut-icon {
-      border-color: var(--border-focus);
-      background: var(--surface-hover);
-      transform: translateY(-2px);
+    .shortcut-item:active .shortcut-icon { transform: scale(0.92); }
+    .shortcut-icon-inner {
+      width: 100%; height: 100%; border-radius: 16px;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
-    .shortcut-item:active .shortcut-icon { transform: scale(0.94); }
-
-    .shortcut-icon img {
-      width: 28px; height: 28px;
-      border-radius: 6px;
-      object-fit: contain;
-    }
-
-    /* Fallback letter icon */
+    .shortcut-icon img { width: 52%; height: 52%; border-radius: 6px; object-fit: contain; }
     .shortcut-letter {
-      width: 28px; height: 28px;
-      border-radius: 8px;
+      width: 52%; height: 52%; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      font-weight: 500;
-      color: #fff;
+      font-size: 18px; font-weight: 500; color: #fff;
       font-family: 'Inter', sans-serif;
-      flex-shrink: 0;
     }
-
     .shortcut-label {
-      font-size: 10px;
-      font-weight: 400;
-      color: var(--text-muted);
-      text-align: center;
-      max-width: 56px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      letter-spacing: 0.02em;
+      font-size: 11px; font-weight: 400; color: var(--text-muted);
+      text-align: center; width: 100%;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      letter-spacing: 0.01em; padding: 0 2px;
     }
-
-    /* Delete badge on long-press / edit mode */
     .shortcut-delete {
-      position: absolute;
-      top: -5px; right: -5px;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: var(--danger);
-      border: 1.5px solid var(--bg);
+      position: absolute; top: -7px; right: -7px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--danger); border: 2px solid var(--bg);
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      opacity: 0;
-      transform: scale(0.6);
+      cursor: pointer; opacity: 0; transform: scale(0.5);
       transition: opacity 0.2s, transform 0.2s;
-      z-index: 5;
-      -webkit-tap-highlight-color: transparent;
+      z-index: 10; will-change: transform; pointer-events: none;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
-    .shortcut-delete svg { width: 9px; height: 9px; }
+    .shortcut-delete svg { width: 10px; height: 10px; }
+    .shortcuts-grid.edit-mode .shortcut-delete { opacity: 1; transform: scale(1); pointer-events: all; }
+    .shortcuts-grid.edit-mode .shortcut-item { animation: wiggle 0.30s ease infinite alternate; transform-origin: center bottom; }
+    .shortcuts-grid.edit-mode .shortcut-item:active { animation: none; }
 
-    .shortcuts-grid.edit-mode .shortcut-delete {
-      opacity: 1;
-      transform: scale(1);
-    }
-    /* Wiggle in edit mode */
-    .shortcuts-grid.edit-mode .shortcut-item {
-      animation: wiggle 0.35s ease infinite alternate;
-    }
-    @keyframes wiggle {
-      from { transform: rotate(-1.5deg); }
-      to   { transform: rotate(1.5deg); }
-    }
-    .shortcuts-grid.edit-mode .shortcut-item:hover { animation: none; }
-
-    /* Add shortcut button */
     .shortcut-add {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation; width: 100%;
     }
     .shortcut-add-icon {
-      width: 52px; height: 52px;
-      border-radius: 14px;
-      border: 1.5px dashed rgba(255,255,255,0.15);
-      background: transparent;
+      width: 100%; aspect-ratio: 1; max-width: 62px; border-radius: 16px;
+      border: 1.5px dashed rgba(255,255,255,0.18); background: transparent;
       display: flex; align-items: center; justify-content: center;
-      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      transition: border-color 0.2s, background 0.2s, transform 0.12s;
     }
-    .shortcut-add:hover .shortcut-add-icon {
-      border-color: rgba(255,255,255,0.35);
-      background: var(--surface);
-      transform: translateY(-2px);
+    .shortcut-add:active .shortcut-add-icon {
+      border-color: rgba(255,255,255,0.40); background: var(--surface); transform: scale(0.92);
     }
-    .shortcut-add:active .shortcut-add-icon { transform: scale(0.94); }
-    .shortcut-add-icon svg { width: 20px; height: 20px; color: var(--text-muted); }
-    .shortcut-add-label {
-      font-size: 10px;
-      color: var(--text-dim);
-      letter-spacing: 0.02em;
-    }
+    .shortcut-add-icon svg { width: 22px; height: 22px; color: var(--text-muted); }
+    .shortcut-add-label { font-size: 11px; color: var(--text-dim); }
 
-    /* Edit mode hint */
     .edit-hint {
-      text-align: center;
-      font-size: 10px;
-      color: var(--text-dim);
-      letter-spacing: 0.06em;
-      margin-top: 10px;
-      opacity: 0;
-      transition: opacity 0.25s;
-      pointer-events: none;
-      user-select: none;
+      text-align: center; font-size: 11px; color: var(--text-dim);
+      letter-spacing: 0.05em; margin-top: 12px;
+      opacity: 0; transition: opacity 0.25s; pointer-events: none;
     }
     .shortcuts-grid.edit-mode ~ .edit-hint { opacity: 1; }
 
-    /* ── Spinner (loading state) ──────────────────────────────────── */
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-top-color: rgba(255,255,255,0.5);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 4px auto 0;
+    /* ── Pending shortcut (optimistic UI) ───────────────────────── */
+    .shortcut-item.pending .shortcut-icon { opacity: 0.55; }
+    .shortcut-item.pending .shortcut-icon::after {
+      content: '';
+      position: absolute; inset: 0; border-radius: 16px;
+      border: 2px solid transparent;
+      border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ══════════════════════════════════════════════════════════════
-       MODAL
+       BOTTOM SHEET  (shared)
     ══════════════════════════════════════════════════════════════ */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: flex-end;          /* sheet slides up from bottom */
-      justify-content: center;
+    .sheet-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: flex; align-items: flex-end; justify-content: center;
       z-index: 100;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s ease;
+      touch-action: none;
     }
-    .modal-backdrop.open {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .sheet-backdrop.open { opacity: 1; pointer-events: all; }
 
-    .modal {
-      background: #161616;
-      border: 1px solid var(--border);
+    .sheet {
+      background: #181818; border: 1px solid var(--border);
       border-radius: 24px 24px 0 0;
-      width: 100%;
-      max-width: 540px;
-      padding: 28px 24px 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      width: 100%; max-height: 90svh;
+      padding: 20px 18px calc(var(--safe-bot) + 20px);
+      display: flex; flex-direction: column; gap: 14px;
       transform: translateY(100%);
-      transition: transform 0.32s cubic-bezier(0.22,1,0.36,1);
+      transition: transform 0.30s cubic-bezier(0.22,1,0.36,1);
+      overflow: hidden; touch-action: pan-y;
     }
-    .modal-backdrop.open .modal {
-      transform: translateY(0);
+    .sheet-backdrop.open .sheet { transform: translateY(0); }
+    .sheet-handle {
+      width: 40px; height: 4px; background: rgba(255,255,255,0.14);
+      border-radius: 2px; margin: 0 auto -2px; flex-shrink: 0;
     }
+    .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; }
 
-    .modal-handle {
-      width: 36px; height: 4px;
-      background: rgba(255,255,255,0.12);
-      border-radius: 2px;
-      margin: 0 auto -4px;
+    /* ── Wallpaper sheet ─────────────────────────────────────────── */
+    .wp-search-row { display: flex; gap: 8px; flex-shrink: 0; }
+    .wp-search-input {
+      flex: 1; height: 44px; padding: 0 14px; border-radius: 12px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.05);
+      color: var(--text-primary); font-family: 'Inter', sans-serif;
+      font-size: 16px; font-weight: 300;
+      outline: none; appearance: none; -webkit-appearance: none;
+      caret-color: var(--accent); transition: border-color 0.2s;
+      user-select: text; -webkit-user-select: text;
     }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--text-primary);
-      letter-spacing: 0.01em;
+    .wp-search-input::placeholder { color: var(--text-dim); }
+    .wp-search-input:focus { border-color: var(--border-focus); }
+    .wp-search-btn {
+      height: 44px; padding: 0 18px; border-radius: 12px;
+      border: 1px solid var(--border-focus); background: rgba(138,180,248,0.14);
+      color: var(--accent); font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: background 0.15s;
     }
+    .wp-search-btn:active { background: rgba(138,180,248,0.26); }
+    .wp-search-btn:disabled { opacity: 0.40; cursor: not-allowed; }
 
-    .modal-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .wp-chips {
+      display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      flex-shrink: 0; padding-bottom: 2px;
+      -webkit-mask-image: linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%);
+      mask-image: linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%);
     }
-
-    .modal-label {
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
+    .wp-chips::-webkit-scrollbar { display: none; }
+    .wp-chip {
+      padding: 6px 14px; border-radius: var(--pill);
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-muted); font-family: 'Inter', sans-serif;
+      font-size: 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
     }
+    .wp-chip:active { background: var(--surface-hover); }
+    .wp-chip.active { color: var(--text-primary); background: rgba(255,255,255,0.09); border-color: var(--border-focus); }
 
-    .modal-input {
-      width: 100%;
-      height: 46px;
-      padding: 0 16px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
+    .wp-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      overflow-y: auto; flex: 1; min-height: 0;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      overscroll-behavior-y: contain;
+    }
+    .wp-grid::-webkit-scrollbar { display: none; }
+    .wp-thumb {
+      position: relative; aspect-ratio: 16/9; border-radius: 12px;
+      overflow: hidden; cursor: pointer; border: 2.5px solid transparent;
+      transition: border-color 0.18s, transform 0.12s;
       background: rgba(255,255,255,0.04);
-      color: var(--text-primary);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 15px;
-      font-weight: 300;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      caret-color: var(--accent);
-      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
-    .modal-input::placeholder { color: var(--text-dim); }
-    .modal-input:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px var(--glow-focus);
+    .wp-thumb:active { transform: scale(0.96); }
+    .wp-thumb.selected { border-color: var(--accent); }
+    .wp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .wp-thumb .wp-res {
+      position: absolute; bottom: 5px; right: 6px; font-size: 9px;
+      color: rgba(255,255,255,0.65); background: rgba(0,0,0,0.55);
+      padding: 2px 5px; border-radius: 4px; letter-spacing: 0.03em;
+      font-family: 'JetBrains Mono', monospace;
     }
+    .wp-thumb .wp-check {
+      position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
+      border-radius: 50%; background: var(--accent); display: none;
+      align-items: center; justify-content: center;
+    }
+    .wp-thumb.selected .wp-check { display: flex; }
+    .wp-check svg { width: 12px; height: 12px; stroke: #000; stroke-width: 2.5; }
+    .wp-state {
+      grid-column: 1 / -1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+      padding: 36px 0; color: var(--text-muted); font-size: 14px; text-align: center;
+    }
+    .wp-spinner {
+      width: 24px; height: 24px;
+      border: 2px solid rgba(255,255,255,0.10);
+      border-top-color: rgba(255,255,255,0.55);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    .wp-pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; gap: 8px;
+    }
+    .wp-page-btn {
+      flex: 1; height: 40px; border-radius: 11px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-primary); font-family: 'Inter', sans-serif;
+      font-size: 13px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: background 0.15s;
+    }
+    .wp-page-btn:active:not(:disabled) { background: var(--surface-hover); }
+    .wp-page-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+    .wp-page-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; text-align: center; flex-shrink: 0; }
 
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
+    /* ── Shared sheet actions ────────────────────────────────────── */
+    .sheet-actions { display: flex; gap: 8px; flex-shrink: 0; }
     .btn {
-      flex: 1;
-      height: 46px;
-      border-radius: 12px;
-      border: none;
+      flex: 1; height: 50px; border-radius: 14px; border: none;
       font-family: 'Inter', system-ui, sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.15s;
-      -webkit-tap-highlight-color: transparent;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: opacity 0.15s, transform 0.12s;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn-cancel {
-      background: rgba(255,255,255,0.06);
-      color: var(--text-muted);
-    }
-    .btn-cancel:hover { background: rgba(255,255,255,0.1); }
-    .btn-save {
-      background: rgba(138,180,248,0.18);
-      color: var(--accent);
-      border: 1px solid rgba(138,180,248,0.25);
-    }
-    .btn-save:hover { background: rgba(138,180,248,0.26); }
-    .btn-save:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    .btn:active { transform: scale(0.96); }
+    .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
+    .btn-cancel:active { background: rgba(255,255,255,0.12); }
+    .btn-apply { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
+    .btn-apply:active { background: rgba(138,180,248,0.28); }
+    .btn-apply:disabled { opacity: 0.38; }
+    .btn-clear { background: rgba(255,80,80,0.12); color: var(--danger); border: 1px solid rgba(255,80,80,0.22); }
+    .btn-clear:active { background: rgba(255,80,80,0.22); }
+    .btn-save { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
+    .btn-save:active:not(:disabled) { background: rgba(138,180,248,0.28); }
+    .btn-save:disabled { opacity: 0.38; cursor: not-allowed; }
 
-    /* Toast */
+    /* ── Add-shortcut sheet ──────────────────────────────────────── */
+    .sheet-field { display: flex; flex-direction: column; gap: 6px; }
+    .sheet-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-muted); }
+    .sheet-input {
+      width: 100%; height: 50px; padding: 0 16px; border-radius: 14px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.05);
+      color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif;
+      font-size: 16px; font-weight: 300;
+      outline: none; appearance: none; -webkit-appearance: none;
+      caret-color: var(--accent); transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: text; -webkit-user-select: text;
+    }
+    .sheet-input::placeholder { color: var(--text-dim); }
+    .sheet-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--glow-focus); }
+
+    /* validation error state */
+    .sheet-input.error { border-color: var(--danger); }
+    .field-error { font-size: 11px; color: var(--danger); display: none; margin-top: 2px; }
+    .sheet-input.error + .field-error { display: block; }
+
+    /* ── Toast ───────────────────────────────────────────────────── */
     .toast {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: rgba(30,30,30,0.95);
-      border: 1px solid var(--border);
-      color: var(--text-primary);
-      font-size: 13px;
-      padding: 10px 20px;
-      border-radius: var(--pill);
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
+      bottom: calc(var(--safe-bot) + 28px); left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: rgba(28,28,28,0.96); border: 1px solid var(--border);
+      color: var(--text-primary); font-size: 14px;
+      padding: 11px 22px; border-radius: var(--pill);
+      white-space: nowrap; opacity: 0; pointer-events: none;
       transition: opacity 0.2s, transform 0.2s;
-      z-index: 200;
-      backdrop-filter: blur(12px);
+      z-index: 300; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      max-width: calc(100vw - 32px); text-align: center;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 
-<main class="page" role="main">
+<div id="wallpaperLayer"></div>
+<div id="wallpaperDim"></div>
 
-  <!-- Clock -->
-  <div class="clock-wrapper">
-    <div class="clock" id="clock" aria-live="polite" aria-label="Current time">
-      <span id="hrs">12</span><span class="clock-sep" aria-hidden="true">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span>
-    </div>
-    <div class="date-label" id="date"></div>
-  </div>
+<!-- Three-dot menu -->
+<button id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <circle cx="12" cy="5"  r="1.8"/>
+    <circle cx="12" cy="12" r="1.8"/>
+    <circle cx="12" cy="19" r="1.8"/>
+  </svg>
+</button>
 
-  <!-- Search -->
-  <section class="search-section" aria-label="Web search">
-    <div class="engine-row" role="group" aria-label="Choose search engine" id="engineRow">
+<div id="dropMenu" role="menu">
+  <button class="drop-item" id="dropWallpaper" role="menuitem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <path d="M21 15l-5-5L5 21"/>
+    </svg>
+    Change Wallpaper
+  </button>
+  <div class="drop-sep"></div>
+  <button class="drop-item" id="dropAddShortcut" role="menuitem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add Shortcut
+  </button>
+  <button class="drop-item" id="dropEditShortcuts" role="menuitem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+    Edit Shortcuts
+  </button>
+</div>
 
-      <button class="engine-btn active" data-engine="google" aria-pressed="true" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-        </svg>
-        Google
-      </button>
-      <span class="engine-dot" aria-hidden="true"></span>
-      <button class="engine-btn" data-engine="bing" aria-pressed="false" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>
-        Bing
-      </button>
-      <span class="engine-dot" aria-hidden="true"></span>
-      <button class="engine-btn" data-engine="duckduckgo" aria-pressed="false" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="12" fill="#DE5833"/>
-          <path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/>
-          <circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/>
-          <circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/>
-          <circle cx="10.8" cy="9.2" r=".3" fill="#fff"/>
-          <circle cx="13.8" cy="9.2" r=".3" fill="#fff"/>
-        </svg>
-        DDG
-      </button>
-      <span class="engine-dot" aria-hidden="true"></span>
-      <button class="engine-btn" data-engine="brave" aria-pressed="false" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/>
-          <path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        Brave
-      </button>
-      <span class="engine-dot" aria-hidden="true"></span>
-      <button class="engine-btn" data-engine="ecosia" aria-pressed="false" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="12" fill="#1D8348"/>
-          <path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/>
-          <path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        Ecosia
-      </button>
-      <span class="engine-dot" aria-hidden="true"></span>
-      <button class="engine-btn" data-engine="startpage" aria-pressed="false" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="12" fill="#4A76EE"/>
-          <path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <circle cx="12" cy="12" r="1.2" fill="#fff"/>
-        </svg>
-        Start
-      </button>
+<div id="scrollRoot">
+  <main class="page" role="main">
 
-    </div>
-
-    <!-- Search bar -->
-    <div class="search-bar">
-      <div class="search-badge" id="searchBadge" aria-hidden="true">
-        <div class="badge-icon" id="badgeIcon"></div>
-        <div class="badge-sep"></div>
+    <div class="clock-wrapper">
+      <div class="clock" id="clock" aria-live="polite" aria-label="Current time">
+        <span id="hrs">12</span><span class="clock-sep" aria-hidden="true">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span>
       </div>
-      <input
-        class="search-input" id="searchInput"
-        type="search" inputmode="search"
-        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-        placeholder="Search the web…"
-        aria-label="Search query" enterkeyhint="search"
-      />
-      <button class="search-submit" id="searchSubmit" aria-label="Submit search" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
-        </svg>
-      </button>
+      <div class="date-label" id="date"></div>
     </div>
 
-    <span class="hint" aria-hidden="true">press Enter to search</span>
-  </section>
+    <section class="search-section" aria-label="Web search">
+      <div class="engine-row" id="engineRow" role="group" aria-label="Choose search engine">
+        <button class="engine-btn active" data-engine="google" aria-pressed="true" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Google
+        </button>
+        <button class="engine-btn" data-engine="bing" aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>
+          Bing
+        </button>
+        <button class="engine-btn" data-engine="duckduckgo" aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="12" fill="#DE5833"/>
+            <path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/>
+            <circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/>
+            <circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/>
+          </svg>
+          DDG
+        </button>
+        <button class="engine-btn" data-engine="brave" aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/>
+            <path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Brave
+        </button>
+        <button class="engine-btn" data-engine="ecosia" aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="12" fill="#1D8348"/>
+            <path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/>
+            <path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Ecosia
+        </button>
+        <button class="engine-btn" data-engine="startpage" aria-pressed="false" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="12" fill="#4A76EE"/>
+            <path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <circle cx="12" cy="12" r="1.2" fill="#fff"/>
+          </svg>
+          Start
+        </button>
+      </div>
 
-  <!-- Shortcuts -->
-  <section class="shortcuts-section" aria-label="Shortcuts">
-    <div class="shortcuts-grid" id="shortcutsGrid">
-      <!-- Populated by JS -->
+      <div class="search-bar">
+        <div class="search-badge" aria-hidden="true">
+          <div class="badge-icon" id="badgeIcon"></div>
+          <div class="badge-sep"></div>
+        </div>
+        <input
+          class="search-input" id="searchInput"
+          type="search" inputmode="search"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          placeholder="Search the web…" aria-label="Search query" enterkeyhint="search"
+        />
+        <button class="search-submit" id="searchSubmit" aria-label="Submit search" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="shortcuts-section" aria-label="Shortcuts">
+      <div class="shortcuts-grid" id="shortcutsGrid"></div>
+      <p class="edit-hint">hold icon to enter edit mode · tap × to remove</p>
+    </section>
+
+  </main>
+</div>
+
+<!-- Wallpaper sheet -->
+<div class="sheet-backdrop" id="wpBackdrop" role="dialog" aria-modal="true" aria-label="Choose wallpaper">
+  <div class="sheet" id="wpSheet">
+    <div class="sheet-handle"></div>
+    <p class="sheet-title">Wallpaper</p>
+    <div class="wp-search-row">
+      <input class="wp-search-input" id="wpSearchInput" type="text"
+        placeholder="Search…" autocomplete="off" autocorrect="off" enterkeyhint="search"/>
+      <button class="wp-search-btn" id="wpSearchBtn" type="button">Search</button>
     </div>
-    <p class="edit-hint" id="editHint">tap × to remove · tap anywhere to finish</p>
-  </section>
-
-</main>
-
-<!-- Add shortcut modal -->
-<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Add shortcut">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <p class="modal-title">Add Shortcut</p>
-
-    <div class="modal-field">
-      <label class="modal-label" for="modalName">Name</label>
-      <input class="modal-input" id="modalName" type="text" placeholder="e.g. YouTube" maxlength="20" autocomplete="off" autocorrect="off" />
+    <div class="wp-chips" id="wpChips">
+      <button class="wp-chip active" data-query="" data-category="111" data-purity="100">Trending</button>
+      <button class="wp-chip" data-query="" data-category="100" data-purity="100">General</button>
+      <button class="wp-chip" data-query="" data-category="010" data-purity="100">Anime</button>
+      <button class="wp-chip" data-query="nature"   data-category="100" data-purity="100">Nature</button>
+      <button class="wp-chip" data-query="space"    data-category="100" data-purity="100">Space</button>
+      <button class="wp-chip" data-query="minimal"  data-category="100" data-purity="100">Minimal</button>
+      <button class="wp-chip" data-query="city"     data-category="100" data-purity="100">City</button>
+      <button class="wp-chip" data-query="dark"     data-category="100" data-purity="100">Dark</button>
+      <button class="wp-chip" data-query="abstract" data-category="100" data-purity="100">Abstract</button>
     </div>
-
-    <div class="modal-field">
-      <label class="modal-label" for="modalUrl">URL</label>
-      <input class="modal-input" id="modalUrl" type="url" placeholder="https://youtube.com" inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off" />
+    <div class="wp-grid" id="wpGrid"></div>
+    <div class="wp-pagination">
+      <button class="wp-page-btn" id="wpPrev" disabled>← Prev</button>
+      <span class="wp-page-label" id="wpPageLabel">Page 1</span>
+      <button class="wp-page-btn" id="wpNext" disabled>Next →</button>
     </div>
-
-    <div class="modal-actions">
-      <button class="btn btn-cancel" id="modalCancel" type="button">Cancel</button>
-      <button class="btn btn-save" id="modalSave" type="button" disabled>Add</button>
+    <div class="sheet-actions">
+      <button class="btn btn-cancel" id="wpCancel" type="button">Cancel</button>
+      <button class="btn btn-clear"  id="wpClear"  type="button">Clear</button>
+      <button class="btn btn-apply"  id="wpApply"  type="button" disabled>Apply</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast" aria-live="polite"></div>
+<!-- Add shortcut sheet -->
+<div class="sheet-backdrop" id="addBackdrop" role="dialog" aria-modal="true" aria-label="Add shortcut">
+  <div class="sheet" id="addSheet">
+    <div class="sheet-handle"></div>
+    <p class="sheet-title">Add Shortcut</p>
 
-<!-- ── Firebase ────────────────────────────────────────────────── -->
+    <div class="sheet-field">
+      <label class="sheet-label" for="scName">Name</label>
+      <input class="sheet-input" id="scName" type="text"
+        placeholder="e.g. YouTube" maxlength="30"
+        autocomplete="off" autocorrect="off" autocapitalize="words"
+        enterkeyhint="next"/>
+      <span class="field-error" id="scNameError">Please enter a name</span>
+    </div>
+
+    <div class="sheet-field">
+      <label class="sheet-label" for="scUrl">URL</label>
+      <input class="sheet-input" id="scUrl" type="text"
+        placeholder="youtube.com or https://youtube.com"
+        inputmode="url"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        enterkeyhint="done"/>
+      <span class="field-error" id="scUrlError">Please enter a valid URL</span>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn btn-cancel" id="scCancel" type="button">Cancel</button>
+      <button class="btn btn-save"   id="scSave"   type="button" disabled>Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
 <script type="module">
-  import { initializeApp }                          from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { initializeApp }                           from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
   import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-  /* ── Firebase init ──────────────────────────────────────────── */
-  const firebaseConfig = {
+  /* ── Firebase ────────────────────────────────────────────────── */
+  const app = initializeApp({
     apiKey:            "AIzaSyAM6T2eWpeqBd5XzcQNa2SGtCsovn_BxAM",
     authDomain:        "citric-143b9.firebaseapp.com",
     databaseURL:       "https://citric-143b9-default-rtdb.firebaseio.com",
@@ -725,10 +744,33 @@
     storageBucket:     "citric-143b9.firebasestorage.app",
     messagingSenderId: "75119245524",
     appId:             "1:75119245524:web:d0006197a335457eb52341"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
+  });
+  const db = getDatabase(app);
   const shortcutsRef = ref(db, 'shortcuts');
+
+  const WH_KEY = 'PpuBn5b2aflHGhjMs7QqjMQ79TzFESfY';
+
+  /* ══════════════════════════════════════════════════════════════
+     TOAST
+  ══════════════════════════════════════════════════════════════ */
+  const toastEl    = document.getElementById('toast');
+  const toastQueue = [];
+  let   toastBusy  = false;
+
+  function processToastQueue() {
+    if (!toastQueue.length) { toastBusy = false; return; }
+    toastBusy = true;
+    toastEl.textContent = toastQueue.shift();
+    toastEl.classList.add('show');
+    setTimeout(() => {
+      toastEl.classList.remove('show');
+      setTimeout(processToastQueue, 220);
+    }, 2200);
+  }
+  function showToast(msg) {
+    toastQueue.push(msg);
+    if (!toastBusy) processToastQueue();
+  }
 
   /* ══════════════════════════════════════════════════════════════
      CLOCK
@@ -737,17 +779,14 @@
   const minsEl = document.getElementById('mins');
   const ampmEl = document.getElementById('ampm');
   const dateEl = document.getElementById('date');
-
   const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   function pad(n) { return String(n).padStart(2,'0'); }
-
   function tick() {
     const now = new Date();
-    let h     = now.getHours();
-    const m   = now.getMinutes();
-    const pm  = h >= 12;
+    let h = now.getHours();
+    const m = now.getMinutes(), pm = h >= 12;
     h = h % 12 || 12;
     hrsEl.textContent  = pad(h);
     minsEl.textContent = pad(m);
@@ -755,36 +794,240 @@
     dateEl.textContent = DAYS[now.getDay()] + ', ' + MONTHS[now.getMonth()] + ' ' + now.getDate();
   }
   tick();
-  (function schedule() {
+  (function scheduleClock() {
     const now = new Date();
-    const ms  = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-    setTimeout(function() { tick(); setInterval(tick, 60000); }, ms);
+    setTimeout(() => { tick(); setInterval(tick, 60_000); },
+      (60 - now.getSeconds()) * 1000 - now.getMilliseconds());
   })();
-  setInterval(tick, 10000);
+
+  /* ══════════════════════════════════════════════════════════════
+     WALLPAPER
+  ══════════════════════════════════════════════════════════════ */
+  const wallLayer = document.getElementById('wallpaperLayer');
+  const wallDim   = document.getElementById('wallpaperDim');
+
+  function applyWallpaper(url) {
+    if (!url) {
+      wallLayer.style.backgroundImage = '';
+      wallLayer.classList.remove('loaded');
+      wallDim.classList.remove('loaded');
+      try { localStorage.removeItem('wallpaperUrl'); } catch(e) {}
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      wallLayer.style.backgroundImage = `url("${url}")`;
+      wallLayer.classList.add('loaded');
+      wallDim.classList.add('loaded');
+    };
+    img.onerror = () => showToast('Could not load wallpaper');
+    img.src = url;
+    try { localStorage.setItem('wallpaperUrl', url); } catch(e) {}
+  }
+  try { const u = localStorage.getItem('wallpaperUrl'); if (u) applyWallpaper(u); } catch(e) {}
+
+  /* ══════════════════════════════════════════════════════════════
+     THREE-DOT MENU
+  ══════════════════════════════════════════════════════════════ */
+  const menuBtn           = document.getElementById('menuBtn');
+  const dropMenu          = document.getElementById('dropMenu');
+  let menuOpen = false;
+
+  function setMenuOpen(on) {
+    menuOpen = on;
+    dropMenu.classList.toggle('open', on);
+    menuBtn.setAttribute('aria-expanded', String(on));
+  }
+  menuBtn.addEventListener('click', e => { e.stopPropagation(); setMenuOpen(!menuOpen); });
+  document.addEventListener('click', e => {
+    if (menuOpen && !dropMenu.contains(e.target) && e.target !== menuBtn) setMenuOpen(false);
+  });
+  document.getElementById('dropWallpaper').addEventListener('click',
+    () => { setMenuOpen(false); openWpSheet(); });
+  document.getElementById('dropAddShortcut').addEventListener('click',
+    () => { setMenuOpen(false); openAddSheet(); });
+  document.getElementById('dropEditShortcuts').addEventListener('click',
+    () => { setMenuOpen(false); setEditMode(true); });
+
+  /* ══════════════════════════════════════════════════════════════
+     SHEET HELPERS
+  ══════════════════════════════════════════════════════════════ */
+  function openSheet(backdrop, afterOpen) {
+    backdrop.classList.add('open');
+    backdrop.removeAttribute('aria-hidden');
+    if (afterOpen) setTimeout(afterOpen, 310);
+  }
+  function closeSheet(backdrop) {
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  /* Swipe-down to dismiss */
+  function addSwipeDismiss(sheet, backdrop) {
+    let startY = 0, curY = 0, active = false;
+    sheet.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY; curY = startY; active = true;
+    }, { passive: true });
+    sheet.addEventListener('touchmove', e => {
+      if (!active) return;
+      curY = e.touches[0].clientY;
+      const dy = curY - startY;
+      if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+    }, { passive: true });
+    sheet.addEventListener('touchend', () => {
+      active = false;
+      const dy = curY - startY;
+      sheet.style.transform = '';
+      if (dy > 90) closeSheet(backdrop);
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     WALLPAPER PICKER
+  ══════════════════════════════════════════════════════════════ */
+  const wpBackdrop    = document.getElementById('wpBackdrop');
+  const wpSheet       = document.getElementById('wpSheet');
+  const wpGrid        = document.getElementById('wpGrid');
+  const wpChips       = document.getElementById('wpChips');
+  const wpSearchInput = document.getElementById('wpSearchInput');
+  const wpSearchBtn   = document.getElementById('wpSearchBtn');
+  const wpPrev        = document.getElementById('wpPrev');
+  const wpNext        = document.getElementById('wpNext');
+  const wpPageLabel   = document.getElementById('wpPageLabel');
+  const wpApply       = document.getElementById('wpApply');
+  const wpClear       = document.getElementById('wpClear');
+  const wpCancel      = document.getElementById('wpCancel');
+
+  addSwipeDismiss(wpSheet, wpBackdrop);
+
+  let wpPage = 1, wpLastPage = 1;
+  let wpQuery = '', wpCategory = '111', wpPurity = '100';
+  let wpSelected = null, wpLoading = false;
+
+  function buildWpUrl(page) {
+    const p = new URLSearchParams({
+      apikey: WH_KEY, categories: wpCategory,
+      purity: wpPurity, sorting: wpQuery ? 'relevance' : 'toplist',
+      page: String(page),
+    });
+    if (wpQuery) p.set('q', wpQuery);
+    return `https://wallhaven.cc/api/v1/search?${p}`;
+  }
+
+  async function fetchWallpapers(page = 1) {
+    if (wpLoading) return;
+    wpLoading = true;
+    wpSearchBtn.disabled = wpPrev.disabled = wpNext.disabled = true;
+    wpGrid.innerHTML = '<div class="wp-state"><div class="wp-spinner"></div><span>Loading…</span></div>';
+    try {
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(buildWpUrl(page))}`;
+      const res   = await fetch(proxy);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const outer = await res.json();
+      const data  = JSON.parse(outer.contents);
+      if (!data.data?.length) {
+        wpGrid.innerHTML = '<div class="wp-state"><span>No wallpapers found.</span></div>';
+      } else {
+        wpPage = data.meta.current_page;
+        wpLastPage = data.meta.last_page;
+        renderWpGrid(data.data);
+        wpPageLabel.textContent = `Page ${wpPage} / ${wpLastPage}`;
+        wpPrev.disabled = wpPage <= 1;
+        wpNext.disabled = wpPage >= wpLastPage;
+      }
+    } catch(err) {
+      wpGrid.innerHTML = `<div class="wp-state"><span>Failed to load.<br><small>${err.message}</small></span></div>`;
+    }
+    wpLoading = false;
+    wpSearchBtn.disabled = false;
+  }
+
+  function renderWpGrid(items) {
+    wpGrid.innerHTML = '';
+    items.forEach(item => {
+      const thumb = document.createElement('div');
+      thumb.className = 'wp-thumb';
+      if (wpSelected?.id === item.id) thumb.classList.add('selected');
+      const img = document.createElement('img');
+      img.src = item.thumbs.small; img.alt = item.id; img.loading = 'lazy';
+      const res = document.createElement('div');
+      res.className = 'wp-res';
+      res.textContent = `${item.dimension_x}×${item.dimension_y}`;
+      const check = document.createElement('div');
+      check.className = 'wp-check';
+      check.innerHTML = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
+      thumb.append(img, res, check);
+      thumb.addEventListener('click', () => {
+        wpGrid.querySelectorAll('.wp-thumb.selected').forEach(el => el.classList.remove('selected'));
+        thumb.classList.add('selected');
+        wpSelected = { id: item.id, url: item.path };
+        wpApply.disabled = false;
+      });
+      wpGrid.appendChild(thumb);
+    });
+  }
+
+  function openWpSheet() {
+    wpSelected = null; wpApply.disabled = true;
+    openSheet(wpBackdrop);
+    fetchWallpapers(1);
+  }
+
+  wpChips.addEventListener('click', e => {
+    const chip = e.target.closest('.wp-chip');
+    if (!chip) return;
+    wpChips.querySelectorAll('.wp-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    wpQuery = chip.dataset.query || '';
+    wpCategory = chip.dataset.category || '111';
+    wpPurity = chip.dataset.purity || '100';
+    wpSearchInput.value = '';
+    fetchWallpapers(1);
+  });
+
+  function doWpSearch() {
+    wpQuery = wpSearchInput.value.trim();
+    wpCategory = '111'; wpPurity = '100';
+    wpChips.querySelectorAll('.wp-chip').forEach(c => c.classList.remove('active'));
+    fetchWallpapers(1);
+  }
+  wpSearchBtn.addEventListener('click', doWpSearch);
+  wpSearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doWpSearch(); });
+  wpPrev.addEventListener('click', () => { if (wpPage > 1) fetchWallpapers(wpPage - 1); });
+  wpNext.addEventListener('click', () => { if (wpPage < wpLastPage) fetchWallpapers(wpPage + 1); });
+  wpApply.addEventListener('click', () => {
+    if (!wpSelected) return;
+    applyWallpaper(wpSelected.url);
+    showToast('Wallpaper applied ✓');
+    closeSheet(wpBackdrop);
+  });
+  wpClear.addEventListener('click', () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
+  wpCancel.addEventListener('click', () => closeSheet(wpBackdrop));
+  wpBackdrop.addEventListener('click', e => { if (e.target === wpBackdrop) closeSheet(wpBackdrop); });
 
   /* ══════════════════════════════════════════════════════════════
      SEARCH ENGINES
   ══════════════════════════════════════════════════════════════ */
   const ENGINES = {
-    google:    { label:'Google',     url: q => 'https://www.google.com/search?q='+q,        svg:'<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>' },
-    bing:      { label:'Bing',       url: q => 'https://www.bing.com/search?q='+q,          svg:'<svg viewBox="0 0 24 24"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>' },
-    duckduckgo:{ label:'DuckDuckGo', url: q => 'https://duckduckgo.com/?q='+q,              svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>' },
-    brave:     { label:'Brave',      url: q => 'https://search.brave.com/search?q='+q,     svg:'<svg viewBox="0 0 24 24"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>' },
-    ecosia:    { label:'Ecosia',     url: q => 'https://www.ecosia.org/search?q='+q,       svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>' },
-    startpage: { label:'Startpage',  url: q => 'https://www.startpage.com/search?q='+q,    svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>' },
+    google:    { label:'Google',     url: q=>'https://www.google.com/search?q='+q,        svg:'<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>' },
+    bing:      { label:'Bing',       url: q=>'https://www.bing.com/search?q='+q,          svg:'<svg viewBox="0 0 24 24"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>' },
+    duckduckgo:{ label:'DuckDuckGo', url: q=>'https://duckduckgo.com/?q='+q,              svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="10.8" cy="9.2" r=".3" fill="#fff"/><circle cx="13.8" cy="9.2" r=".3" fill="#fff"/></svg>' },
+    brave:     { label:'Brave',      url: q=>'https://search.brave.com/search?q='+q,     svg:'<svg viewBox="0 0 24 24"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>' },
+    ecosia:    { label:'Ecosia',     url: q=>'https://www.ecosia.org/search?q='+q,       svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+    startpage: { label:'Startpage',  url: q=>'https://www.startpage.com/search?q='+q,    svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>' },
   };
 
-  let active = 'google';
-  const engineRow   = document.getElementById('engineRow');
-  const badgeIcon   = document.getElementById('badgeIcon');
-  const searchInput = document.getElementById('searchInput');
-  const searchSubmit= document.getElementById('searchSubmit');
+  let activeEngine = 'google';
+  const engineRow    = document.getElementById('engineRow');
+  const badgeIcon    = document.getElementById('badgeIcon');
+  const searchInput  = document.getElementById('searchInput');
+  const searchSubmit = document.getElementById('searchSubmit');
 
   function setEngine(key) {
     if (!ENGINES[key]) return;
-    active = key;
+    activeEngine = key;
     badgeIcon.innerHTML = ENGINES[key].svg;
-    searchInput.placeholder = 'Search with ' + ENGINES[key].label + '…';
+    searchInput.placeholder = 'Search ' + ENGINES[key].label + '…';
     engineRow.querySelectorAll('.engine-btn').forEach(btn => {
       const on = btn.dataset.engine === key;
       btn.classList.toggle('active', on);
@@ -792,127 +1035,79 @@
     });
     try { localStorage.setItem('engine', key); } catch(e) {}
   }
-
-  try { const s = localStorage.getItem('engine'); if (s && ENGINES[s]) active = s; } catch(e) {}
-  setEngine(active);
+  try { const s = localStorage.getItem('engine'); if (s && ENGINES[s]) activeEngine = s; } catch(e) {}
+  setEngine(activeEngine);
 
   engineRow.addEventListener('click', e => {
     const btn = e.target.closest('.engine-btn');
-    if (btn) { setEngine(btn.dataset.engine); searchInput.focus(); }
+    if (btn) setEngine(btn.dataset.engine);
   });
-
   function doSearch() {
     const q = searchInput.value.trim();
     if (!q) { searchInput.focus(); return; }
-    window.location.href = ENGINES[active].url(encodeURIComponent(q));
+    window.location.href = ENGINES[activeEngine].url(encodeURIComponent(q));
   }
   searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   searchSubmit.addEventListener('click', doSearch);
-  if (window.innerWidth >= 768) searchInput.focus();
-  document.addEventListener('touchstart', () => {}, { passive: true });
+
+  /* ══════════════════════════════════════════════════════════════
+     FAVICON CACHE
+  ══════════════════════════════════════════════════════════════ */
+  const faviconCache = (() => {
+    try { return JSON.parse(localStorage.getItem('faviconCache') || '{}'); } catch(e) { return {}; }
+  })();
+  function saveFaviconCache() {
+    try { localStorage.setItem('faviconCache', JSON.stringify(faviconCache)); } catch(e) {}
+  }
+  function faviconUrl(url) {
+    try {
+      const host = new URL(url).hostname;
+      if (faviconCache[host]) return faviconCache[host];
+      const fav = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+      faviconCache[host] = fav; saveFaviconCache(); return fav;
+    } catch(e) { return null; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     URL NORMALISATION
+     Accepts bare domains like "youtube.com" — the most common
+     thing a mobile user types.
+  ══════════════════════════════════════════════════════════════ */
+  function normalizeUrl(raw) {
+    if (!raw) return null;
+    raw = raw.trim();
+    if (!raw) return null;
+    /* Strip any leading/trailing quotes that mobile keyboards add */
+    raw = raw.replace(/^["'`]+|["'`]+$/g, '').trim();
+    /* Prepend scheme if missing */
+    if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+    try {
+      const p = new URL(raw);
+      /* Must have at least one dot in hostname (real domain) or be localhost */
+      if (p.hostname !== 'localhost' && !p.hostname.includes('.')) return null;
+      return p.href; /* normalized, with trailing slash etc. */
+    } catch(e) { return null; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     COLOUR HASH
+  ══════════════════════════════════════════════════════════════ */
+  const PALETTE = ['#E53935','#D81B60','#8E24AA','#3949AB','#1E88E5','#00897B','#43A047','#FB8C00','#F4511E','#6D4C41','#546E7A','#757575'];
+  function colorForName(name) {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return PALETTE[h % PALETTE.length];
+  }
 
   /* ══════════════════════════════════════════════════════════════
      SHORTCUTS
   ══════════════════════════════════════════════════════════════ */
-  const grid     = document.getElementById('shortcutsGrid');
-  const editHint = document.getElementById('editHint');
-
-  /* Palette for letter-icon backgrounds */
-  const PALETTE = [
-    '#E53935','#D81B60','#8E24AA','#3949AB',
-    '#1E88E5','#00897B','#43A047','#FB8C00',
-    '#F4511E','#6D4C41','#546E7A','#757575'
-  ];
-
-  function colorForName(name) {
-    let h = 0;
-    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xFFFFFFFF;
-    return PALETTE[Math.abs(h) % PALETTE.length];
-  }
-
-  function faviconUrl(url) {
-    try {
-      const host = new URL(url).hostname;
-      return 'https://www.google.com/s2/favicons?domain=' + host + '&sz=64';
-    } catch(e) { return null; }
-  }
-
-  /* Normalize URL */
-  function normalizeUrl(raw) {
-    raw = raw.trim();
-    if (!raw) return null;
-    if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
-    try { new URL(raw); return raw; } catch(e) { return null; }
-  }
-
-  let editMode = false;
-  let longPressTimer = null;
+  const grid = document.getElementById('shortcutsGrid');
+  let editMode = false, longPressTimer = null, justEnteredEditMode = false;
 
   function setEditMode(on) {
     editMode = on;
     grid.classList.toggle('edit-mode', on);
-  }
-
-  /* Build a single shortcut tile */
-  function makeShortcutEl(key, data) {
-    const item = document.createElement('div');
-    item.className = 'shortcut-item';
-    item.dataset.key = key;
-
-    /* Icon */
-    const iconWrap = document.createElement('div');
-    iconWrap.className = 'shortcut-icon';
-
-    const fav = faviconUrl(data.url);
-    if (fav) {
-      const img = document.createElement('img');
-      img.src = fav;
-      img.alt = '';
-      img.onerror = function() {
-        this.replaceWith(makeLetterIcon(data.name));
-      };
-      iconWrap.appendChild(img);
-    } else {
-      iconWrap.appendChild(makeLetterIcon(data.name));
-    }
-
-    /* Delete badge */
-    const del = document.createElement('button');
-    del.className = 'shortcut-delete';
-    del.setAttribute('aria-label', 'Remove ' + data.name);
-    del.type = 'button';
-    del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
-    del.addEventListener('click', e => {
-      e.stopPropagation();
-      remove(ref(db, 'shortcuts/' + key))
-        .then(() => showToast('Shortcut removed'))
-        .catch(() => showToast('Could not remove'));
-    });
-
-    iconWrap.appendChild(del);
-
-    /* Label */
-    const label = document.createElement('span');
-    label.className = 'shortcut-label';
-    label.textContent = data.name;
-
-    item.appendChild(iconWrap);
-    item.appendChild(label);
-
-    /* Click → navigate (if not edit mode) */
-    item.addEventListener('click', () => {
-      if (editMode) return;
-      window.location.href = data.url;
-    });
-
-    /* Long-press → edit mode */
-    item.addEventListener('pointerdown', () => {
-      longPressTimer = setTimeout(() => setEditMode(true), 500);
-    });
-    item.addEventListener('pointerup',    () => clearTimeout(longPressTimer));
-    item.addEventListener('pointerleave', () => clearTimeout(longPressTimer));
-
-    return item;
   }
 
   function makeLetterIcon(name) {
@@ -923,7 +1118,64 @@
     return el;
   }
 
-  /* "+" add button (always last in grid) */
+  function makeShortcutEl(key, data, pending = false) {
+    const item = document.createElement('div');
+    item.className = 'shortcut-item' + (pending ? ' pending' : '');
+    if (key) item.dataset.key = key;
+
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'shortcut-icon';
+    const inner = document.createElement('div');
+    inner.className = 'shortcut-icon-inner';
+
+    const fav = faviconUrl(data.url);
+    if (fav) {
+      const img = document.createElement('img');
+      img.src = fav; img.alt = '';
+      img.onerror = function() { this.replaceWith(makeLetterIcon(data.name)); };
+      inner.appendChild(img);
+    } else {
+      inner.appendChild(makeLetterIcon(data.name));
+    }
+
+    const del = document.createElement('button');
+    del.className = 'shortcut-delete';
+    del.setAttribute('aria-label', 'Remove ' + data.name);
+    del.type = 'button';
+    del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
+    del.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!key) return; /* pending item — not yet in DB */
+      remove(ref(db, 'shortcuts/' + key))
+        .then(()  => showToast('Shortcut removed'))
+        .catch(() => showToast('Could not remove'));
+    });
+
+    iconWrap.append(inner, del);
+    const label = document.createElement('span');
+    label.className = 'shortcut-label';
+    label.textContent = data.name;
+    item.append(iconWrap, label);
+
+    if (!pending) {
+      item.addEventListener('click', () => {
+        if (editMode || justEnteredEditMode) return;
+        window.location.href = data.url;
+      });
+      item.addEventListener('pointerdown', () => {
+        longPressTimer = setTimeout(() => {
+          setEditMode(true);
+          justEnteredEditMode = true;
+          setTimeout(() => { justEnteredEditMode = false; }, 300);
+        }, 500);
+      });
+      item.addEventListener('pointerup',    () => clearTimeout(longPressTimer));
+      item.addEventListener('pointerleave', () => clearTimeout(longPressTimer));
+    }
+
+    return item;
+  }
+
   function makeAddButton() {
     const wrap = document.createElement('div');
     wrap.className = 'shortcut-add';
@@ -933,115 +1185,150 @@
     wrap.setAttribute('aria-label', 'Add shortcut');
     wrap.innerHTML = `
       <div class="shortcut-add-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </div>
       <span class="shortcut-add-label">Add</span>`;
-    wrap.addEventListener('click', () => { setEditMode(false); openModal(); });
-    wrap.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(); });
+    wrap.addEventListener('click', () => { setEditMode(false); openAddSheet(); });
     return wrap;
   }
 
-  /* Render all shortcuts from Firebase snapshot */
   function renderShortcuts(snapshot) {
     grid.innerHTML = '';
-
-    if (snapshot && snapshot.exists()) {
-      snapshot.forEach(child => {
-        grid.appendChild(makeShortcutEl(child.key, child.val()));
-      });
+    if (snapshot?.exists()) {
+      snapshot.forEach(child => grid.appendChild(makeShortcutEl(child.key, child.val())));
     }
-
     grid.appendChild(makeAddButton());
   }
 
-  /* Listen to Firebase in real-time */
-  onValue(shortcutsRef, snapshot => {
-    renderShortcuts(snapshot);
-  });
+  onValue(shortcutsRef, renderShortcuts);
 
-  /* Tap outside edit-mode tiles → exit edit mode */
   document.addEventListener('click', e => {
     if (!editMode) return;
-    if (!e.target.closest('.shortcut-item') && !e.target.closest('.shortcut-add')) {
-      setEditMode(false);
-    }
+    if (!e.target.closest('.shortcut-item') && !e.target.closest('.shortcut-add')) setEditMode(false);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if      (wpBackdrop.classList.contains('open'))  closeSheet(wpBackdrop);
+    else if (addBackdrop.classList.contains('open')) closeSheet(addBackdrop);
+    else if (editMode)                               setEditMode(false);
   });
 
   /* ══════════════════════════════════════════════════════════════
-     MODAL
+     ADD SHORTCUT SHEET
+     Root cause of the original bug:
+     • type="url" on mobile causes the keyboard to add spaces /
+       format the value in ways that break URL parsing.
+       Fixed: use type="text" with inputmode="url".
+     • The sheet was closed BEFORE the Firebase push resolved,
+       so if the network was slow the user saw nothing happen.
+       Fixed: close sheet immediately (optimistic UI) and show
+       a pending tile in the grid while the write is in-flight.
+     • Validation fired onChange but not onBlur, so pasting a URL
+       with no prior typing left the button disabled.
+       Fixed: validate on both input AND blur.
   ══════════════════════════════════════════════════════════════ */
-  const backdrop   = document.getElementById('modalBackdrop');
-  const modalName  = document.getElementById('modalName');
-  const modalUrl   = document.getElementById('modalUrl');
-  const modalSave  = document.getElementById('modalSave');
-  const modalCancel= document.getElementById('modalCancel');
+  const addBackdrop = document.getElementById('addBackdrop');
+  const addSheet    = document.getElementById('addSheet');
+  const scName      = document.getElementById('scName');
+  const scUrl       = document.getElementById('scUrl');
+  const scSave      = document.getElementById('scSave');
+  const scCancel    = document.getElementById('scCancel');
+  const scNameError = document.getElementById('scNameError');
+  const scUrlError  = document.getElementById('scUrlError');
 
-  function openModal() {
-    modalName.value = '';
-    modalUrl.value  = '';
-    modalSave.disabled = true;
-    backdrop.classList.add('open');
-    setTimeout(() => modalName.focus(), 320);
+  addSwipeDismiss(addSheet, addBackdrop);
+
+  function resetAddSheet() {
+    scName.value = '';
+    scUrl.value  = '';
+    scSave.disabled = true;
+    scName.classList.remove('error');
+    scUrl.classList.remove('error');
   }
 
-  function closeModal() {
-    backdrop.classList.remove('open');
+  function openAddSheet() {
+    resetAddSheet();
+    openSheet(addBackdrop, () => {
+      /* Delay focus so the sheet slide animation completes first,
+         preventing layout shift from the keyboard appearing mid-animation */
+      scName.focus();
+    });
   }
 
-  function validateModal() {
-    const nameOk = modalName.value.trim().length > 0;
-    const urlOk  = normalizeUrl(modalUrl.value) !== null;
-    modalSave.disabled = !(nameOk && urlOk);
+  function validateAdd() {
+    const nameOk = scName.value.trim().length > 0;
+    const urlOk  = normalizeUrl(scUrl.value) !== null;
+    scSave.disabled = !(nameOk && urlOk);
+
+    /* Only show red border after user has touched the field */
+    if (scName.dataset.touched) scName.classList.toggle('error', !nameOk);
+    if (scUrl.dataset.touched)  scUrl.classList.toggle('error',  !urlOk);
+    return { nameOk, urlOk };
   }
 
-  modalName.addEventListener('input', validateModal);
-  modalUrl.addEventListener('input',  validateModal);
+  scName.addEventListener('input', validateAdd);
+  scUrl.addEventListener('input',  validateAdd);
 
-  modalCancel.addEventListener('click', closeModal);
-  backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+  /* Mark touched on blur so we don't show errors before user interacts */
+  scName.addEventListener('blur', () => { scName.dataset.touched = '1'; validateAdd(); });
+  scUrl.addEventListener('blur',  () => { scUrl.dataset.touched  = '1'; validateAdd(); });
 
-  /* Save to Firebase */
-  modalSave.addEventListener('click', () => {
-    const name = modalName.value.trim();
-    const url  = normalizeUrl(modalUrl.value);
-    if (!name || !url) return;
+  scCancel.addEventListener('click', () => { closeSheet(addBackdrop); });
+  addBackdrop.addEventListener('click', e => { if (e.target === addBackdrop) closeSheet(addBackdrop); });
 
-    modalSave.disabled = true;
-    modalSave.textContent = '…';
+  scSave.addEventListener('click', saveShortcut);
+  scUrl.addEventListener('keydown',  e => { if (e.key === 'Enter' && !scSave.disabled) saveShortcut(); });
+  scName.addEventListener('keydown', e => { if (e.key === 'Enter') scUrl.focus(); });
+
+  function saveShortcut() {
+    /* Re-read values at click time — not captured at sheet-open time */
+    const name = scName.value.trim();
+    const url  = normalizeUrl(scUrl.value);
+
+    /* Final validation check — covers edge-case where button became
+       enabled but user then cleared a field */
+    if (!name) {
+      scName.dataset.touched = '1';
+      scName.classList.add('error');
+      scName.focus();
+      return;
+    }
+    if (!url) {
+      scUrl.dataset.touched = '1';
+      scUrl.classList.add('error');
+      scUrl.focus();
+      return;
+    }
+
+    /* ── Optimistic UI ──────────────────────────────────────────
+       Close the sheet and immediately show a dimmed pending tile
+       in the grid. When Firebase confirms, onValue fires and
+       replaces the pending tile with the real one automatically.
+       If Firebase fails, we remove the pending tile and toast. */
+    closeSheet(addBackdrop);
+
+    const pendingEl = makeShortcutEl(null, { name, url }, true);
+    pendingEl.id = 'pendingShortcut';
+    /* Insert before the add button */
+    const addBtn = document.getElementById('shortcutAddBtn');
+    grid.insertBefore(pendingEl, addBtn);
+
+    /* Disable save to prevent double-tap duplicates */
+    scSave.disabled = true;
 
     push(shortcutsRef, { name, url })
       .then(() => {
-        closeModal();
-        showToast('Shortcut added ✓');
-        modalSave.textContent = 'Add';
+        /* onValue will fire and renderShortcuts() will replace the
+           pending tile — nothing extra needed here */
+        showToast(name + ' added ✓');
       })
-      .catch(() => {
-        showToast('Failed to save');
-        modalSave.disabled = false;
-        modalSave.textContent = 'Add';
+      .catch(err => {
+        /* Remove optimistic tile on failure */
+        document.getElementById('pendingShortcut')?.remove();
+        showToast('Failed to save — ' + (err.message || 'check connection'));
       });
-  });
-
-  /* Submit on Enter inside modal inputs */
-  [modalName, modalUrl].forEach(el => {
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !modalSave.disabled) modalSave.click();
-    });
-  });
-
-  /* ══════════════════════════════════════════════════════════════
-     TOAST
-  ══════════════════════════════════════════════════════════════ */
-  const toastEl = document.getElementById('toast');
-  let toastTimer;
-
-  function showToast(msg) {
-    clearTimeout(toastTimer);
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
   }
 </script>
 </body>
