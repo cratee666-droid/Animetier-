@@ -29,7 +29,6 @@
 
     html {
       height: 100%;
-      /* Prevent the page from resizing when keyboard opens */
       overflow: hidden;
       overscroll-behavior: none;
     }
@@ -49,27 +48,19 @@
       -webkit-user-select: none;
     }
 
-    /*
-     * WALLPAPER FIX:
-     * Use fixed positioning anchored to the LAYOUT viewport (not visual viewport).
-     * We set width/height explicitly in JS using window.screen dimensions so the
-     * wallpaper never resizes when the soft keyboard opens/closes.
-     */
     #wallpaperLayer {
       position: fixed;
       top: 0; left: 0;
-      /* Will be overridden by JS with screen.width/height */
       width: 100vw;
       height: 100vh;
       z-index: 0;
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
-      background-attachment: local; /* prevents reflow on scroll */
+      background-attachment: local;
       opacity: 0;
       transition: opacity 0.8s ease;
       pointer-events: none;
-      /* Prevent transform repaints */
       will-change: opacity;
       transform: translateZ(0);
       -webkit-transform: translateZ(0);
@@ -299,32 +290,106 @@
     .shortcut-add-label { font-size: 11px; color: rgba(255,255,255,0.22); text-align: center; }
 
     /* ── Chat ── */
-    .chat-section { width: 100%; margin-top: 26px; animation: fadeUp 0.55s 0.22s cubic-bezier(0.22,1,0.36,1) both; display: flex; flex-direction: column; }
-    .chat-toggle-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); margin-bottom: 10px; }
-    .chat-toggle-left { display: flex; flex-direction: column; gap: 3px; }
-    .chat-toggle-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
-    .chat-toggle-sub { font-size: 11px; color: var(--text-muted); }
-    .toggle-switch { position: relative; width: 50px; height: 28px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-    .toggle-track { position: absolute; inset: 0; background: rgba(255,255,255,0.12); border-radius: 14px; border: 1px solid var(--border); transition: background 0.25s, border-color 0.25s; }
-    .toggle-switch input:checked ~ .toggle-track { background: rgba(100,220,100,0.85); border-color: rgba(100,220,100,0.60); }
-    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.35); transition: transform 0.25s cubic-bezier(0.22,1,0.36,1); }
-    .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(22px); }
-    .chat-body { display: flex; flex-direction: column; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.40s cubic-bezier(0.22,1,0.36,1), opacity 0.30s ease; }
+    .chat-section {
+      width: 100%; margin-top: 26px;
+      animation: fadeUp 0.55s 0.22s cubic-bezier(0.22,1,0.36,1) both;
+      display: flex; flex-direction: column;
+    }
+
+    /* Small header row: label left, toggle right */
+    .chat-header-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px; padding: 0 2px;
+    }
+    .chat-header-left {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .chat-status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(100,220,100,0.80);
+      box-shadow: 0 0 6px rgba(100,220,100,0.60);
+      flex-shrink: 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .chat-status-dot.offline {
+      background: rgba(255,255,255,0.20); box-shadow: none;
+    }
+    .chat-username-display {
+      font-size: 11px; letter-spacing: 0.08em;
+      color: var(--text-muted); font-weight: 400;
+      cursor: pointer; padding: 3px 6px; border-radius: 6px;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.15s, background 0.15s;
+      user-select: none; -webkit-user-select: none;
+    }
+    .chat-username-display:active {
+      color: var(--text-primary); background: var(--surface-hover);
+    }
+
+    /* Slim toggle — pill shape, no label */
+    .chat-mini-toggle {
+      position: relative; width: 42px; height: 24px;
+      flex-shrink: 0; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chat-mini-toggle input {
+      opacity: 0; width: 0; height: 0; position: absolute;
+    }
+    .chat-mini-track {
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0.12);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .chat-mini-toggle input:checked ~ .chat-mini-track {
+      background: rgba(100,220,100,0.85);
+      border-color: rgba(100,220,100,0.60);
+    }
+    .chat-mini-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+    }
+    .chat-mini-toggle input:checked ~ .chat-mini-thumb {
+      transform: translateX(18px);
+    }
+
+    .chat-body {
+      display: flex; flex-direction: column;
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height 0.40s cubic-bezier(0.22,1,0.36,1), opacity 0.30s ease;
+    }
     .chat-body.visible { max-height: 600px; opacity: 1; }
-    .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 2px; }
-    .chat-header-left { display: flex; align-items: center; gap: 8px; }
-    .chat-status-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(100,220,100,0.80); box-shadow: 0 0 6px rgba(100,220,100,0.60); flex-shrink: 0; transition: background 0.3s, box-shadow 0.3s; }
-    .chat-status-dot.offline { background: rgba(255,255,255,0.20); box-shadow: none; }
-    .chat-username-display { font-size: 11px; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 400; cursor: pointer; padding: 3px 6px; border-radius: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.15s, background 0.15s; user-select: none; -webkit-user-select: none; }
-    .chat-username-display:active { color: var(--text-primary); background: var(--surface-hover); }
-    .chat-messages { background: var(--surface); border: 1px solid var(--border); border-radius: 18px 18px 0 0; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); overflow-y: auto; overflow-x: hidden; height: 260px; display: flex; flex-direction: column; padding: 12px 0 4px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+
+    .chat-messages {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px 18px 0 0;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      overflow-y: auto; overflow-x: hidden;
+      height: 260px; display: flex; flex-direction: column;
+      padding: 12px 0 4px;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
     .chat-messages::-webkit-scrollbar { width: 3px; }
     .chat-messages::-webkit-scrollbar-track { background: transparent; }
     .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
-    .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-dim); font-size: 13px; padding: 24px; }
+
+    .chat-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; color: var(--text-dim); font-size: 13px; padding: 24px;
+    }
     .chat-empty svg { width: 28px; height: 28px; opacity: 0.4; }
-    .chat-msg { display: flex; flex-direction: column; padding: 4px 14px; gap: 2px; animation: fadeUp 0.20s cubic-bezier(0.22,1,0.36,1) both; }
+
+    .chat-msg {
+      display: flex; flex-direction: column;
+      padding: 4px 14px; gap: 2px;
+      animation: fadeUp 0.20s cubic-bezier(0.22,1,0.36,1) both;
+    }
     .chat-msg-header { display: flex; align-items: baseline; gap: 7px; }
     .chat-msg-name { font-size: 11px; font-weight: 500; color: var(--accent); letter-spacing: 0.03em; flex-shrink: 0; }
     .chat-msg-name.self { color: rgba(180,255,180,0.75); }
@@ -332,13 +397,43 @@
     .chat-msg-text { font-size: 14px; font-weight: 300; color: var(--text-primary); line-height: 1.5; word-break: break-word; user-select: text; -webkit-user-select: text; }
     .chat-msg-text a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(138,180,248,0.35); transition: color 0.15s, border-color 0.15s; word-break: break-all; }
     .chat-msg-text a:active { color: rgba(138,180,248,1); border-color: rgba(138,180,248,0.8); }
-    .chat-input-row { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 18px 18px; overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .chat-text-input { flex: 1; height: 50px; padding: 0 14px; background: none; border: none; outline: none; color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif; font-size: 16px; font-weight: 300; caret-color: var(--accent); appearance: none; -webkit-appearance: none; user-select: text; -webkit-user-select: text; min-width: 0; }
+
+    .chat-input-row {
+      display: flex; align-items: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-top: none; border-radius: 0 0 18px 18px;
+      overflow: hidden;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+    .chat-text-input {
+      flex: 1; height: 50px; padding: 0 14px;
+      background: none; border: none; outline: none;
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 16px; font-weight: 300;
+      caret-color: var(--accent);
+      appearance: none; -webkit-appearance: none;
+      user-select: text; -webkit-user-select: text; min-width: 0;
+    }
     .chat-text-input::placeholder { color: var(--text-dim); }
-    .chat-clear-btn { flex-shrink: 0; width: 50px; height: 50px; background: none; border: none; border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-dim); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: color 0.15s, background 0.15s; }
+    .chat-clear-btn {
+      flex-shrink: 0; width: 50px; height: 50px;
+      background: none; border: none; border-left: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-dim);
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: color 0.15s, background 0.15s;
+    }
     .chat-clear-btn:active { color: var(--danger); background: rgba(255,80,80,0.08); }
     .chat-clear-btn svg { width: 17px; height: 17px; }
-    .chat-send-btn { flex-shrink: 0; width: 50px; height: 50px; background: none; border: none; border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-dim); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: color 0.15s, background 0.15s; }
+    .chat-send-btn {
+      flex-shrink: 0; width: 50px; height: 50px;
+      background: none; border: none; border-left: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-dim);
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      transition: color 0.15s, background 0.15s;
+    }
     .chat-send-btn:active { color: var(--accent); background: rgba(138,180,248,0.08); }
     .chat-send-btn svg { width: 18px; height: 18px; }
 
@@ -487,26 +582,22 @@
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
     </section>
 
+    <!-- Chat: small header row with status dot, username, and mini toggle -->
     <section class="chat-section" id="chatSection" aria-label="Live chat">
-      <div class="chat-toggle-bar">
-        <div class="chat-toggle-left">
-          <span class="chat-toggle-title">Live Chat</span>
-          <span class="chat-toggle-sub" id="chatToggleSub">Off — tap to enable</span>
-        </div>
-        <label class="toggle-switch" aria-label="Toggle chat">
-          <input type="checkbox" id="chatToggleInput" />
-          <div class="toggle-track"></div>
-          <div class="toggle-thumb"></div>
-        </label>
-      </div>
-      <div class="chat-body" id="chatBody">
-        <div class="chat-header">
-          <div class="chat-header-left">
-            <div class="chat-status-dot offline" id="chatStatusDot"></div>
-            <span class="section-label">Chat</span>
-          </div>
+      <div class="chat-header-row">
+        <div class="chat-header-left">
+          <div class="chat-status-dot offline" id="chatStatusDot"></div>
+          <span class="section-label">Live Chat</span>
           <span class="chat-username-display" id="chatUsernameDisplay" title="Tap to change name">—</span>
         </div>
+        <label class="chat-mini-toggle" aria-label="Toggle live chat">
+          <input type="checkbox" id="chatToggleInput" />
+          <div class="chat-mini-track"></div>
+          <div class="chat-mini-thumb"></div>
+        </label>
+      </div>
+
+      <div class="chat-body" id="chatBody">
         <div class="chat-messages" id="chatMessages">
           <div class="chat-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -650,70 +741,49 @@
   const db          = getDatabase(app);
   const messagesRef = ref(db, 'chat/messages');
 
-  /* ══════════════════════════════════════════
-     WALLPAPER FIX — lock size to screen dims
-     so keyboard open/close never zooms it
-  ══════════════════════════════════════════ */
+  /* ══ Wallpaper size lock ══ */
   const wallLayer = document.getElementById('wallpaperLayer');
   const wallDim   = document.getElementById('wallpaperDim');
-
   function lockWallpaperSize() {
-    // Use screen.width/height (never changes) instead of window.innerWidth/Height
-    // which shrinks when the keyboard opens
     const w = window.screen.width  + 'px';
     const h = window.screen.height + 'px';
-    wallLayer.style.width  = w;
-    wallLayer.style.height = h;
-    wallDim.style.width    = w;
-    wallDim.style.height   = h;
+    wallLayer.style.width  = w; wallLayer.style.height = h;
+    wallDim.style.width    = w; wallDim.style.height   = h;
   }
   lockWallpaperSize();
-  // Also re-lock on orientation change only (not on resize from keyboard)
-  window.addEventListener('orientationchange', () => {
-    setTimeout(lockWallpaperSize, 200);
-  });
+  window.addEventListener('orientationchange', () => setTimeout(lockWallpaperSize, 200));
 
   function applyWallpaper(url) {
     if (!url) {
       wallLayer.style.backgroundImage = '';
-      wallLayer.classList.remove('loaded');
-      wallDim.classList.remove('loaded');
+      wallLayer.classList.remove('loaded'); wallDim.classList.remove('loaded');
       try { localStorage.removeItem('wallpaperUrl'); } catch(e) {}
       return;
     }
     const img = new Image();
-    img.onload = () => {
-      wallLayer.style.backgroundImage = `url("${url}")`;
-      wallLayer.classList.add('loaded');
-      wallDim.classList.add('loaded');
-    };
+    img.onload = () => { wallLayer.style.backgroundImage = `url("${url}")`; wallLayer.classList.add('loaded'); wallDim.classList.add('loaded'); };
     img.onerror = () => showToast('Could not load wallpaper image');
     img.src = url;
     try { localStorage.setItem('wallpaperUrl', url); } catch(e) {}
   }
   try { const u = localStorage.getItem('wallpaperUrl'); if (u) applyWallpaper(u); } catch(e) {}
 
-  /* ═══ Toast ═══ */
-  const toastEl   = document.getElementById('toast');
-  const toastQ    = [];
-  let   toastBusy = false;
+  /* ══ Toast ══ */
+  const toastEl = document.getElementById('toast');
+  const toastQ  = []; let toastBusy = false;
   function processToastQ() {
     if (!toastQ.length) { toastBusy = false; return; }
-    toastBusy = true;
-    toastEl.textContent = toastQ.shift();
-    toastEl.classList.add('show');
+    toastBusy = true; toastEl.textContent = toastQ.shift(); toastEl.classList.add('show');
     setTimeout(() => { toastEl.classList.remove('show'); setTimeout(processToastQ, 220); }, 2200);
   }
   function showToast(msg) { toastQ.push(msg); if (!toastBusy) processToastQ(); }
 
-  /* ═══ Clock ═══ */
-  const hrsEl  = document.getElementById('hrs');
-  const minsEl = document.getElementById('mins');
-  const ampmEl = document.getElementById('ampm');
-  const dateEl = document.getElementById('date');
+  /* ══ Clock ══ */
+  const hrsEl = document.getElementById('hrs'), minsEl = document.getElementById('mins');
+  const ampmEl = document.getElementById('ampm'), dateEl = document.getElementById('date');
   const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function pad(n) { return String(n).padStart(2, '0'); }
+  function pad(n) { return String(n).padStart(2,'0'); }
   function tick() {
     const now = new Date(), pm = now.getHours() >= 12;
     hrsEl.textContent  = pad(now.getHours() % 12 || 12);
@@ -722,13 +792,9 @@
     dateEl.textContent = DAYS[now.getDay()] + ', ' + MONTHS[now.getMonth()] + ' ' + now.getDate();
   }
   tick();
-  (() => {
-    const now = new Date();
-    setTimeout(() => { tick(); setInterval(tick, 60000); },
-      (60 - now.getSeconds()) * 1000 - now.getMilliseconds());
-  })();
+  (() => { const now = new Date(); setTimeout(() => { tick(); setInterval(tick, 60000); }, (60 - now.getSeconds()) * 1000 - now.getMilliseconds()); })();
 
-  /* ═══ Wallpaper Sheet ═══ */
+  /* ══ Wallpaper Sheet ══ */
   const WP_URLS_KEY = 'savedWpUrls', WP_URLS_MAX = 8;
   const loadSavedWpUrls  = () => { try { return JSON.parse(localStorage.getItem(WP_URLS_KEY) || '[]'); } catch(e) { return []; } };
   const saveSavedWpUrls  = a  => { try { localStorage.setItem(WP_URLS_KEY, JSON.stringify(a.slice(-WP_URLS_MAX))); } catch(e) {} };
@@ -753,37 +819,29 @@
     wpApply.disabled = false;
     wpPreviewTimer = setTimeout(() => {
       wpPreviewImg.classList.remove('loaded'); wpPreviewPlaceholder.style.display = 'flex';
-      const t = new Image();
-      t.onload = () => { wpPreviewImg.src = url; wpPreviewImg.onload = () => { wpPreviewImg.classList.add('loaded'); wpPreviewPlaceholder.style.display = 'none'; }; };
-      t.onerror = () => { wpPreviewImg.classList.remove('loaded'); wpPreviewPlaceholder.style.display = 'flex'; };
-      t.src = url;
+      const t = new Image(); t.onload = () => { wpPreviewImg.src = url; wpPreviewImg.onload = () => { wpPreviewImg.classList.add('loaded'); wpPreviewPlaceholder.style.display = 'none'; }; }; t.onerror = () => {}; t.src = url;
     }, 600);
   }
-
   function renderSavedWpUrls() {
-    wpSavedUrlsEl.innerHTML = '';
-    const saved = loadSavedWpUrls().slice().reverse();
+    wpSavedUrlsEl.innerHTML = ''; const saved = loadSavedWpUrls().slice().reverse();
     wpSavedLabel.style.display = saved.length ? '' : 'none';
     saved.forEach(url => {
-      let label = url; try { label = new URL(url).hostname.replace(/^www\./, ''); } catch(e) {}
-      if (label.length > 32) label = label.slice(0, 30) + '…';
-      const chip = document.createElement('div'); chip.className = 'wp-saved-chip'; chip.setAttribute('role', 'button'); chip.setAttribute('tabindex', '0'); chip.title = url;
+      let label = url; try { label = new URL(url).hostname.replace(/^www\./,''); } catch(e) {}
+      if (label.length > 32) label = label.slice(0,30) + '…';
+      const chip = document.createElement('div'); chip.className = 'wp-saved-chip'; chip.title = url;
       const lbl = document.createElement('span'); lbl.className = 'wp-saved-chip-label'; lbl.textContent = label;
-      const del = document.createElement('button'); del.className = 'wp-saved-chip-del'; del.type = 'button'; del.setAttribute('aria-label', 'Remove');
+      const del = document.createElement('button'); del.className = 'wp-saved-chip-del'; del.type = 'button'; del.setAttribute('aria-label','Remove');
       del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
       del.addEventListener('click', e => { e.stopPropagation(); removeSavedWpUrl(url); renderSavedWpUrls(); });
-      chip.append(lbl, del);
-      chip.addEventListener('click', e => { if (del.contains(e.target)) return; wpUrlInput.value = url; updateWpPreview(url); });
+      chip.append(lbl, del); chip.addEventListener('click', e => { if (del.contains(e.target)) return; wpUrlInput.value = url; updateWpPreview(url); });
       wpSavedUrlsEl.appendChild(chip);
     });
   }
-
   function openWpSheet() {
     const current = localStorage.getItem('wallpaperUrl') || '';
     wpUrlInput.value = current; wpPreviewImg.classList.remove('loaded'); wpPreviewImg.src = '';
     wpPreviewPlaceholder.style.display = 'flex'; wpApply.disabled = !current;
-    if (current) updateWpPreview(current);
-    renderSavedWpUrls(); openSheet(wpBackdrop, () => wpUrlInput.focus());
+    if (current) updateWpPreview(current); renderSavedWpUrls(); openSheet(wpBackdrop, () => wpUrlInput.focus());
   }
   wpUrlInput.addEventListener('input', () => { let u = wpUrlInput.value.trim(); if (u && !/^https?:\/\//i.test(u)) u = 'https://' + u; updateWpPreview(u); });
   wpUrlInput.addEventListener('keydown', e => { if (e.key === 'Enter') wpApply.click(); });
@@ -793,13 +851,13 @@
     try { new URL(url); } catch(e) { showToast('Invalid URL'); return; }
     addSavedWpUrl(url); applyWallpaper(url); showToast('Wallpaper applied ✓'); closeSheet(wpBackdrop);
   });
-  wpClear.addEventListener('click', () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
+  wpClear.addEventListener('click',  () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
   wpCancel.addEventListener('click', () => closeSheet(wpBackdrop));
   wpBackdrop.addEventListener('click', e => { if (e.target === wpBackdrop) closeSheet(wpBackdrop); });
 
-  /* ═══ Sheet helpers ═══ */
+  /* ══ Sheet helpers ══ */
   function openSheet(backdrop, cb) { backdrop.classList.add('open'); backdrop.removeAttribute('aria-hidden'); if (cb) setTimeout(cb, 310); }
-  function closeSheet(backdrop) { backdrop.classList.remove('open'); backdrop.setAttribute('aria-hidden', 'true'); }
+  function closeSheet(backdrop)    { backdrop.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); }
   function addSwipeDismiss(sheet, backdrop) {
     let sY = 0, cY = 0, on = false;
     sheet.addEventListener('touchstart', e => { sY = e.touches[0].clientY; cY = sY; on = true; }, { passive: true });
@@ -808,9 +866,8 @@
   }
   addSwipeDismiss(wpSheet, wpBackdrop);
 
-  /* ═══ Menu ═══ */
-  const menuBtn  = document.getElementById('menuBtn');
-  const dropMenu = document.getElementById('dropMenu');
+  /* ══ Menu ══ */
+  const menuBtn = document.getElementById('menuBtn'), dropMenu = document.getElementById('dropMenu');
   let menuOpen = false;
   function setMenuOpen(on) { menuOpen = on; dropMenu.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', String(on)); }
   menuBtn.addEventListener('click', e => { e.stopPropagation(); setMenuOpen(!menuOpen); });
@@ -818,7 +875,7 @@
   document.getElementById('dropWallpaper').addEventListener('click', () => { setMenuOpen(false); openWpSheet(); });
   document.getElementById('dropShortcuts').addEventListener('click', () => { setMenuOpen(false); toggleEditMode(); });
 
-  /* ═══ Recent ═══ */
+  /* ══ Recent ══ */
   const RECENT_KEY = 'recentSearches', RECENT_MAX = 12, RECENT_SHOW = 5;
   const loadRecent  = ()   => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) { return []; } };
   const saveRecent  = arr  => { try { localStorage.setItem(RECENT_KEY, JSON.stringify(arr)); } catch(e) {} };
@@ -831,12 +888,9 @@
   function renderRecentInline() {
     recentInlineList.innerHTML = '';
     const items = loadRecent().slice(0, RECENT_SHOW);
-    if (!items.length) {
-      const empty = document.createElement('div'); empty.className = 'recent-inline-empty'; empty.textContent = 'No recent searches yet';
-      recentInlineList.appendChild(empty); return;
-    }
+    if (!items.length) { const e = document.createElement('div'); e.className = 'recent-inline-empty'; e.textContent = 'No recent searches yet'; recentInlineList.appendChild(e); return; }
     items.forEach(term => {
-      const row = document.createElement('div'); row.className = 'recent-inline-item'; row.setAttribute('role', 'button'); row.setAttribute('tabindex', '0');
+      const row = document.createElement('div'); row.className = 'recent-inline-item'; row.setAttribute('role','button'); row.setAttribute('tabindex','0');
       const icon = document.createElement('div'); icon.className = 'recent-inline-icon';
       icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>`;
       const txt = document.createElement('span'); txt.className = 'recent-inline-text'; txt.textContent = term;
@@ -849,7 +903,7 @@
   }
   recentClearAll.addEventListener('click', () => { clearRecent(); renderRecentInline(); });
 
-  /* ═══ Engines ═══ */
+  /* ══ Engines ══ */
   const ENGINES = {
     google:     { label:'Google',   url: q=>'https://www.google.com/search?q='+q,
       svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>` },
@@ -874,8 +928,7 @@
   function buildEngineRow() {
     engineRowEl.innerHTML = '';
     Object.entries(ENGINES).forEach(([key, eng]) => {
-      const btn = document.createElement('button');
-      btn.className = 'engine-btn' + (key === activeEngine ? ' active' : '');
+      const btn = document.createElement('button'); btn.className = 'engine-btn' + (key === activeEngine ? ' active' : '');
       btn.dataset.engine = key; btn.setAttribute('aria-pressed', String(key === activeEngine)); btn.type = 'button';
       const iconWrap = document.createElement('span'); iconWrap.className = 'eng-icon'; iconWrap.innerHTML = eng.svg;
       const label = document.createElement('span'); label.textContent = eng.label;
@@ -901,7 +954,7 @@
   searchInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   searchSubmit.addEventListener('click', doSearch);
 
-  /* ═══ Shortcuts ═══ */
+  /* ══ Shortcuts ══ */
   const SC_KEY = 'shortcuts', SC_MAX = 20;
   const scGrid     = document.getElementById('shortcutsGrid');
   const scBackdrop = document.getElementById('scBackdrop');
@@ -912,38 +965,38 @@
   function loadShortcuts() { try { return JSON.parse(localStorage.getItem(SC_KEY) || '[]'); } catch(e) { return []; } }
   function saveShortcuts(a) { try { localStorage.setItem(SC_KEY, JSON.stringify(a)); } catch(e) {} }
   function getFaviconUrl(url) { try { return `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(new URL(url).origin)}`; } catch(e) { return ''; } }
-  function nameFromUrl(url) { try { const h = new URL(url).hostname.replace(/^www\./, ''); const p = h.split('.')[0]; return p.charAt(0).toUpperCase() + p.slice(1); } catch(e) { return url; } }
+  function nameFromUrl(url) { try { const h = new URL(url).hostname.replace(/^www\./,''); const p = h.split('.')[0]; return p.charAt(0).toUpperCase() + p.slice(1); } catch(e) { return url; } }
 
   function renderShortcuts() {
     scGrid.innerHTML = '';
     const list = loadShortcuts();
     list.forEach((sc, i) => {
-      const item = document.createElement('div'); item.className = 'shortcut-item'; item.setAttribute('role', 'link'); item.setAttribute('tabindex', '0');
+      const item = document.createElement('div'); item.className = 'shortcut-item'; item.setAttribute('role','link'); item.setAttribute('tabindex','0');
       const icon = document.createElement('div'); icon.className = 'shortcut-icon';
       const favUrl = getFaviconUrl(sc.url);
       if (favUrl) { const img = document.createElement('img'); img.src = favUrl; img.alt = ''; img.onerror = () => { img.remove(); const ltr = document.createElement('span'); ltr.className = 'shortcut-letter'; ltr.textContent = (sc.name || nameFromUrl(sc.url)).charAt(0); icon.appendChild(ltr); }; icon.appendChild(img); }
       else { const ltr = document.createElement('span'); ltr.className = 'shortcut-letter'; ltr.textContent = (sc.name || nameFromUrl(sc.url)).charAt(0); icon.appendChild(ltr); }
-      const delBtn = document.createElement('button'); delBtn.className = 'shortcut-del-btn'; delBtn.type = 'button'; delBtn.setAttribute('aria-label', 'Delete');
+      const delBtn = document.createElement('button'); delBtn.className = 'shortcut-del-btn'; delBtn.type = 'button'; delBtn.setAttribute('aria-label','Delete');
       delBtn.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="2.5" y1="2.5" x2="7.5" y2="7.5"/><line x1="7.5" y1="2.5" x2="2.5" y2="7.5"/></svg>`;
       delBtn.addEventListener('click', e => { e.stopPropagation(); deleteShortcut(i); });
       const lbl = document.createElement('div'); lbl.className = 'shortcut-label'; lbl.textContent = sc.name || nameFromUrl(sc.url);
       item.append(icon, delBtn, lbl);
       item.addEventListener('click', () => { if (scEditMode) { openScSheet(i); return; } let url = sc.url; if (!/^https?:\/\//i.test(url)) url = 'https://' + url; window.open(url, '_blank', 'noopener'); });
       let lpTimer;
-      item.addEventListener('pointerdown', () => { lpTimer = setTimeout(() => { if (!scEditMode) toggleEditMode(); }, 600); });
+      item.addEventListener('pointerdown',  () => { lpTimer = setTimeout(() => { if (!scEditMode) toggleEditMode(); }, 600); });
       item.addEventListener('pointerup',    () => clearTimeout(lpTimer));
       item.addEventListener('pointerleave', () => clearTimeout(lpTimer));
       scGrid.appendChild(item);
     });
     if (list.length < SC_MAX) {
-      const addBtn = document.createElement('div'); addBtn.className = 'shortcut-add'; addBtn.setAttribute('role', 'button'); addBtn.setAttribute('tabindex', '0'); addBtn.setAttribute('aria-label', 'Add shortcut');
+      const addBtn = document.createElement('div'); addBtn.className = 'shortcut-add'; addBtn.setAttribute('role','button'); addBtn.setAttribute('tabindex','0'); addBtn.setAttribute('aria-label','Add shortcut');
       addBtn.innerHTML = `<div class="shortcut-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="shortcut-add-label">Add</span>`;
       addBtn.addEventListener('click', () => openScSheet(-1)); scGrid.appendChild(addBtn);
     }
     scGrid.classList.toggle('edit-mode', scEditMode);
   }
 
-  function deleteShortcut(i) { const list = loadShortcuts(); list.splice(i, 1); saveShortcuts(list); renderShortcuts(); showToast('Shortcut removed'); }
+  function deleteShortcut(i) { const list = loadShortcuts(); list.splice(i,1); saveShortcuts(list); renderShortcuts(); showToast('Shortcut removed'); }
   function toggleEditMode() { scEditMode = !scEditMode; scGrid.classList.toggle('edit-mode', scEditMode); showToast(scEditMode ? 'Tap × to remove · tap icon to edit' : 'Done editing'); if (!scEditMode) renderShortcuts(); }
 
   const scSheetTitle  = document.getElementById('scSheetTitle');
@@ -994,7 +1047,6 @@
   scCancel.addEventListener('click', () => closeSheet(scBackdrop));
   scBackdrop.addEventListener('click', e => { if (e.target === scBackdrop) closeSheet(scBackdrop); });
   document.addEventListener('click', e => { if (scEditMode && !scGrid.contains(e.target) && !scBackdrop.classList.contains('open') && !dropMenu.contains(e.target)) { scEditMode = false; scGrid.classList.remove('edit-mode'); } });
-
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (scBackdrop.classList.contains('open')) closeSheet(scBackdrop);
@@ -1003,11 +1055,10 @@
     else closeConfirm();
   });
 
-  /* ═══ Chat ═══ */
-  const CHAT_ENABLED_KEY = 'chatEnabled';
+  /* ══ Chat ══ */
+  const CHAT_ENABLED_KEY    = 'chatEnabled';
   const chatBody            = document.getElementById('chatBody');
   const chatToggleInput     = document.getElementById('chatToggleInput');
-  const chatToggleSub       = document.getElementById('chatToggleSub');
   const chatMessagesEl      = document.getElementById('chatMessages');
   const chatInput           = document.getElementById('chatInput');
   const chatSendBtn         = document.getElementById('chatSendBtn');
@@ -1025,7 +1076,7 @@
   chatUsernameDisplay.textContent = myUsername;
   chatUsernameDisplay.addEventListener('click', () => {
     const n = prompt('Enter your display name:', myUsername);
-    if (n && n.trim()) { myUsername = n.trim().slice(0, 24); chatUsernameDisplay.textContent = myUsername; try { localStorage.setItem(CHAT_USER_KEY, myUsername); } catch(e) {} showToast('Name updated ✓'); }
+    if (n && n.trim()) { myUsername = n.trim().slice(0,24); chatUsernameDisplay.textContent = myUsername; try { localStorage.setItem(CHAT_USER_KEY, myUsername); } catch(e) {} showToast('Name updated ✓'); }
   });
 
   function fmtTime(ts) { if (!ts) return ''; const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
@@ -1044,8 +1095,7 @@
   function clearChatDOM() { chatMessagesEl.innerHTML = ''; renderedKeys.clear(); renderEmptyState(); }
 
   function appendMessage(data, key) {
-    if (renderedKeys.has(key)) return;
-    renderedKeys.add(key);
+    if (renderedKeys.has(key)) return; renderedKeys.add(key);
     const empty = chatMessagesEl.querySelector('.chat-empty'); if (empty) empty.remove();
     const isSelf = data.name === myUsername;
     const wrap = document.createElement('div'); wrap.className = 'chat-msg'; wrap.dataset.key = key;
@@ -1054,8 +1104,7 @@
     const time = document.createElement('span'); time.className = 'chat-msg-time'; time.textContent = fmtTime(data.ts);
     header.append(name, time);
     const text = document.createElement('div'); text.className = 'chat-msg-text'; text.innerHTML = linkify(data.text);
-    wrap.append(header, text);
-    chatMessagesEl.appendChild(wrap);
+    wrap.append(header, text); chatMessagesEl.appendChild(wrap);
     chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
   }
 
@@ -1084,17 +1133,16 @@
   let chatEnabled = false;
   try { chatEnabled = localStorage.getItem(CHAT_ENABLED_KEY) === 'true'; } catch(e) {}
   chatToggleInput.checked = chatEnabled;
-  applyChatState(chatEnabled, false);
+  applyChatState(chatEnabled);
 
   chatToggleInput.addEventListener('change', () => {
     chatEnabled = chatToggleInput.checked;
     try { localStorage.setItem(CHAT_ENABLED_KEY, String(chatEnabled)); } catch(e) {}
-    applyChatState(chatEnabled, true);
+    applyChatState(chatEnabled);
     showToast(chatEnabled ? 'Chat enabled' : 'Chat disabled');
   });
 
   function applyChatState(enabled) {
-    chatToggleSub.textContent = enabled ? 'On — connected to live chat' : 'Off — tap to enable';
     if (enabled) { chatBody.classList.add('visible'); clearChatDOM(); startChatListeners(); }
     else { chatBody.classList.remove('visible'); stopChatListeners(); clearChatDOM(); }
   }
@@ -1110,7 +1158,7 @@
   chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
   chatClearBtn.addEventListener('click', () => openConfirm());
 
-  /* ═══ Confirm ═══ */
+  /* ══ Confirm ══ */
   const confirmBackdrop = document.getElementById('confirmBackdrop');
   const confirmNo       = document.getElementById('confirmNo');
   const confirmYes      = document.getElementById('confirmYes');
@@ -1125,7 +1173,7 @@
     finally { confirmYes.disabled = false; confirmYes.textContent = 'Clear Chat'; closeConfirm(); }
   });
 
-  /* ═══ Init ═══ */
+  /* ══ Init ══ */
   renderRecentInline();
   renderShortcuts();
 </script>
