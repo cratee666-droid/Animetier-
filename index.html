@@ -510,6 +510,7 @@
         <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
         <div class="f1-header-label" style="flex:1;">Driver</div>
         <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
+        <div class="f1-header-label" style="width:44px; text-align:right;">Gap</div>
       </div>
       <div id="f1SubContent"></div>
     `;
@@ -523,17 +524,24 @@
     
     if (f1Cache.standings.length === 0) { sub.innerHTML = '<div class="loading-pulse">No data available.</div>'; return; }
 
-    sub.innerHTML = f1Cache.standings.map(d => `
-      <div class="f1-row">
-        <div class="f1-pos" style="color:${getPosColor(d.position)}">${d.position}</div>
-        <div class="f1-color" style="background:${TEAM_COLORS[d.Constructors[0].constructorId] || '#fff'}"></div>
-        <div class="f1-info">
-          <div class="f1-name">${d.Driver.givenName} ${d.Driver.familyName.toUpperCase()}</div>
-          <div class="f1-sub">${d.Constructors[0].name}</div>
+    const leaderPoints = parseFloat(f1Cache.standings[0].points);
+
+    sub.innerHTML = f1Cache.standings.map(d => {
+      const pts = parseFloat(d.points);
+      const gap = i => i === 0 ? '—' : `-${(leaderPoints - pts).toFixed(0)}`;
+      return `
+        <div class="f1-row">
+          <div class="f1-pos" style="color:${getPosColor(d.position)}">${d.position}</div>
+          <div class="f1-color" style="background:${TEAM_COLORS[d.Constructors[0].constructorId] || '#fff'}"></div>
+          <div class="f1-info">
+            <div class="f1-name">${d.Driver.givenName} ${d.Driver.familyName.toUpperCase()}</div>
+            <div class="f1-sub">${d.Constructors[0].name}</div>
+          </div>
+          <div class="f1-pts">${d.points}</div>
+          <div class="f1-pts" style="color:var(--text-dim); font-size:11px; width:44px;">${gap(f1Cache.standings.indexOf(d))}</div>
         </div>
-        <div class="f1-pts">${d.points}</div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   async function renderF1Constructors() {
@@ -542,6 +550,7 @@
         <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
         <div class="f1-header-label" style="flex:1;">Constructor</div>
         <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
+        <div class="f1-header-label" style="width:44px; text-align:right;">Gap</div>
       </div>
       <div id="f1SubContent"></div>
     `;
@@ -555,17 +564,24 @@
 
     if (f1Cache.constructors.length === 0) { sub.innerHTML = '<div class="loading-pulse">No data available.</div>'; return; }
 
-    sub.innerHTML = f1Cache.constructors.map(c => `
-      <div class="f1-row">
-        <div class="f1-pos" style="color:${getPosColor(c.position)}">${c.position}</div>
-        <div class="f1-color" style="background:${TEAM_COLORS[c.Constructor.constructorId] || '#fff'}"></div>
-        <div class="f1-info">
-          <div class="f1-name">${c.Constructor.name}</div>
-          <div class="f1-sub">${c.Constructor.nationality} • ${c.wins} Wins</div>
+    const leaderPoints = parseFloat(f1Cache.constructors[0].points);
+
+    sub.innerHTML = f1Cache.constructors.map(c => {
+      const pts = parseFloat(c.points);
+      const gap = i => i === 0 ? '—' : `-${(leaderPoints - pts).toFixed(0)}`;
+      return `
+        <div class="f1-row">
+          <div class="f1-pos" style="color:${getPosColor(c.position)}">${c.position}</div>
+          <div class="f1-color" style="background:${TEAM_COLORS[c.Constructor.constructorId] || '#fff'}"></div>
+          <div class="f1-info">
+            <div class="f1-name">${c.Constructor.name}</div>
+            <div class="f1-sub">${c.Constructor.nationality} • ${c.wins} Wins</div>
+          </div>
+          <div class="f1-pts">${c.points}</div>
+          <div class="f1-pts" style="color:var(--text-dim); font-size:11px; width:44px;">${gap(f1Cache.constructors.indexOf(c))}</div>
         </div>
-        <div class="f1-pts">${c.points}</div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   window.renderF1Races = async function() {
