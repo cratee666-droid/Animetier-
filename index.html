@@ -27,478 +27,105 @@
       --safe-bot:      env(safe-area-inset-bottom, 0px);
     }
 
-    html {
-      height: 100%;
-      overflow: hidden;
-      overscroll-behavior: none;
-    }
+    html { height: 100%; overflow: hidden; overscroll-behavior: none; }
+    body { height: 100%; width: 100%; overflow: hidden; background-color: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text-primary); -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
 
-    body {
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      background-color: var(--bg);
-      font-family: 'Inter', system-ui, sans-serif;
-      color: var(--text-primary);
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-      -webkit-touch-callout: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    #wallpaperLayer {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-attachment: local;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      pointer-events: none;
-      will-change: opacity;
-      transform: translateZ(0);
-      -webkit-transform: translateZ(0);
-    }
+    #wallpaperLayer { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
     #wallpaperLayer.loaded { opacity: 1; }
-
-    #wallpaperDim {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-      background: rgba(0,0,0,0.45);
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      pointer-events: none;
-      will-change: opacity;
-      transform: translateZ(0);
-      -webkit-transform: translateZ(0);
-    }
+    #wallpaperDim { position: fixed; inset: 0; z-index: 1; background: rgba(0,0,0,0.45); opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
     #wallpaperDim.loaded { opacity: 1; }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.15; }
-    }
-    @keyframes popIn {
-      from { opacity: 0; transform: scale(0.85); }
-      to   { opacity: 1; transform: scale(1); }
-    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 
-    #menuBtn {
-      position: fixed;
-      top: calc(var(--safe-top) + 12px); right: 16px; z-index: 60;
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 1px solid var(--border);
-      background: rgba(10,10,10,0.60);
-      backdrop-filter: blur(16px) saturate(160%);
-      -webkit-backdrop-filter: blur(16px) saturate(160%);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-muted); padding: 0;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: color 0.2s, background 0.2s;
-    }
+    #menuBtn { position: fixed; top: calc(var(--safe-top) + 12px); right: 16px; z-index: 60; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: rgba(10,10,10,0.60); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: color 0.2s, background 0.2s; }
     #menuBtn:active { color: var(--text-primary); background: rgba(40,40,40,0.80); }
     #menuBtn svg { width: 20px; height: 20px; }
 
-    #dropMenu {
-      position: fixed;
-      top: calc(var(--safe-top) + 60px); right: 16px; z-index: 61;
-      background: rgba(22,22,22,0.96);
-      border: 1px solid var(--border); border-radius: 16px;
-      padding: 6px; display: flex; flex-direction: column; gap: 2px;
-      min-width: 200px;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.70);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      opacity: 0; pointer-events: none;
-      transform: scale(0.92) translateY(-10px); transform-origin: top right;
-      will-change: transform, opacity;
-      transition: opacity 0.20s ease, transform 0.20s cubic-bezier(0.22,1,0.36,1);
-    }
+    #dropMenu { position: fixed; top: calc(var(--safe-top) + 60px); right: 16px; z-index: 61; background: rgba(22,22,22,0.96); border: 1px solid var(--border); border-radius: 16px; padding: 6px; display: flex; flex-direction: column; gap: 2px; min-width: 200px; box-shadow: 0 16px 48px rgba(0,0,0,0.70); backdrop-filter: blur(20px); opacity: 0; pointer-events: none; transform: scale(0.92) translateY(-10px); transform-origin: top right; transition: opacity 0.2s, transform 0.2s cubic-bezier(0.22,1,0.36,1); }
     #dropMenu.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
-    .drop-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 13px 14px; border-radius: 11px;
-      cursor: pointer; font-size: 15px; font-weight: 400;
-      color: var(--text-primary); background: transparent; border: none;
-      width: 100%; text-align: left; font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: background 0.15s;
-    }
+    .drop-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 11px; cursor: pointer; font-size: 15px; color: var(--text-primary); background: transparent; border: none; width: 100%; text-align: left; transition: background 0.15s; }
     .drop-item:active { background: var(--surface-hover); }
     .drop-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--text-muted); }
 
-    #scrollRoot {
-      position: relative; z-index: 2;
-      height: 100%; width: 100%;
-      overflow-y: auto; overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
-      padding-top: calc(var(--safe-top) + 64px);
-      padding-bottom: calc(var(--safe-bot) + 32px);
-      padding-left: 16px; padding-right: 16px;
-      scrollbar-width: none;
-    }
+    #scrollRoot { position: relative; z-index: 2; height: 100%; width: 100%; overflow-y: auto; padding: calc(var(--safe-top) + 64px) 16px calc(var(--safe-bot) + 32px); scrollbar-width: none; }
     #scrollRoot::-webkit-scrollbar { display: none; }
 
-    .page {
-      display: flex; flex-direction: column; align-items: center; width: 100%;
-      animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both;
-    }
+    .page { display: flex; flex-direction: column; align-items: center; width: 100%; animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both; }
 
-    .clock-wrapper {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 6px; margin-bottom: 28px;
-      animation: fadeUp 0.55s 0.04s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    .clock {
-      font-family: 'JetBrains Mono', monospace; font-weight: 300;
-      font-size: clamp(64px, 20vw, 100px);
-      letter-spacing: -0.04em; line-height: 1;
-      color: var(--text-primary);
-      text-shadow: 0 2px 8px rgba(0,0,0,0.70);
-      font-variant-numeric: tabular-nums;
-      display: flex; align-items: baseline;
-    }
+    .clock-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 28px; }
+    .clock { font-family: 'JetBrains Mono', monospace; font-weight: 300; font-size: clamp(64px, 20vw, 100px); letter-spacing: -0.04em; color: var(--text-primary); text-shadow: 0 2px 8px rgba(0,0,0,0.70); display: flex; align-items: baseline; }
     .clock-sep { animation: blink 1s step-start infinite; margin: 0 2px; }
-    .clock-ampm {
-      font-size: clamp(16px, 4.5vw, 24px); font-weight: 300;
-      letter-spacing: 0.06em; color: var(--text-muted);
-      align-self: flex-end; margin-bottom: 0.12em; margin-left: 6px;
-    }
-    .date-label {
-      font-weight: 300; font-size: clamp(11px, 3vw, 13px);
-      letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted);
-    }
+    .clock-ampm { font-size: clamp(16px, 4.5vw, 24px); color: var(--text-muted); margin-left: 6px; }
+    .date-label { font-size: clamp(11px, 3vw, 13px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+    .age-display { margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); cursor: pointer; }
 
-    .search-section {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 10px; width: 100%;
-      animation: fadeUp 0.55s 0.10s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    .engine-row {
-      display: flex; overflow-x: auto; overflow-y: hidden;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      width: 100%; gap: 4px; padding-bottom: 2px;
-      -webkit-mask-image: linear-gradient(to right,transparent 0%,black 5%,black 95%,transparent 100%);
-      mask-image: linear-gradient(to right,transparent 0%,black 5%,black 95%,transparent 100%);
-    }
+    .search-section { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+    .engine-row { display: flex; overflow-x: auto; width: 100%; gap: 4px; padding-bottom: 2px; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent); }
     .engine-row::-webkit-scrollbar { display: none; }
-    .engine-btn {
-      display: flex; align-items: center; gap: 6px;
-      padding: 7px 13px; border-radius: var(--pill);
-      border: 1px solid transparent; background: transparent;
-      color: var(--text-muted);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 13px; font-weight: 400; letter-spacing: 0.02em;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: color 0.2s, background 0.2s, border-color 0.2s;
-    }
-    .engine-btn .eng-icon { width: 15px; height: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-    .engine-btn .eng-icon svg { width: 15px; height: 15px; display: block; }
-    .engine-btn:active { color: rgba(255,255,255,0.70); background: var(--surface-hover); }
+    .engine-btn { display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: var(--pill); border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
     .engine-btn.active { color: var(--text-primary); background: rgba(255,255,255,0.08); border-color: var(--border-focus); }
+    .eng-icon { width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; }
+    .eng-icon img, .eng-icon svg { width: 15px; height: 15px; object-fit: contain; }
 
     .search-bar-wrap { position: relative; width: 100%; }
-    .search-bar { position: relative; width: 100%; display: flex; align-items: center; }
-    .search-badge {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      display: flex; align-items: center; gap: 8px;
-      pointer-events: none; z-index: 2; height: 24px;
-    }
-    .badge-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .badge-icon svg { width: 18px; height: 18px; display: block; }
-    .badge-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
-    .search-input {
-      width: 100%; height: 54px; padding: 0 52px 0 52px;
-      border-radius: var(--pill); border: 1px solid var(--border);
-      background: var(--surface);
-      backdrop-filter: blur(20px) saturate(160%);
-      -webkit-backdrop-filter: blur(20px) saturate(160%);
-      color: var(--text-primary);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 16px; font-weight: 300;
-      outline: none; appearance: none; -webkit-appearance: none;
-      caret-color: var(--accent);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 24px rgba(0,0,0,0.50);
-      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
-      user-select: text; -webkit-user-select: text;
-    }
-    .search-input::placeholder { color: var(--text-muted); font-weight: 300; }
-    .search-input:focus {
-      border-color: var(--border-focus); background: rgba(255,255,255,0.07);
-      box-shadow: 0 0 0 3px var(--glow-focus), inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 24px rgba(0,0,0,0.50);
-    }
-    .search-submit {
-      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-      width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-muted);
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: color 0.2s, background 0.2s;
-    }
-    .search-submit svg { width: 18px; height: 18px; stroke-width: 2; }
-    .search-submit:active { color: var(--text-primary); background: rgba(255,255,255,0.10); }
+    .search-badge { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 2; }
+    .badge-icon { width: 18px; height: 18px; }
+    .badge-icon img, .badge-icon svg { width: 18px; height: 18px; object-fit: contain; }
+    .badge-sep { width: 1px; height: 16px; background: var(--border); }
+    .search-input { width: 100%; height: 54px; padding: 0 52px 0 52px; border-radius: var(--pill); border: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(20px); color: var(--text-primary); font-size: 16px; outline: none; caret-color: var(--accent); box-shadow: 0 6px 24px rgba(0,0,0,0.50); transition: all 0.25s; }
+    .search-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
+    .search-submit { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; cursor: pointer; color: var(--text-muted); }
 
-    .recent-section { width: 100%; margin-top: 22px; animation: fadeUp 0.55s 0.14s cubic-bezier(0.22,1,0.36,1) both; }
-    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 2px; }
-    .section-label { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-dim); font-weight: 400; }
-    .section-clear { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 4px 8px; border-radius: 8px; -webkit-tap-highlight-color: transparent; transition: color 0.15s, background 0.15s; }
-    .section-clear:active { color: var(--danger); background: rgba(255,80,80,0.08); }
-    .recent-inline-list { display: flex; flex-direction: column; gap: 1px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .recent-inline-empty { padding: 18px 16px; font-size: 13px; color: var(--text-dim); text-align: center; }
-    .recent-inline-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background 0.10s; }
-    .recent-inline-item:last-child { border-bottom: none; }
-    .recent-inline-item:active { background: var(--surface-hover); }
-    .recent-inline-icon { flex-shrink: 0; width: 17px; height: 17px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
-    .recent-inline-icon svg { width: 14px; height: 14px; }
-    .recent-inline-text { flex: 1; font-size: 14px; font-weight: 300; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .recent-inline-del { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-dim); -webkit-tap-highlight-color: transparent; transition: color 0.12s, background 0.12s; }
-    .recent-inline-del:active { color: var(--danger); background: rgba(255,80,80,0.10); }
-    .recent-inline-del svg { width: 11px; height: 11px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 2px; width: 100%; }
+    .section-label { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-dim); }
+    .section-clear { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
 
-    .shortcuts-section { width: 100%; margin-top: 22px; animation: fadeUp 0.55s 0.18s cubic-bezier(0.22,1,0.36,1) both; }
+    .recent-section { width: 100%; margin-top: 22px; }
+    .recent-inline-list { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+    .recent-inline-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .recent-inline-text { flex: 1; font-size: 14px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .shortcuts-section { width: 100%; margin-top: 22px; }
     .shortcuts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 16px 12px; width: 100%; }
-    .shortcut-item { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent; touch-action: manipulation; animation: popIn 0.25s cubic-bezier(0.22,1,0.36,1) both; }
-    .shortcut-icon { width: 54px; height: 54px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; transition: transform 0.15s, border-color 0.15s, background 0.15s; box-shadow: 0 4px 16px rgba(0,0,0,0.40); }
+    .shortcut-item { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; position: relative; animation: popIn 0.25s both; }
+    .shortcut-icon { width: 54px; height: 54px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.40); transition: transform 0.15s; }
     .shortcut-item:active .shortcut-icon { transform: scale(0.91); }
-    .shortcut-icon img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; display: block; }
-    .shortcut-icon .shortcut-letter { font-size: 22px; font-weight: 500; color: var(--text-primary); line-height: 1; text-transform: uppercase; }
-    .shortcut-label { font-size: 11px; font-weight: 400; color: var(--text-muted); text-align: center; max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .shortcut-del-btn { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; background: var(--danger); border: 2px solid var(--bg); display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 2; -webkit-tap-highlight-color: transparent; }
-    .shortcut-del-btn svg { width: 8px; height: 8px; stroke: #fff; stroke-width: 2.5; }
+    .shortcut-icon img { width: 28px; height: 28px; border-radius: 6px; }
+    .shortcut-label { font-size: 11px; color: var(--text-muted); text-align: center; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
+    .shortcut-del-btn { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; background: var(--danger); border: 2px solid var(--bg); display: none; align-items: center; justify-content: center; z-index: 2; }
     .shortcuts-grid.edit-mode .shortcut-del-btn { display: flex; }
-    .shortcuts-grid.edit-mode .shortcut-icon { animation: shortcutWiggle 0.5s ease infinite alternate; }
-    @keyframes shortcutWiggle { from { transform: rotate(-1.5deg); } to { transform: rotate(1.5deg); } }
-    .shortcuts-grid.edit-mode .shortcut-item:active .shortcut-icon { animation: none; transform: scale(0.91); }
-    .shortcut-add { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-    .shortcut-add-icon { width: 54px; height: 54px; border-radius: 16px; background: transparent; border: 1.5px dashed rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; transition: border-color 0.18s, background 0.18s; }
-    .shortcut-add:active .shortcut-add-icon { border-color: rgba(255,255,255,0.40); background: var(--surface); }
-    .shortcut-add-icon svg { width: 20px; height: 20px; color: rgba(255,255,255,0.22); }
-    .shortcut-add-label { font-size: 11px; color: rgba(255,255,255,0.22); text-align: center; }
+    .shortcut-add-icon { width: 54px; height: 54px; border-radius: 16px; border: 1.5px dashed rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; }
 
-    /* ── Chat ── */
-    .chat-section {
-      width: 100%; margin-top: 26px;
-      animation: fadeUp 0.55s 0.22s cubic-bezier(0.22,1,0.36,1) both;
-      display: flex; flex-direction: column;
-    }
-
-    /* Small header row: label left, toggle right */
-    .chat-header-row {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px; padding: 0 2px;
-    }
-    .chat-header-left {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .chat-status-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: rgba(100,220,100,0.80);
-      box-shadow: 0 0 6px rgba(100,220,100,0.60);
-      flex-shrink: 0;
-      transition: background 0.3s, box-shadow 0.3s;
-    }
-    .chat-status-dot.offline {
-      background: rgba(255,255,255,0.20); box-shadow: none;
-    }
-    .chat-username-display {
-      font-size: 11px; letter-spacing: 0.08em;
-      color: var(--text-muted); font-weight: 400;
-      cursor: pointer; padding: 3px 6px; border-radius: 6px;
-      -webkit-tap-highlight-color: transparent;
-      transition: color 0.15s, background 0.15s;
-      user-select: none; -webkit-user-select: none;
-    }
-    .chat-username-display:active {
-      color: var(--text-primary); background: var(--surface-hover);
-    }
-
-    /* Slim toggle — pill shape, no label */
-    .chat-mini-toggle {
-      position: relative; width: 42px; height: 24px;
-      flex-shrink: 0; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .chat-mini-toggle input {
-      opacity: 0; width: 0; height: 0; position: absolute;
-    }
-    .chat-mini-track {
-      position: absolute; inset: 0;
-      background: rgba(255,255,255,0.12);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .chat-mini-toggle input:checked ~ .chat-mini-track {
-      background: rgba(100,220,100,0.85);
-      border-color: rgba(100,220,100,0.60);
-    }
-    .chat-mini-thumb {
-      position: absolute; top: 3px; left: 3px;
-      width: 16px; height: 16px; border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
-    }
-    .chat-mini-toggle input:checked ~ .chat-mini-thumb {
-      transform: translateX(18px);
-    }
-
-    .chat-body {
-      display: flex; flex-direction: column;
-      overflow: hidden; max-height: 0; opacity: 0;
-      transition: max-height 0.40s cubic-bezier(0.22,1,0.36,1), opacity 0.30s ease;
-    }
-    .chat-body.visible { max-height: 600px; opacity: 1; }
-
-    .chat-messages {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 18px 18px 0 0;
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      overflow-y: auto; overflow-x: hidden;
-      height: 260px; display: flex; flex-direction: column;
-      padding: 12px 0 4px;
-      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent;
-    }
-    .chat-messages::-webkit-scrollbar { width: 3px; }
-    .chat-messages::-webkit-scrollbar-track { background: transparent; }
-    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
-
-    .chat-empty {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 8px; color: var(--text-dim); font-size: 13px; padding: 24px;
-    }
-    .chat-empty svg { width: 28px; height: 28px; opacity: 0.4; }
-
-    .chat-msg {
-      display: flex; flex-direction: column;
-      padding: 4px 14px; gap: 2px;
-      animation: fadeUp 0.20s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    .chat-msg-header { display: flex; align-items: baseline; gap: 7px; }
-    .chat-msg-name { font-size: 11px; font-weight: 500; color: var(--accent); letter-spacing: 0.03em; flex-shrink: 0; }
-    .chat-msg-name.self { color: rgba(180,255,180,0.75); }
-    .chat-msg-time { font-size: 10px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
-    .chat-msg-text { font-size: 14px; font-weight: 300; color: var(--text-primary); line-height: 1.5; word-break: break-word; user-select: text; -webkit-user-select: text; }
-    .chat-msg-text a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(138,180,248,0.35); transition: color 0.15s, border-color 0.15s; word-break: break-all; }
-    .chat-msg-text a:active { color: rgba(138,180,248,1); border-color: rgba(138,180,248,0.8); }
-
-    .chat-input-row {
-      display: flex; align-items: center;
-      background: var(--surface); border: 1px solid var(--border);
-      border-top: none; border-radius: 0 0 18px 18px;
-      overflow: hidden;
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    }
-    .chat-text-input {
-      flex: 1; height: 50px; padding: 0 14px;
-      background: none; border: none; outline: none;
-      color: var(--text-primary);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 16px; font-weight: 300;
-      caret-color: var(--accent);
-      appearance: none; -webkit-appearance: none;
-      user-select: text; -webkit-user-select: text; min-width: 0;
-    }
-    .chat-text-input::placeholder { color: var(--text-dim); }
-    .chat-clear-btn {
-      flex-shrink: 0; width: 50px; height: 50px;
-      background: none; border: none; border-left: 1px solid var(--border);
+    /* Sticky Notes */
+    .notes-section { width: 100%; margin-top: 26px; }
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; }
+    .note-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 34px; position: relative; }
+    .note-card:active { background: var(--surface-hover); transform: scale(0.97); }
+    .note-card-title { font-size: 11px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
+    .note-edit-icon {
+      position: absolute; bottom: 2px; right: 2px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-dim);
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: color 0.15s, background 0.15s;
+      color: var(--text-dim); transition: all 0.2s;
     }
-    .chat-clear-btn:active { color: var(--danger); background: rgba(255,80,80,0.08); }
-    .chat-clear-btn svg { width: 17px; height: 17px; }
-    .chat-send-btn {
-      flex-shrink: 0; width: 50px; height: 50px;
-      background: none; border: none; border-left: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-dim);
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      transition: color 0.15s, background 0.15s;
-    }
-    .chat-send-btn:active { color: var(--accent); background: rgba(138,180,248,0.08); }
-    .chat-send-btn svg { width: 18px; height: 18px; }
+    .note-edit-icon:active { background: rgba(255,255,255,0.15); color: var(--text-primary); }
+    .note-add-btn { border: 1.5px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; min-height: 34px; }
+    .note-add-btn svg { width: 14px; height: 14px; }
 
-    .confirm-backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.18s ease; }
-    .confirm-backdrop.open { opacity: 1; pointer-events: all; }
-    .confirm-box { background: #1a1a1a; border: 1px solid var(--border); border-radius: 20px; padding: 24px 20px 20px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 16px; transform: scale(0.90); transition: transform 0.20s cubic-bezier(0.22,1,0.36,1); }
-    .confirm-backdrop.open .confirm-box { transform: scale(1); }
-    .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.22); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-    .confirm-icon svg { width: 22px; height: 22px; color: var(--danger); }
-    .confirm-title { font-size: 17px; font-weight: 500; color: var(--text-primary); text-align: center; }
-    .confirm-body { font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.5; }
-    .confirm-actions { display: flex; gap: 8px; }
-
-    .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; touch-action: none; will-change: opacity; }
+    .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
     .sheet-backdrop.open { opacity: 1; pointer-events: all; }
-    .sheet { background: #181818; border: 1px solid var(--border); border-radius: 24px 24px 0 0; width: 100%; max-height: 92svh; padding: 20px 18px calc(var(--safe-bot) + 20px); display: flex; flex-direction: column; gap: 14px; transform: translateY(100%); transition: transform 0.30s cubic-bezier(0.22,1,0.36,1); overflow: hidden; touch-action: pan-y; will-change: transform; }
+    .sheet { background: #181818; border: 1px solid var(--border); border-radius: 24px 24px 0 0; width: 100%; max-height: 92svh; padding: 20px 18px calc(var(--safe-bot) + 20px); display: flex; flex-direction: column; gap: 14px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
     .sheet-backdrop.open .sheet { transform: translateY(0); }
-    .sheet-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.14); border-radius: 2px; margin: 0 auto -2px; flex-shrink: 0; }
-    .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; }
-    .sheet-actions { display: flex; gap: 8px; flex-shrink: 0; }
-    .btn { flex: 1; height: 50px; border-radius: 14px; border: none; font-family: 'Inter', system-ui, sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: transform 0.12s, background 0.15s; will-change: transform; }
-    .btn:active { transform: scale(0.96); }
-    .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
-    .btn-cancel:active { background: rgba(255,255,255,0.12); }
+    .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); }
+    .btn { height: 50px; border-radius: 14px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.12s; flex: 1; }
     .btn-apply { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
-    .btn-apply:active { background: rgba(138,180,248,0.28); }
-    .btn-apply:disabled { opacity: 0.38; }
-    .btn-clear { background: rgba(255,80,80,0.12); color: var(--danger); border: 1px solid rgba(255,80,80,0.22); }
-    .btn-clear:active { background: rgba(255,80,80,0.22); }
-
-    .wp-field { display: flex; flex-direction: column; gap: 6px; }
-    .wp-field-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); font-weight: 400; }
-    .wp-url-input { width: 100%; height: 50px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 300; outline: none; appearance: none; -webkit-appearance: none; caret-color: var(--accent); transition: border-color 0.2s, background 0.2s; user-select: text; -webkit-user-select: text; }
-    .wp-url-input::placeholder { color: var(--text-dim); }
-    .wp-url-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
-    .wp-saved-label { font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); font-weight: 400; flex-shrink: 0; }
-    .wp-saved-urls { display: flex; gap: 6px; overflow-x: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; -webkit-mask-image: linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%); mask-image: linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%); }
-    .wp-saved-urls::-webkit-scrollbar { display: none; }
-    .wp-saved-urls:empty { display: none; }
-    .wp-saved-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 12px; border-radius: var(--pill); border: 1px solid var(--border); background: rgba(255,255,255,0.04); flex-shrink: 0; max-width: 200px; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: border-color 0.15s, background 0.15s; }
-    .wp-saved-chip:active { background: var(--surface-hover); }
-    .wp-saved-chip-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .wp-saved-chip-del { flex-shrink: 0; background: none; border: none; cursor: pointer; color: var(--text-dim); display: flex; align-items: center; -webkit-tap-highlight-color: transparent; padding: 2px; transition: color 0.15s; }
-    .wp-saved-chip-del:active { color: var(--danger); }
-    .wp-saved-chip-del svg { width: 10px; height: 10px; }
-    .wp-preview { flex-shrink: 0; width: 100%; height: 120px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
-    .wp-preview img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.3s ease; }
-    .wp-preview img.loaded { opacity: 1; }
-    .wp-preview-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-dim); font-size: 12px; pointer-events: none; }
-    .wp-preview-placeholder svg { width: 28px; height: 28px; }
-
-    .sc-field { display: flex; flex-direction: column; gap: 6px; }
-    .sc-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); font-weight: 400; }
-    .sc-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 300; outline: none; appearance: none; -webkit-appearance: none; caret-color: var(--accent); transition: border-color 0.2s, background 0.2s; user-select: text; -webkit-user-select: text; }
-    .sc-input::placeholder { color: var(--text-dim); }
-    .sc-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
-    .sc-preview-row { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); flex-shrink: 0; }
-    .sc-preview-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; }
-    .sc-preview-icon .sc-preview-letter { font-size: 20px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; }
-    .sc-preview-info { display: flex; flex-direction: column; gap: 3px; }
-    .sc-preview-name { font-size: 15px; font-weight: 400; color: var(--text-primary); }
-    .sc-preview-url  { font-size: 12px; color: var(--text-muted); word-break: break-all; }
-
-    .toast { position: fixed; bottom: calc(var(--safe-bot) + 28px); left: 50%; transform: translateX(-50%) translateY(16px); background: rgba(28,28,28,0.96); border: 1px solid var(--border); color: var(--text-primary); font-size: 14px; padding: 11px 22px; border-radius: var(--pill); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s cubic-bezier(0.22,1,0.36,1); will-change: transform, opacity; z-index: 400; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-width: calc(100vw - 32px); text-align: center; }
+    .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
+    .sc-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 16px; outline: none; }
+    
+    .toast { position: fixed; bottom: calc(var(--safe-bot) + 28px); left: 50%; transform: translateX(-50%) translateY(16px); background: rgba(28,28,28,0.96); border: 1px solid var(--border); color: var(--text-primary); font-size: 14px; padding: 11px 22px; border-radius: var(--pill); opacity: 0; transition: all 0.18s; z-index: 400; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
@@ -507,675 +134,352 @@
 <div id="wallpaperLayer"></div>
 <div id="wallpaperDim"></div>
 
-<button id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <circle cx="12" cy="5"  r="1.8"/>
-    <circle cx="12" cy="12" r="1.8"/>
-    <circle cx="12" cy="19" r="1.8"/>
-  </svg>
+<button id="menuBtn" aria-label="Open menu">
+  <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
 </button>
 
-<div id="dropMenu" role="menu">
-  <button class="drop-item" id="dropWallpaper" role="menuitem">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="3"/>
-      <circle cx="8.5" cy="8.5" r="1.5"/>
-      <path d="M21 15l-5-5L5 21"/>
-    </svg>
-    Change Wallpaper
-  </button>
-  <button class="drop-item" id="dropShortcuts" role="menuitem">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-    </svg>
-    Edit Shortcuts
-  </button>
+<div id="dropMenu">
+  <button class="drop-item" id="dropWallpaper">Change Wallpaper</button>
+  <button class="drop-item" id="dropShortcuts">Edit Shortcuts</button>
+  <button class="drop-item" id="dropSettings">Settings</button>
 </div>
 
 <div id="scrollRoot">
-  <main class="page" role="main">
+  <main class="page">
     <div class="clock-wrapper">
-      <div class="clock" id="clock" aria-live="polite" aria-label="Current time">
-        <span id="hrs">12</span><span class="clock-sep" aria-hidden="true">:</span><span id="mins">00</span>
-        <span class="clock-ampm" id="ampm">AM</span>
-      </div>
+      <div class="clock" id="clock"><span id="hrs">12</span><span class="clock-sep">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span></div>
       <div class="date-label" id="date"></div>
+      <div class="age-display" id="ageDisplay">Set Birthday</div>
     </div>
 
-    <section class="search-section" aria-label="Web search">
-      <div class="engine-row" id="engineRow" role="group" aria-label="Choose search engine"></div>
+    <section class="search-section">
+      <div class="engine-row" id="engineRow"></div>
       <div class="search-bar-wrap">
-        <div class="search-bar">
-          <div class="search-badge" aria-hidden="true">
-            <div class="badge-icon" id="badgeIcon"></div>
-            <div class="badge-sep"></div>
-          </div>
-          <input class="search-input" id="searchInput"
-            type="search" inputmode="search"
-            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            placeholder="Search the web…" aria-label="Search query" enterkeyhint="search"/>
-          <button class="search-submit" id="searchSubmit" aria-label="Submit search" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="7"/>
-              <line x1="16.5" y1="16.5" x2="22" y2="22"/>
-            </svg>
-          </button>
-        </div>
+        <div class="search-badge"><div class="badge-icon" id="badgeIcon"></div><div class="badge-sep"></div></div>
+        <input class="search-input" id="searchInput" type="search" placeholder="Search...">
+        <button class="search-submit" id="searchSubmit">Go</button>
       </div>
     </section>
 
-    <section class="recent-section" id="recentSection" aria-label="Recent searches">
-      <div class="section-header">
-        <span class="section-label">Recent</span>
-        <button class="section-clear" id="recentClearAll" type="button">Clear all</button>
-      </div>
+    <section class="recent-section">
+      <div class="section-header"><span class="section-label">Recent</span><button class="section-clear" id="recentClearAll">Clear</button></div>
       <div class="recent-inline-list" id="recentInlineList"></div>
     </section>
 
-    <section class="shortcuts-section" id="shortcutsSection" aria-label="Shortcuts">
-      <div class="section-header">
-        <span class="section-label">Shortcuts</span>
-      </div>
+    <section class="shortcuts-section">
+      <div class="section-header"><span class="section-label">Shortcuts</span></div>
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
     </section>
 
-    <!-- Chat: small header row with status dot, username, and mini toggle -->
-    <section class="chat-section" id="chatSection" aria-label="Live chat">
-      <div class="chat-header-row">
-        <div class="chat-header-left">
-          <div class="chat-status-dot offline" id="chatStatusDot"></div>
-          <span class="section-label">Live Chat</span>
-          <span class="chat-username-display" id="chatUsernameDisplay" title="Tap to change name">—</span>
-        </div>
-        <label class="chat-mini-toggle" aria-label="Toggle live chat">
-          <input type="checkbox" id="chatToggleInput" />
-          <div class="chat-mini-track"></div>
-          <div class="chat-mini-thumb"></div>
-        </label>
-      </div>
-
-      <div class="chat-body" id="chatBody">
-        <div class="chat-messages" id="chatMessages">
-          <div class="chat-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            No messages yet
-          </div>
-        </div>
-        <div class="chat-input-row">
-          <input class="chat-text-input" id="chatInput"
-            type="text" placeholder="Message everyone…"
-            autocomplete="off" autocorrect="off" autocapitalize="sentences"
-            spellcheck="false" enterkeyhint="send" maxlength="500"/>
-          <button class="chat-clear-btn" id="chatClearBtn" type="button" aria-label="Clear chat">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-              <path d="M10 11v6M14 11v6"/>
-              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-            </svg>
-          </button>
-          <button class="chat-send-btn" id="chatSendBtn" type="button" aria-label="Send message">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+    <section class="notes-section">
+      <div class="section-header"><span class="section-label">Sticky Notes</span></div>
+      <div class="notes-grid" id="notesGrid"></div>
     </section>
   </main>
 </div>
 
 <!-- Wallpaper Sheet -->
-<div class="sheet-backdrop" id="wpBackdrop" role="dialog" aria-modal="true" aria-label="Change wallpaper">
-  <div class="sheet" id="wpSheet">
-    <div class="sheet-handle"></div>
+<div class="sheet-backdrop" id="wpBackdrop">
+  <div class="sheet">
     <p class="sheet-title">Wallpaper</p>
-    <div class="wp-preview" id="wpPreview">
-      <div class="wp-preview-placeholder" id="wpPreviewPlaceholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="3"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <path d="M21 15l-5-5L5 21"/>
-        </svg>
-        Preview
-      </div>
-      <img id="wpPreviewImg" src="" alt="Wallpaper preview" />
-    </div>
-    <div class="wp-field">
-      <label class="wp-field-label" for="wpUrlInput">Image URL</label>
-      <input class="wp-url-input" id="wpUrlInput" type="text"
-        placeholder="https://example.com/image.jpg"
-        inputmode="url" autocomplete="off" autocorrect="off"
-        autocapitalize="off" spellcheck="false" enterkeyhint="go"/>
-    </div>
-    <span class="wp-saved-label" id="wpSavedLabel" style="display:none">Recent</span>
-    <div class="wp-saved-urls" id="wpSavedUrls"></div>
-    <div class="sheet-actions">
-      <button class="btn btn-cancel" id="wpCancel" type="button">Cancel</button>
-      <button class="btn btn-clear"  id="wpClear"  type="button">Clear</button>
-      <button class="btn btn-apply"  id="wpApply"  type="button" disabled>Apply</button>
+    <input class="sc-input" id="wpUrlInput" type="text" placeholder="Image URL">
+    <div class="sheet-actions" style="display:flex;gap:8px;">
+      <button class="btn btn-cancel" id="wpCancel">Cancel</button>
+      <button class="btn btn-apply" id="wpApply">Apply</button>
     </div>
   </div>
 </div>
 
 <!-- Shortcut Sheet -->
-<div class="sheet-backdrop" id="scBackdrop" role="dialog" aria-modal="true" aria-label="Add shortcut">
-  <div class="sheet" id="scSheet">
-    <div class="sheet-handle"></div>
-    <p class="sheet-title" id="scSheetTitle">Add Shortcut</p>
-    <div class="sc-preview-row">
-      <div class="sc-preview-icon" id="scPreviewIcon">
-        <span class="sc-preview-letter" id="scPreviewLetter">?</span>
-      </div>
-      <div class="sc-preview-info">
-        <div class="sc-preview-name" id="scPreviewName">Enter a URL</div>
-        <div class="sc-preview-url"  id="scPreviewUrl">—</div>
-      </div>
-    </div>
-    <div class="sc-field">
-      <label class="sc-label" for="scUrlInput">URL</label>
-      <input class="sc-input" id="scUrlInput" type="text"
-        placeholder="https://example.com"
-        inputmode="url" autocomplete="off" autocorrect="off"
-        autocapitalize="off" spellcheck="false" enterkeyhint="next"/>
-    </div>
-    <div class="sc-field">
-      <label class="sc-label" for="scNameInput">Name <span style="color:var(--text-dim)">(optional)</span></label>
-      <input class="sc-input" id="scNameInput" type="text"
-        placeholder="Auto-detected from URL"
-        autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"/>
-    </div>
-    <div class="sheet-actions">
-      <button class="btn btn-cancel" id="scCancel" type="button">Cancel</button>
-      <button class="btn btn-apply"  id="scSave"   type="button" disabled>Save</button>
+<div class="sheet-backdrop" id="scBackdrop">
+  <div class="sheet">
+    <p class="sheet-title" id="scSheetTitle">Shortcut</p>
+    <input class="sc-input" id="scUrlInput" type="text" placeholder="URL">
+    <input class="sc-input" id="scNameInput" type="text" placeholder="Name (optional)">
+    <div class="sheet-actions" style="display:flex;gap:8px;">
+      <button class="btn btn-cancel" id="scCancel">Cancel</button>
+      <button class="btn btn-apply" id="scSave">Save</button>
     </div>
   </div>
 </div>
 
-<!-- Confirm Clear -->
-<div class="confirm-backdrop" id="confirmBackdrop" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
-  <div class="confirm-box">
-    <div class="confirm-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-        <path d="M10 11v6M14 11v6"/>
-      </svg>
-    </div>
-    <div class="confirm-title" id="confirmTitle">Clear all messages?</div>
-    <div class="confirm-body">This will permanently delete every message for <strong>all users</strong>. This cannot be undone.</div>
-    <div class="confirm-actions">
-      <button class="btn btn-cancel" id="confirmNo"  type="button">Cancel</button>
-      <button class="btn btn-clear"  id="confirmYes" type="button">Clear Chat</button>
+<!-- Note Sheet -->
+<div class="sheet-backdrop" id="noteBackdrop">
+  <div class="sheet">
+    <div class="sheet-handle" style="width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin:0 auto 8px;"></div>
+    <p class="sheet-title" id="noteSheetTitle">Note</p>
+    <input class="sc-input" id="noteTitleInput" type="text" placeholder="Title">
+    <textarea class="sc-input" id="noteTextInput" style="height:200px;resize:none;" placeholder="Content"></textarea>
+    <div class="sheet-actions" style="display:flex;gap:8px;">
+      <button class="btn btn-apply" style="background:rgba(255,80,80,0.1);color:var(--danger);" id="noteDelete">Delete</button>
+      <button class="btn btn-apply" id="noteSave">Save</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast" aria-live="polite" role="status"></div>
+<!-- Settings Sheet -->
+<div class="sheet-backdrop" id="settingsBackdrop">
+  <div class="sheet">
+    <p class="sheet-title">Settings</p>
+    <label class="section-label">Birth Date</label>
+    <input class="sc-input" id="birthDateInput" type="datetime-local">
+    <label class="section-label">Engines</label>
+    <div id="settingsEngineList" style="display:flex;flex-direction:column;gap:4px;"></div>
+    <div style="display:flex;gap:4px;">
+      <input class="sc-input" id="newEngineName" placeholder="Name">
+      <input class="sc-input" id="newEngineUrl" placeholder="URL (%s)">
+      <button class="btn btn-apply" id="addEngineBtn">Add</button>
+    </div>
+    <div class="sheet-actions" style="display:flex;gap:8px;">
+      <button class="btn btn-cancel" id="settingsClose">Close</button>
+      <button class="btn btn-apply" id="settingsSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getDatabase, ref, push, remove,
-    onChildAdded, onChildRemoved, onValue,
-    serverTimestamp, query, limitToLast
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   const firebaseConfig = {
-    apiKey:            "AIzaSyAM6T2eWpeqBd5XzcQNa2SGtCsovn_BxAM",
-    authDomain:        "citric-143b9.firebaseapp.com",
-    databaseURL:       "https://citric-143b9-default-rtdb.firebaseio.com",
-    projectId:         "citric-143b9",
-    storageBucket:     "citric-143b9.firebasestorage.app",
+    apiKey: "AIzaSyAM6T2eWpeqBd5XzcQNa2SGtCsovn_BxAM",
+    authDomain: "citric-143b9.firebaseapp.com",
+    databaseURL: "https://citric-143b9-default-rtdb.firebaseio.com",
+    projectId: "citric-143b9",
+    storageBucket: "citric-143b9.firebasestorage.app",
     messagingSenderId: "75119245524",
-    appId:             "1:75119245524:web:d0006197a335457eb52341"
+    appId: "1:75119245524:web:d0006197a335457eb52341"
   };
 
-  const app         = initializeApp(firebaseConfig);
-  const db          = getDatabase(app);
-  const messagesRef = ref(db, 'chat/messages');
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const sharedId = 'shared_dashboard';
+  const shortcutsRef = ref(db, 'shortcuts/' + sharedId);
+  const notesRef     = ref(db, 'notes/' + sharedId);
+  const settingsRef  = ref(db, 'settings/' + sharedId);
 
-  /* ══ Wallpaper size lock ══ */
-  const wallLayer = document.getElementById('wallpaperLayer');
-  const wallDim   = document.getElementById('wallpaperDim');
-  function lockWallpaperSize() {
-    const w = window.screen.width  + 'px';
-    const h = window.screen.height + 'px';
-    wallLayer.style.width  = w; wallLayer.style.height = h;
-    wallDim.style.width    = w; wallDim.style.height   = h;
-  }
-  lockWallpaperSize();
-  window.addEventListener('orientationchange', () => setTimeout(lockWallpaperSize, 200));
-
-  function applyWallpaper(url) {
-    if (!url) {
-      wallLayer.style.backgroundImage = '';
-      wallLayer.classList.remove('loaded'); wallDim.classList.remove('loaded');
-      try { localStorage.removeItem('wallpaperUrl'); } catch(e) {}
-      return;
-    }
-    const img = new Image();
-    img.onload = () => { wallLayer.style.backgroundImage = `url("${url}")`; wallLayer.classList.add('loaded'); wallDim.classList.add('loaded'); };
-    img.onerror = () => showToast('Could not load wallpaper image');
-    img.src = url;
-    try { localStorage.setItem('wallpaperUrl', url); } catch(e) {}
-  }
-  try { const u = localStorage.getItem('wallpaperUrl'); if (u) applyWallpaper(u); } catch(e) {}
-
-  /* ══ Toast ══ */
-  const toastEl = document.getElementById('toast');
-  const toastQ  = []; let toastBusy = false;
-  function processToastQ() {
-    if (!toastQ.length) { toastBusy = false; return; }
-    toastBusy = true; toastEl.textContent = toastQ.shift(); toastEl.classList.add('show');
-    setTimeout(() => { toastEl.classList.remove('show'); setTimeout(processToastQ, 220); }, 2200);
-  }
-  function showToast(msg) { toastQ.push(msg); if (!toastBusy) processToastQ(); }
+  const ensureArray = v => Array.isArray(v) ? v : (v ? Object.values(v) : []);
+  const getFaviconUrl = url => { try { const u = new URL(url.replace('%s', 'g.com')); return `https://www.google.com/s2/favicons?sz=64&domain_url=${u.origin}`; } catch(e) { return ''; } };
+  const nameFromUrl = url => { try { return new URL(url).hostname.replace('www.','').split('.')[0].replace(/^\w/, c => c.toUpperCase()); } catch(e) { return url; } };
 
   /* ══ Clock ══ */
-  const hrsEl = document.getElementById('hrs'), minsEl = document.getElementById('mins');
-  const ampmEl = document.getElementById('ampm'), dateEl = document.getElementById('date');
-  const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function pad(n) { return String(n).padStart(2,'0'); }
-  function tick() {
-    const now = new Date(), pm = now.getHours() >= 12;
-    hrsEl.textContent  = pad(now.getHours() % 12 || 12);
-    minsEl.textContent = pad(now.getMinutes());
-    ampmEl.textContent = pm ? 'PM' : 'AM';
-    dateEl.textContent = DAYS[now.getDay()] + ', ' + MONTHS[now.getMonth()] + ' ' + now.getDate();
-  }
-  tick();
-  (() => { const now = new Date(); setTimeout(() => { tick(); setInterval(tick, 60000); }, (60 - now.getSeconds()) * 1000 - now.getMilliseconds()); })();
-
-  /* ══ Wallpaper Sheet ══ */
-  const WP_URLS_KEY = 'savedWpUrls', WP_URLS_MAX = 8;
-  const loadSavedWpUrls  = () => { try { return JSON.parse(localStorage.getItem(WP_URLS_KEY) || '[]'); } catch(e) { return []; } };
-  const saveSavedWpUrls  = a  => { try { localStorage.setItem(WP_URLS_KEY, JSON.stringify(a.slice(-WP_URLS_MAX))); } catch(e) {} };
-  const addSavedWpUrl    = u  => { const a = loadSavedWpUrls().filter(x => x !== u); a.push(u); saveSavedWpUrls(a); };
-  const removeSavedWpUrl = u  => saveSavedWpUrls(loadSavedWpUrls().filter(x => x !== u));
-
-  const wpBackdrop           = document.getElementById('wpBackdrop');
-  const wpSheet              = document.getElementById('wpSheet');
-  const wpUrlInput           = document.getElementById('wpUrlInput');
-  const wpApply              = document.getElementById('wpApply');
-  const wpClear              = document.getElementById('wpClear');
-  const wpCancel             = document.getElementById('wpCancel');
-  const wpSavedUrlsEl        = document.getElementById('wpSavedUrls');
-  const wpSavedLabel         = document.getElementById('wpSavedLabel');
-  const wpPreviewImg         = document.getElementById('wpPreviewImg');
-  const wpPreviewPlaceholder = document.getElementById('wpPreviewPlaceholder');
-  let wpPreviewTimer = null;
-
-  function updateWpPreview(url) {
-    clearTimeout(wpPreviewTimer);
-    if (!url) { wpPreviewImg.classList.remove('loaded'); wpPreviewImg.src = ''; wpPreviewPlaceholder.style.display = 'flex'; wpApply.disabled = true; return; }
-    wpApply.disabled = false;
-    wpPreviewTimer = setTimeout(() => {
-      wpPreviewImg.classList.remove('loaded'); wpPreviewPlaceholder.style.display = 'flex';
-      const t = new Image(); t.onload = () => { wpPreviewImg.src = url; wpPreviewImg.onload = () => { wpPreviewImg.classList.add('loaded'); wpPreviewPlaceholder.style.display = 'none'; }; }; t.onerror = () => {}; t.src = url;
-    }, 600);
-  }
-  function renderSavedWpUrls() {
-    wpSavedUrlsEl.innerHTML = ''; const saved = loadSavedWpUrls().slice().reverse();
-    wpSavedLabel.style.display = saved.length ? '' : 'none';
-    saved.forEach(url => {
-      let label = url; try { label = new URL(url).hostname.replace(/^www\./,''); } catch(e) {}
-      if (label.length > 32) label = label.slice(0,30) + '…';
-      const chip = document.createElement('div'); chip.className = 'wp-saved-chip'; chip.title = url;
-      const lbl = document.createElement('span'); lbl.className = 'wp-saved-chip-label'; lbl.textContent = label;
-      const del = document.createElement('button'); del.className = 'wp-saved-chip-del'; del.type = 'button'; del.setAttribute('aria-label','Remove');
-      del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
-      del.addEventListener('click', e => { e.stopPropagation(); removeSavedWpUrl(url); renderSavedWpUrls(); });
-      chip.append(lbl, del); chip.addEventListener('click', e => { if (del.contains(e.target)) return; wpUrlInput.value = url; updateWpPreview(url); });
-      wpSavedUrlsEl.appendChild(chip);
-    });
-  }
-  function openWpSheet() {
-    const current = localStorage.getItem('wallpaperUrl') || '';
-    wpUrlInput.value = current; wpPreviewImg.classList.remove('loaded'); wpPreviewImg.src = '';
-    wpPreviewPlaceholder.style.display = 'flex'; wpApply.disabled = !current;
-    if (current) updateWpPreview(current); renderSavedWpUrls(); openSheet(wpBackdrop, () => wpUrlInput.focus());
-  }
-  wpUrlInput.addEventListener('input', () => { let u = wpUrlInput.value.trim(); if (u && !/^https?:\/\//i.test(u)) u = 'https://' + u; updateWpPreview(u); });
-  wpUrlInput.addEventListener('keydown', e => { if (e.key === 'Enter') wpApply.click(); });
-  wpApply.addEventListener('click', () => {
-    let url = wpUrlInput.value.trim(); if (!url) { showToast('Enter an image URL first'); return; }
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-    try { new URL(url); } catch(e) { showToast('Invalid URL'); return; }
-    addSavedWpUrl(url); applyWallpaper(url); showToast('Wallpaper applied ✓'); closeSheet(wpBackdrop);
-  });
-  wpClear.addEventListener('click',  () => { applyWallpaper(null); showToast('Wallpaper cleared'); closeSheet(wpBackdrop); });
-  wpCancel.addEventListener('click', () => closeSheet(wpBackdrop));
-  wpBackdrop.addEventListener('click', e => { if (e.target === wpBackdrop) closeSheet(wpBackdrop); });
-
-  /* ══ Sheet helpers ══ */
-  function openSheet(backdrop, cb) { backdrop.classList.add('open'); backdrop.removeAttribute('aria-hidden'); if (cb) setTimeout(cb, 310); }
-  function closeSheet(backdrop)    { backdrop.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); }
-  function addSwipeDismiss(sheet, backdrop) {
-    let sY = 0, cY = 0, on = false;
-    sheet.addEventListener('touchstart', e => { sY = e.touches[0].clientY; cY = sY; on = true; }, { passive: true });
-    sheet.addEventListener('touchmove',  e => { if (!on) return; cY = e.touches[0].clientY; const d = cY - sY; if (d > 0) sheet.style.transform = `translateY(${d}px)`; }, { passive: true });
-    sheet.addEventListener('touchend',   () => { on = false; const d = cY - sY; sheet.style.transform = ''; if (d > 90) closeSheet(backdrop); });
-  }
-  addSwipeDismiss(wpSheet, wpBackdrop);
-
-  /* ══ Menu ══ */
-  const menuBtn = document.getElementById('menuBtn'), dropMenu = document.getElementById('dropMenu');
-  let menuOpen = false;
-  function setMenuOpen(on) { menuOpen = on; dropMenu.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', String(on)); }
-  menuBtn.addEventListener('click', e => { e.stopPropagation(); setMenuOpen(!menuOpen); });
-  document.addEventListener('click', e => { if (menuOpen && !dropMenu.contains(e.target) && e.target !== menuBtn) setMenuOpen(false); });
-  document.getElementById('dropWallpaper').addEventListener('click', () => { setMenuOpen(false); openWpSheet(); });
-  document.getElementById('dropShortcuts').addEventListener('click', () => { setMenuOpen(false); toggleEditMode(); });
-
-  /* ══ Recent ══ */
-  const RECENT_KEY = 'recentSearches', RECENT_MAX = 12, RECENT_SHOW = 5;
-  const loadRecent  = ()   => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) { return []; } };
-  const saveRecent  = arr  => { try { localStorage.setItem(RECENT_KEY, JSON.stringify(arr)); } catch(e) {} };
-  const addRecent   = term => { if (!term.trim()) return; const a = loadRecent().filter(t => t.toLowerCase() !== term.toLowerCase()); a.unshift(term); saveRecent(a.slice(0, RECENT_MAX)); };
-  const rmRecent    = term => saveRecent(loadRecent().filter(t => t !== term));
-  const clearRecent = ()   => saveRecent([]);
-  const recentInlineList = document.getElementById('recentInlineList');
-  const recentClearAll   = document.getElementById('recentClearAll');
-
-  function renderRecentInline() {
-    recentInlineList.innerHTML = '';
-    const items = loadRecent().slice(0, RECENT_SHOW);
-    if (!items.length) { const e = document.createElement('div'); e.className = 'recent-inline-empty'; e.textContent = 'No recent searches yet'; recentInlineList.appendChild(e); return; }
-    items.forEach(term => {
-      const row = document.createElement('div'); row.className = 'recent-inline-item'; row.setAttribute('role','button'); row.setAttribute('tabindex','0');
-      const icon = document.createElement('div'); icon.className = 'recent-inline-icon';
-      icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>`;
-      const txt = document.createElement('span'); txt.className = 'recent-inline-text'; txt.textContent = term;
-      const del = document.createElement('button'); del.className = 'recent-inline-del'; del.type = 'button'; del.setAttribute('aria-label', `Remove "${term}"`);
-      del.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
-      del.addEventListener('click', e => { e.stopPropagation(); rmRecent(term); renderRecentInline(); });
-      row.addEventListener('click', e => { if (del.contains(e.target)) return; searchInputEl.value = term; doSearch(); });
-      row.append(icon, txt, del); recentInlineList.appendChild(row);
-    });
-  }
-  recentClearAll.addEventListener('click', () => { clearRecent(); renderRecentInline(); });
-
-  /* ══ Engines ══ */
-  const ENGINES = {
-    google:     { label:'Google',   url: q=>'https://www.google.com/search?q='+q,
-      svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>` },
-    bing:       { label:'Bing',     url: q=>'https://www.bing.com/search?q='+q,
-      svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 3l4 1.5v13.1l4.5-2.6-2-1.1L9 12.6V7.9l7 2.5v4.3l-6 3.5L5 20V3z" fill="#008373"/></svg>` },
-    duckduckgo: { label:'DDG',      url: q=>'https://duckduckgo.com/?q='+q,
-      svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#DE5833"/><path d="M12 5.5c-2.76 0-5 1.79-5 4 0 1.38.82 2.6 2.1 3.33-.1.35-.1.7 0 1.04C7.82 14.6 7 15.82 7 17.2c0 .17.01.33.03.5h9.94c.02-.17.03-.33.03-.5 0-1.38-.82-2.6-2.1-3.33.1-.34.1-.69 0-1.04C16.18 12.1 17 10.88 17 9.5c0-2.21-2.24-4-5-4z" fill="#fff"/><circle cx="10.5" cy="9.5" r="1" fill="#3D4043"/><circle cx="13.5" cy="9.5" r="1" fill="#3D4043"/></svg>` },
-    brave:      { label:'Brave',    url: q=>'https://search.brave.com/search?q='+q,
-      svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 5.5l1 8.5c.5 3 3.5 6 7 8 3.5-2 6.5-5 7-8l1-8.5L12 2z" fill="#FB542B"/><path d="M12 7v6M9.5 10h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>` },
-    ecosia:     { label:'Ecosia',   url: q=>'https://www.ecosia.org/search?q='+q,
-      svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#1D8348"/><path d="M7 17c1-5 5-8 10-8-1 5-5 8-10 8z" fill="#fff"/><path d="M12 17V9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>` },
-    startpage:  { label:'Start',    url: q=>'https://www.startpage.com/search?q='+q,
-      svg:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#4A76EE"/><path d="M15 9.5a3.5 3.5 0 0 0-6 2.5 3.5 3.5 0 0 0 6 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.2" fill="#fff"/></svg>` }
+  const showToast = msg => {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
   };
 
-  let activeEngine = 'google';
-  const engineRowEl   = document.getElementById('engineRow');
-  const badgeIcon     = document.getElementById('badgeIcon');
-  const searchInputEl = document.getElementById('searchInput');
-  const searchSubmit  = document.getElementById('searchSubmit');
+  const tick = () => {
+    const now = new Date(), pm = now.getHours() >= 12;
+    document.getElementById('hrs').textContent = String(now.getHours() % 12 || 12).padStart(2, '0');
+    document.getElementById('mins').textContent = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('ampm').textContent = pm ? 'PM' : 'AM';
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' });
+  };
+  setInterval(tick, 1000); tick();
 
-  function buildEngineRow() {
-    engineRowEl.innerHTML = '';
-    Object.entries(ENGINES).forEach(([key, eng]) => {
-      const btn = document.createElement('button'); btn.className = 'engine-btn' + (key === activeEngine ? ' active' : '');
-      btn.dataset.engine = key; btn.setAttribute('aria-pressed', String(key === activeEngine)); btn.type = 'button';
-      const iconWrap = document.createElement('span'); iconWrap.className = 'eng-icon'; iconWrap.innerHTML = eng.svg;
-      const label = document.createElement('span'); label.textContent = eng.label;
-      btn.append(iconWrap, label); engineRowEl.appendChild(btn);
+  /* ══ Sheets ══ */
+  const openSheet = b => b.classList.add('open');
+  const closeSheet = b => b.classList.remove('open');
+
+  const setupDismiss = (backdropId) => {
+    const backdrop = document.getElementById(backdropId);
+    const sheet = backdrop.querySelector('.sheet');
+    backdrop.onclick = e => { if(e.target === backdrop) closeSheet(backdrop); };
+    
+    let startY = 0, currentY = 0;
+    sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, {passive:true});
+    sheet.addEventListener('touchmove', e => {
+      currentY = e.touches[0].clientY;
+      const diff = currentY - startY;
+      if(diff > 0) sheet.style.transform = `translateY(${diff}px)`;
+    }, {passive:true});
+    sheet.addEventListener('touchend', () => {
+      const diff = currentY - startY;
+      sheet.style.transform = '';
+      if(diff > 100) closeSheet(backdrop);
+      startY = 0; currentY = 0;
     });
-  }
-  function setEngine(key) {
-    if (!ENGINES[key]) return; activeEngine = key;
-    badgeIcon.innerHTML = ENGINES[key].svg;
-    searchInputEl.placeholder = 'Search ' + ENGINES[key].label + '…';
-    engineRowEl.querySelectorAll('.engine-btn').forEach(btn => { const on = btn.dataset.engine === key; btn.classList.toggle('active', on); btn.setAttribute('aria-pressed', String(on)); });
-    try { localStorage.setItem('engine', key); } catch(e) {}
-  }
-  try { const s = localStorage.getItem('engine'); if (s && ENGINES[s]) activeEngine = s; } catch(e) {}
-  buildEngineRow(); setEngine(activeEngine);
-  engineRowEl.addEventListener('click', e => { const b = e.target.closest('.engine-btn'); if (b) setEngine(b.dataset.engine); });
+  };
 
-  function doSearch() {
-    const q = searchInputEl.value.trim(); if (!q) { searchInputEl.focus(); return; }
-    addRecent(q); renderRecentInline();
-    window.location.href = ENGINES[activeEngine].url(encodeURIComponent(q));
-  }
-  searchInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
-  searchSubmit.addEventListener('click', doSearch);
+  ['wpBackdrop', 'scBackdrop', 'noteBackdrop', 'settingsBackdrop'].forEach(setupDismiss);
+
+  /* ══ Wallpaper ══ */
+  const applyWall = url => {
+    if(!url) return;
+    const l = document.getElementById('wallpaperLayer'), d = document.getElementById('wallpaperDim');
+    const img = new Image(); img.src = url;
+    img.onload = () => { l.style.backgroundImage = `url(${url})`; l.classList.add('loaded'); d.classList.add('loaded'); };
+    localStorage.setItem('wp', url);
+  };
+  applyWall(localStorage.getItem('wp'));
+  document.getElementById('dropWallpaper').onclick = () => openSheet(document.getElementById('wpBackdrop'));
+  document.getElementById('wpApply').onclick = () => { applyWall(document.getElementById('wpUrlInput').value); closeSheet(document.getElementById('wpBackdrop')); };
+  document.getElementById('wpCancel').onclick = () => closeSheet(document.getElementById('wpBackdrop'));
+
+  /* ══ Search & Engines ══ */
+  let ENGINES = { google: { label:'Google', url:'https://www.google.com/search?q=%s' } };
+  let activeEngine = 'google';
+  const engineRow = document.getElementById('engineRow');
+  const badgeIcon = document.getElementById('badgeIcon');
+  const searchInput = document.getElementById('searchInput');
+  const searchSubmit = document.getElementById('searchSubmit');
+  
+  const RECENT_KEY = 'recent_searches', RECENT_MAX = 5;
+  const loadRecent = () => JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+  const saveRecent = (arr) => localStorage.setItem(RECENT_KEY, JSON.stringify(arr));
+  const addRecent = (q) => {
+    let arr = loadRecent().filter(i => i !== q);
+    arr.unshift(q);
+    saveRecent(arr.slice(0, RECENT_MAX));
+    renderRecent();
+  };
+
+  const renderRecent = () => {
+    const list = document.getElementById('recentInlineList');
+    const items = loadRecent();
+    list.innerHTML = items.length ? '' : '<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:13px;">No recent searches</div>';
+    items.forEach(q => {
+      const el = document.createElement('div');
+      el.className = 'recent-inline-item';
+      el.innerHTML = `<span class="recent-inline-text">${q}</span>`;
+      el.onclick = () => { searchInput.value = q; doSearch(); };
+      list.appendChild(el);
+    });
+  };
+
+  const doSearch = () => {
+    let q = searchInput.value.trim();
+    if(!q) return;
+    addRecent(q);
+    if(/^https?:\/\//i.test(q) || (!q.includes(' ') && q.includes('.'))) {
+      window.location.href = q.includes('://') ? q : 'https://' + q;
+    } else {
+      window.location.href = ENGINES[activeEngine].url.replace('%s', encodeURIComponent(q));
+    }
+  };
+
+  const buildEngines = () => {
+    engineRow.innerHTML = '';
+    Object.entries(ENGINES).forEach(([k, e]) => {
+      const b = document.createElement('button');
+      b.className = 'engine-btn' + (k === activeEngine ? ' active' : '');
+      const iconHtml = e.svg || `<img src="${getFaviconUrl(e.url)}">`;
+      b.innerHTML = `<span class="eng-icon">${iconHtml}</span><span>${e.label}</span>`;
+      b.onclick = (event) => { event.preventDefault(); setEngine(k); };
+      engineRow.appendChild(b);
+    });
+  };
+  const setEngine = k => {
+    activeEngine = k;
+    const e = ENGINES[k];
+    badgeIcon.innerHTML = e.svg || `<img src="${getFaviconUrl(e.url)}">`;
+    searchInput.placeholder = `Search ${e.label}...`;
+    buildEngines(); 
+  };
+
+  searchSubmit.onclick = doSearch;
+  searchInput.onkeydown = e => { if(e.key === 'Enter') doSearch(); };
+  document.getElementById('recentClearAll').onclick = () => { saveRecent([]); renderRecent(); };
 
   /* ══ Shortcuts ══ */
-  const SC_KEY = 'shortcuts', SC_MAX = 20;
-  const scGrid     = document.getElementById('shortcutsGrid');
-  const scBackdrop = document.getElementById('scBackdrop');
-  const scSheet    = document.getElementById('scSheet');
-  addSwipeDismiss(scSheet, scBackdrop);
-  let scEditMode = false, scEditIndex = -1;
-
-  function loadShortcuts() { try { return JSON.parse(localStorage.getItem(SC_KEY) || '[]'); } catch(e) { return []; } }
-  function saveShortcuts(a) { try { localStorage.setItem(SC_KEY, JSON.stringify(a)); } catch(e) {} }
-  function getFaviconUrl(url) { try { return `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(new URL(url).origin)}`; } catch(e) { return ''; } }
-  function nameFromUrl(url) { try { const h = new URL(url).hostname.replace(/^www\./,''); const p = h.split('.')[0]; return p.charAt(0).toUpperCase() + p.slice(1); } catch(e) { return url; } }
-
-  function renderShortcuts() {
-    scGrid.innerHTML = '';
-    const list = loadShortcuts();
-    list.forEach((sc, i) => {
-      const item = document.createElement('div'); item.className = 'shortcut-item'; item.setAttribute('role','link'); item.setAttribute('tabindex','0');
-      const icon = document.createElement('div'); icon.className = 'shortcut-icon';
-      const favUrl = getFaviconUrl(sc.url);
-      if (favUrl) { const img = document.createElement('img'); img.src = favUrl; img.alt = ''; img.onerror = () => { img.remove(); const ltr = document.createElement('span'); ltr.className = 'shortcut-letter'; ltr.textContent = (sc.name || nameFromUrl(sc.url)).charAt(0); icon.appendChild(ltr); }; icon.appendChild(img); }
-      else { const ltr = document.createElement('span'); ltr.className = 'shortcut-letter'; ltr.textContent = (sc.name || nameFromUrl(sc.url)).charAt(0); icon.appendChild(ltr); }
-      const delBtn = document.createElement('button'); delBtn.className = 'shortcut-del-btn'; delBtn.type = 'button'; delBtn.setAttribute('aria-label','Delete');
-      delBtn.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="2.5" y1="2.5" x2="7.5" y2="7.5"/><line x1="7.5" y1="2.5" x2="2.5" y2="7.5"/></svg>`;
-      delBtn.addEventListener('click', e => { e.stopPropagation(); deleteShortcut(i); });
-      const lbl = document.createElement('div'); lbl.className = 'shortcut-label'; lbl.textContent = sc.name || nameFromUrl(sc.url);
-      item.append(icon, delBtn, lbl);
-      item.addEventListener('click', () => { if (scEditMode) { openScSheet(i); return; } let url = sc.url; if (!/^https?:\/\//i.test(url)) url = 'https://' + url; window.open(url, '_blank', 'noopener'); });
-      let lpTimer;
-      item.addEventListener('pointerdown',  () => { lpTimer = setTimeout(() => { if (!scEditMode) toggleEditMode(); }, 600); });
-      item.addEventListener('pointerup',    () => clearTimeout(lpTimer));
-      item.addEventListener('pointerleave', () => clearTimeout(lpTimer));
-      scGrid.appendChild(item);
+  const grid = document.getElementById('shortcutsGrid');
+  let scList = [], scEditMode = false;
+  onValue(shortcutsRef, s => { scList = ensureArray(s.val()); renderShortcuts(); });
+  const renderShortcuts = () => {
+    grid.innerHTML = '';
+    scList.forEach((sc, i) => {
+      const item = document.createElement('div'); item.className = 'shortcut-item';
+      item.innerHTML = `<div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}"></div><div class="shortcut-del-btn" onclick="delSc(${i})">&times;</div><div class="shortcut-label">${sc.name || nameFromUrl(sc.url)}</div>`;
+      item.onclick = e => { if(scEditMode) return; window.location.href = sc.url; };
+      grid.appendChild(item);
     });
-    if (list.length < SC_MAX) {
-      const addBtn = document.createElement('div'); addBtn.className = 'shortcut-add'; addBtn.setAttribute('role','button'); addBtn.setAttribute('tabindex','0'); addBtn.setAttribute('aria-label','Add shortcut');
-      addBtn.innerHTML = `<div class="shortcut-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="shortcut-add-label">Add</span>`;
-      addBtn.addEventListener('click', () => openScSheet(-1)); scGrid.appendChild(addBtn);
-    }
-    scGrid.classList.toggle('edit-mode', scEditMode);
-  }
+    const add = document.createElement('div'); add.className = 'shortcut-item'; add.innerHTML = '<div class="shortcut-icon shortcut-add-icon">+</div>';
+    add.onclick = () => openSheet(document.getElementById('scBackdrop'));
+    grid.appendChild(add);
+  };
+  window.delSc = i => { scList.splice(i,1); set(shortcutsRef, scList); };
+  document.getElementById('scSave').onclick = () => {
+    const url = document.getElementById('scUrlInput').value, name = document.getElementById('scNameInput').value;
+    scList.push({ url, name }); set(shortcutsRef, scList); closeSheet(document.getElementById('scBackdrop'));
+  };
+  document.getElementById('dropShortcuts').onclick = () => { scEditMode = !scEditMode; grid.classList.toggle('edit-mode', scEditMode); };
 
-  function deleteShortcut(i) { const list = loadShortcuts(); list.splice(i,1); saveShortcuts(list); renderShortcuts(); showToast('Shortcut removed'); }
-  function toggleEditMode() { scEditMode = !scEditMode; scGrid.classList.toggle('edit-mode', scEditMode); showToast(scEditMode ? 'Tap × to remove · tap icon to edit' : 'Done editing'); if (!scEditMode) renderShortcuts(); }
-
-  const scSheetTitle  = document.getElementById('scSheetTitle');
-  const scUrlInput    = document.getElementById('scUrlInput');
-  const scNameInput   = document.getElementById('scNameInput');
-  const scSave        = document.getElementById('scSave');
-  const scCancel      = document.getElementById('scCancel');
-  const scPreviewIcon = document.getElementById('scPreviewIcon');
-  const scPreviewName = document.getElementById('scPreviewName');
-  const scPreviewUrl  = document.getElementById('scPreviewUrl');
-  let scPreviewTimer  = null;
-
-  function updateScPreview() {
-    const rawUrl = scUrlInput.value.trim(), rawName = scNameInput.value.trim();
-    let url = rawUrl; if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
-    scSave.disabled = !rawUrl;
-    if (!rawUrl) { scPreviewIcon.innerHTML = '<span class="sc-preview-letter">?</span>'; scPreviewName.textContent = 'Enter a URL'; scPreviewUrl.textContent = '—'; return; }
-    const displayName = rawName || nameFromUrl(url); scPreviewName.textContent = displayName; scPreviewUrl.textContent = url;
-    const firstChar = displayName.charAt(0).toUpperCase();
-    clearTimeout(scPreviewTimer);
-    scPreviewTimer = setTimeout(() => {
-      const favUrl = getFaviconUrl(url);
-      if (favUrl) { const img = new Image(); img.onload = () => { scPreviewIcon.innerHTML = ''; const el = document.createElement('img'); el.src = favUrl; el.alt = ''; scPreviewIcon.appendChild(el); }; img.onerror = () => { scPreviewIcon.innerHTML = `<span class="sc-preview-letter">${firstChar}</span>`; }; img.src = favUrl; }
-      else { scPreviewIcon.innerHTML = `<span class="sc-preview-letter">${firstChar}</span>`; }
-    }, 500);
-  }
-
-  function openScSheet(index) {
-    scEditIndex = index; const list = loadShortcuts();
-    if (index >= 0 && list[index]) { scSheetTitle.textContent = 'Edit Shortcut'; scUrlInput.value = list[index].url; scNameInput.value = list[index].name || ''; }
-    else { scSheetTitle.textContent = 'Add Shortcut'; scUrlInput.value = ''; scNameInput.value = ''; }
-    updateScPreview(); openSheet(scBackdrop, () => scUrlInput.focus());
-  }
-  scUrlInput.addEventListener('input', updateScPreview);
-  scNameInput.addEventListener('input', updateScPreview);
-  scUrlInput.addEventListener('keydown', e => { if (e.key === 'Enter') scNameInput.focus(); });
-  scNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') scSave.click(); });
-  scSave.addEventListener('click', () => {
-    let url = scUrlInput.value.trim(); const name = scNameInput.value.trim(); if (!url) return;
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-    try { new URL(url); } catch(e) { showToast('Invalid URL'); return; }
-    const list = loadShortcuts();
-    if (scEditIndex >= 0 && list[scEditIndex]) list[scEditIndex] = { url, name };
-    else list.push({ url, name });
-    saveShortcuts(list); renderShortcuts(); closeSheet(scBackdrop);
-    showToast(scEditIndex >= 0 ? 'Shortcut updated ✓' : 'Shortcut added ✓');
-  });
-  scCancel.addEventListener('click', () => closeSheet(scBackdrop));
-  scBackdrop.addEventListener('click', e => { if (e.target === scBackdrop) closeSheet(scBackdrop); });
-  document.addEventListener('click', e => { if (scEditMode && !scGrid.contains(e.target) && !scBackdrop.classList.contains('open') && !dropMenu.contains(e.target)) { scEditMode = false; scGrid.classList.remove('edit-mode'); } });
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    if (scBackdrop.classList.contains('open')) closeSheet(scBackdrop);
-    else if (wpBackdrop.classList.contains('open')) closeSheet(wpBackdrop);
-    else if (scEditMode) { scEditMode = false; scGrid.classList.remove('edit-mode'); }
-    else closeConfirm();
-  });
-
-  /* ══ Chat ══ */
-  const CHAT_ENABLED_KEY    = 'chatEnabled';
-  const chatBody            = document.getElementById('chatBody');
-  const chatToggleInput     = document.getElementById('chatToggleInput');
-  const chatMessagesEl      = document.getElementById('chatMessages');
-  const chatInput           = document.getElementById('chatInput');
-  const chatSendBtn         = document.getElementById('chatSendBtn');
-  const chatClearBtn        = document.getElementById('chatClearBtn');
-  const chatStatusDot       = document.getElementById('chatStatusDot');
-  const chatUsernameDisplay = document.getElementById('chatUsernameDisplay');
-
-  const renderedKeys = new Set();
-  let unsubConnected = null, unsubChildAdded = null, unsubChildRemoved = null;
-
-  const CHAT_USER_KEY = 'chatUsername';
-  let myUsername = '';
-  try { myUsername = localStorage.getItem(CHAT_USER_KEY) || ''; } catch(e) {}
-  if (!myUsername) { myUsername = 'User' + Math.floor(Math.random() * 9000 + 1000); try { localStorage.setItem(CHAT_USER_KEY, myUsername); } catch(e) {} }
-  chatUsernameDisplay.textContent = myUsername;
-  chatUsernameDisplay.addEventListener('click', () => {
-    const n = prompt('Enter your display name:', myUsername);
-    if (n && n.trim()) { myUsername = n.trim().slice(0,24); chatUsernameDisplay.textContent = myUsername; try { localStorage.setItem(CHAT_USER_KEY, myUsername); } catch(e) {} showToast('Name updated ✓'); }
-  });
-
-  function fmtTime(ts) { if (!ts) return ''; const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
-  function linkify(text) {
-    const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    return esc.replace(/(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi, u => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
-  }
-
-  function renderEmptyState() {
-    if (!chatMessagesEl.querySelector('.chat-empty')) {
-      const e = document.createElement('div'); e.className = 'chat-empty';
-      e.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>No messages yet`;
-      chatMessagesEl.appendChild(e);
-    }
-  }
-  function clearChatDOM() { chatMessagesEl.innerHTML = ''; renderedKeys.clear(); renderEmptyState(); }
-
-  function appendMessage(data, key) {
-    if (renderedKeys.has(key)) return; renderedKeys.add(key);
-    const empty = chatMessagesEl.querySelector('.chat-empty'); if (empty) empty.remove();
-    const isSelf = data.name === myUsername;
-    const wrap = document.createElement('div'); wrap.className = 'chat-msg'; wrap.dataset.key = key;
-    const header = document.createElement('div'); header.className = 'chat-msg-header';
-    const name = document.createElement('span'); name.className = 'chat-msg-name' + (isSelf ? ' self' : ''); name.textContent = data.name;
-    const time = document.createElement('span'); time.className = 'chat-msg-time'; time.textContent = fmtTime(data.ts);
-    header.append(name, time);
-    const text = document.createElement('div'); text.className = 'chat-msg-text'; text.innerHTML = linkify(data.text);
-    wrap.append(header, text); chatMessagesEl.appendChild(wrap);
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-  }
-
-  function startChatListeners() {
-    stopChatListeners();
-    unsubConnected = onValue(ref(db, '.info/connected'), snap => {
-      const ok = snap.val() === true;
-      chatStatusDot.classList.toggle('offline', !ok);
-      chatStatusDot.title = ok ? 'Connected' : 'Connecting…';
+  /* ══ Notes ══ */
+  const nGrid = document.getElementById('notesGrid');
+  let nList = [], nIdx = -1;
+  onValue(notesRef, s => { nList = ensureArray(s.val()); renderNotes(); });
+  const renderNotes = () => {
+    nGrid.innerHTML = '';
+    nList.forEach((n, i) => {
+      const c = document.createElement('div'); c.className = 'note-card';
+      c.style.position = 'relative';
+      c.innerHTML = `
+        <div class="note-card-title">${n.title || 'Note'}</div>
+        <div class="note-edit-icon" id="edit-note-${i}">
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+      `;
+      c.onclick = () => {
+        const textToCopy = n.text || '';
+        if (textToCopy) {
+          navigator.clipboard.writeText(textToCopy).then(() => showToast('Content copied!'));
+        } else {
+          showToast('No content to copy');
+        }
+      };
+      nGrid.appendChild(c);
+      document.getElementById(`edit-note-${i}`).onclick = (e) => {
+        e.stopPropagation();
+        openNote(i);
+      };
     });
-    const q = query(messagesRef, limitToLast(50));
-    unsubChildAdded   = onChildAdded(q, snap => appendMessage(snap.val(), snap.key));
-    unsubChildRemoved = onChildRemoved(messagesRef, snap => {
-      const el = chatMessagesEl.querySelector(`[data-key="${snap.key}"]`);
-      if (el) el.remove(); renderedKeys.delete(snap.key);
-      if (!chatMessagesEl.querySelectorAll('.chat-msg').length) renderEmptyState();
-    });
-  }
-  function stopChatListeners() {
-    if (unsubConnected)    { unsubConnected();    unsubConnected    = null; }
-    if (unsubChildAdded)   { unsubChildAdded();   unsubChildAdded   = null; }
-    if (unsubChildRemoved) { unsubChildRemoved(); unsubChildRemoved = null; }
-    chatStatusDot.classList.add('offline'); chatStatusDot.title = 'Chat disabled';
-  }
+    const add = document.createElement('div'); add.className = 'note-add-btn'; add.innerHTML = '+';
+    add.onclick = () => openNote(-1);
+    nGrid.appendChild(add);
+  };
+  const openNote = i => {
+    nIdx = i;
+    document.getElementById('noteTitleInput').value = i >= 0 ? nList[i].title : '';
+    document.getElementById('noteTextInput').value = i >= 0 ? nList[i].text : '';
+    openSheet(document.getElementById('noteBackdrop'));
+  };
+  document.getElementById('noteSave').onclick = () => {
+    const t = document.getElementById('noteTitleInput').value, x = document.getElementById('noteTextInput').value;
+    if(nIdx >= 0) nList[nIdx] = { title:t, text:x }; else nList.push({ title:t, text:x });
+    set(notesRef, nList); closeSheet(document.getElementById('noteBackdrop'));
+  };
+  document.getElementById('noteDelete').onclick = () => { if(nIdx >= 0) nList.splice(nIdx,1); set(notesRef, nList); closeSheet(document.getElementById('noteBackdrop')); };
 
-  let chatEnabled = false;
-  try { chatEnabled = localStorage.getItem(CHAT_ENABLED_KEY) === 'true'; } catch(e) {}
-  chatToggleInput.checked = chatEnabled;
-  applyChatState(chatEnabled);
-
-  chatToggleInput.addEventListener('change', () => {
-    chatEnabled = chatToggleInput.checked;
-    try { localStorage.setItem(CHAT_ENABLED_KEY, String(chatEnabled)); } catch(e) {}
-    applyChatState(chatEnabled);
-    showToast(chatEnabled ? 'Chat enabled' : 'Chat disabled');
+  /* ══ Settings ══ */
+  let bDay = null;
+  onValue(settingsRef, s => {
+    const d = s.val() || {};
+    if(d.birthDate) bDay = new Date(d.birthDate);
+    if(d.engines) { ENGINES = { ...ENGINES, ...d.engines }; buildEngines(); setEngine(activeEngine); }
   });
+  setInterval(() => {
+    if(!bDay) return;
+    const diff = new Date() - bDay;
+    const years = diff / 31557600000;
+    const y = Math.floor(years);
+    const d = Math.floor((years - y) * 365.25);
+    const h = Math.floor(((years - y) * 365.25 - d) * 24);
+    const m = Math.floor((((years - y) * 365.25 - d) * 24 - h) * 60);
+    const s = Math.floor(((((years - y) * 365.25 - d) * 24 - h) * 60 - m) * 60);
+    document.getElementById('ageDisplay').textContent = `${y}y ${d}d ${h}h ${m}m ${s}s`;
+  }, 1000);
 
-  function applyChatState(enabled) {
-    if (enabled) { chatBody.classList.add('visible'); clearChatDOM(); startChatListeners(); }
-    else { chatBody.classList.remove('visible'); stopChatListeners(); clearChatDOM(); }
-  }
+  document.getElementById('dropSettings').onclick = () => openSheet(document.getElementById('settingsBackdrop'));
+  document.getElementById('settingsSave').onclick = () => {
+    set(settingsRef, { birthDate: document.getElementById('birthDateInput').value, engines: ENGINES });
+    closeSheet(document.getElementById('settingsBackdrop'));
+  };
 
-  function sendMessage() {
-    if (!chatEnabled) { showToast('Enable chat first'); return; }
-    const text = chatInput.value.trim(); if (!text) return;
-    chatInput.value = '';
-    push(messagesRef, { name: myUsername, text, ts: serverTimestamp() })
-      .catch(() => showToast('Failed to send — check connection'));
-  }
-  chatSendBtn.addEventListener('click', sendMessage);
-  chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
-  chatClearBtn.addEventListener('click', () => openConfirm());
-
-  /* ══ Confirm ══ */
-  const confirmBackdrop = document.getElementById('confirmBackdrop');
-  const confirmNo       = document.getElementById('confirmNo');
-  const confirmYes      = document.getElementById('confirmYes');
-  function openConfirm()  { confirmBackdrop.classList.add('open'); }
-  function closeConfirm() { confirmBackdrop.classList.remove('open'); }
-  confirmNo.addEventListener('click', closeConfirm);
-  confirmBackdrop.addEventListener('click', e => { if (e.target === confirmBackdrop) closeConfirm(); });
-  confirmYes.addEventListener('click', async () => {
-    confirmYes.disabled = true; confirmYes.textContent = 'Clearing…';
-    try { clearChatDOM(); await remove(messagesRef); showToast('Chat cleared for everyone ✓'); }
-    catch(e) { showToast('Failed to clear — check connection'); }
-    finally { confirmYes.disabled = false; confirmYes.textContent = 'Clear Chat'; closeConfirm(); }
-  });
-
-  /* ══ Init ══ */
-  renderRecentInline();
-  renderShortcuts();
+  document.getElementById('menuBtn').onclick = () => document.getElementById('dropMenu').classList.toggle('open');
+  buildEngines(); setEngine('google'); renderRecent();
 </script>
 </body>
 </html>
