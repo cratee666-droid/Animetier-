@@ -192,13 +192,32 @@
 
 <!-- Shortcut Sheet -->
 <div class="sheet-backdrop" id="scBackdrop">
-  <div class="sheet">
-    <p class="sheet-title" id="scSheetTitle">Shortcut</p>
-    <input class="sc-input" id="scUrlInput" type="text" placeholder="URL">
-    <input class="sc-input" id="scNameInput" type="text" placeholder="Name (optional)">
-    <div class="sheet-actions" style="display:flex;gap:8px;">
-      <button class="btn btn-cancel" id="scCancel">Cancel</button>
-      <button class="btn btn-apply" id="scSave">Save</button>
+  <div class="sheet" id="scSheet">
+    <div class="sheet-handle" style="width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin:0 auto 12px;"></div>
+    <p class="sheet-title" id="scSheetTitle" style="margin-bottom:12px;">Shortcut</p>
+    
+    <div class="sc-preview-row" style="display:flex; align-items:center; gap:14px; padding:14px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); margin-bottom:16px;">
+      <div class="sc-preview-icon" id="scPreviewIcon" style="width:48px; height:48px; border-radius:14px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+        <span class="sc-preview-letter" id="scPreviewLetter" style="font-size:20px; font-weight:500; color:var(--text-primary); text-transform:uppercase;">?</span>
+      </div>
+      <div class="sc-preview-info">
+        <div class="sc-preview-name" id="scPreviewName" style="font-size:15px; font-weight:400; color:var(--text-primary);">Enter a URL</div>
+        <div class="sc-preview-url" id="scPreviewUrl" style="font-size:12px; color:var(--text-muted); word-break:break-all;">—</div>
+      </div>
+    </div>
+
+    <div class="sc-field" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
+      <label class="sc-label" style="font-size:11px; letter-spacing:0.10em; text-transform:uppercase; color:var(--text-dim);">URL</label>
+      <input class="sc-input" id="scUrlInput" type="text" placeholder="https://example.com" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="sc-field" style="display:flex; flex-direction:column; gap:6px; margin-bottom:20px;">
+      <label class="sc-label" style="font-size:11px; letter-spacing:0.10em; text-transform:uppercase; color:var(--text-dim);">Name (optional)</label>
+      <input class="sc-input" id="scNameInput" type="text" placeholder="Auto-detected" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="sheet-actions" style="display:flex; gap:8px;">
+      <button class="btn btn-apply" id="scSave">Save Shortcut</button>
     </div>
   </div>
 </div>
@@ -386,24 +405,78 @@
 
   /* ══ Shortcuts ══ */
   const grid = document.getElementById('shortcutsGrid');
+  const scUrlInput = document.getElementById('scUrlInput');
+  const scNameInput = document.getElementById('scNameInput');
+  const scPreviewIcon = document.getElementById('scPreviewIcon');
+  const scPreviewName = document.getElementById('scPreviewName');
+  const scPreviewUrl = document.getElementById('scPreviewUrl');
+
   let scList = [], scEditMode = false;
   onValue(shortcutsRef, s => { scList = ensureArray(s.val()); renderShortcuts(); });
+
+  const updateScPreview = () => {
+    let url = scUrlInput.value.trim();
+    const name = scNameInput.value.trim();
+    if(!url) {
+      scPreviewIcon.innerHTML = '<span style="font-size:20px;color:var(--text-primary);">?</span>';
+      scPreviewName.textContent = 'Enter a URL';
+      scPreviewUrl.textContent = '—';
+      return;
+    }
+    if(!url.includes('://')) url = 'https://' + url;
+    scPreviewName.textContent = name || nameFromUrl(url);
+    scPreviewUrl.textContent = url;
+    const fav = getFaviconUrl(url);
+    scPreviewIcon.innerHTML = `<img src="${fav}" style="width:26px;height:26px;object-fit:contain;border-radius:4px;" onerror="this.innerHTML='<span style=\'font-size:20px;\'>${scPreviewName.textContent[0]}</span>'">`;
+  };
+
+  scUrlInput.oninput = updateScPreview;
+  scNameInput.oninput = updateScPreview;
+
   const renderShortcuts = () => {
     grid.innerHTML = '';
     scList.forEach((sc, i) => {
       const item = document.createElement('div'); item.className = 'shortcut-item';
-      item.innerHTML = `<div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}"></div><div class="shortcut-del-btn" onclick="delSc(${i})">&times;</div><div class="shortcut-label">${sc.name || nameFromUrl(sc.url)}</div>`;
-      item.onclick = e => { if(scEditMode) return; window.location.href = sc.url; };
+      item.innerHTML = `<div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}"></div><div class="shortcut-del-btn" onclick="delSc(event, ${i})">&times;</div><div class="shortcut-label">${sc.name || nameFromUrl(sc.url)}</div>`;
+      item.onclick = e => { 
+        if(scEditMode) return; 
+        let target = sc.url.trim();
+        if (!target.includes('://')) target = 'https://' + target;
+        window.location.href = target; 
+      };
+      
+      let pressTimer;
+      item.onpointerdown = () => { pressTimer = setTimeout(() => { scEditMode = true; grid.classList.add('edit-mode'); }, 600); };
+      item.onpointerup = () => clearTimeout(pressTimer);
+      item.onpointercancel = () => clearTimeout(pressTimer);
+
       grid.appendChild(item);
     });
     const add = document.createElement('div'); add.className = 'shortcut-item'; add.innerHTML = '<div class="shortcut-icon shortcut-add-icon">+</div>';
-    add.onclick = () => openSheet(document.getElementById('scBackdrop'));
+    add.onclick = () => {
+      if(scEditMode) return;
+      scUrlInput.value = ''; scNameInput.value = ''; updateScPreview();
+      openSheet(document.getElementById('scBackdrop'));
+    };
     grid.appendChild(add);
   };
-  window.delSc = i => { scList.splice(i,1); set(shortcutsRef, scList); };
+  window.delSc = (e, i) => { e.stopPropagation(); scList.splice(i,1); set(shortcutsRef, scList); };
+  
+  document.addEventListener('click', e => {
+    if (scEditMode && !grid.contains(e.target) && !document.getElementById('dropMenu').contains(e.target)) {
+      scEditMode = false;
+      grid.classList.remove('edit-mode');
+    }
+  });
+
   document.getElementById('scSave').onclick = () => {
-    const url = document.getElementById('scUrlInput').value, name = document.getElementById('scNameInput').value;
-    scList.push({ url, name }); set(shortcutsRef, scList); closeSheet(document.getElementById('scBackdrop'));
+    let url = document.getElementById('scUrlInput').value.trim();
+    const name = document.getElementById('scNameInput').value.trim();
+    if (!url) return;
+    if (!url.includes('://')) url = 'https://' + url;
+    scList.push({ url, name }); 
+    set(shortcutsRef, scList); 
+    closeSheet(document.getElementById('scBackdrop'));
   };
   document.getElementById('dropShortcuts').onclick = () => { scEditMode = !scEditMode; grid.classList.toggle('edit-mode', scEditMode); };
 
@@ -481,5 +554,5 @@
   document.getElementById('menuBtn').onclick = () => document.getElementById('dropMenu').classList.toggle('open');
   buildEngines(); setEngine('google'); renderRecent();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1142dd3feb3551d',t:'MTc4MjM5MjY3Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
