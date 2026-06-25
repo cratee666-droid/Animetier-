@@ -216,7 +216,8 @@
       </div>
       <div class="f1-card" id="f1Content">
         <div class="f1-tabs">
-          <button class="f1-tab active" data-tab="standings">Standings</button>
+          <button class="f1-tab active" data-tab="drivers">Drivers</button>
+          <button class="f1-tab" data-tab="constructors">Constructors</button>
           <button class="f1-tab" data-tab="races">Races</button>
         </div>
         <div id="f1TabContent"></div>
@@ -481,8 +482,7 @@
   };
 
   let f1Cache = { standings: null, constructors: null, races: null, results: {} };
-  let f1ActiveMainTab = 'standings';
-  let f1ActiveStandingsTab = 'drivers';
+  let f1ActiveTab = 'drivers';
 
   const f1Container = document.getElementById('f1TabContent');
 
@@ -504,71 +504,73 @@
     return 'var(--text-primary)';
   }
 
-  async function renderF1Standings() {
+  async function renderF1Drivers() {
     f1Container.innerHTML = `
-      <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <button class="f1-tab ${f1ActiveStandingsTab === 'drivers' ? 'active' : ''}" style="padding:4px 12px; font-size:11px;" id="f1DriversBtn">Drivers</button>
-        <button class="f1-tab ${f1ActiveStandingsTab === 'constructors' ? 'active' : ''}" style="padding:4px 12px; font-size:11px;" id="f1ConstructorsBtn">Constructors</button>
-      </div>
       <div class="f1-header-row">
         <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
-        <div class="f1-header-label" style="flex:1;">${f1ActiveStandingsTab === 'drivers' ? 'Driver' : 'Constructor'}</div>
+        <div class="f1-header-label" style="flex:1;">Driver</div>
         <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
       </div>
-      <div id="f1SubTabContent"></div>
+      <div id="f1SubContent"></div>
     `;
+    const sub = document.getElementById('f1SubContent');
 
-    document.getElementById('f1DriversBtn').onclick = () => { f1ActiveStandingsTab = 'drivers'; renderF1Standings(); };
-    document.getElementById('f1ConstructorsBtn').onclick = () => { f1ActiveStandingsTab = 'constructors'; renderF1Standings(); };
-
-    const subContent = document.getElementById('f1SubTabContent');
-    
-    if (f1ActiveStandingsTab === 'drivers') {
-      if (!f1Cache.standings) {
-        subContent.innerHTML = '<div class="loading-pulse">Fetching Drivers...</div>';
-        const data = await fetchF1('driverStandings');
-        f1Cache.standings = data?.MRData?.StandingsTable?.StandingsLists[0]?.DriverStandings || [];
-      }
-      
-      if (f1Cache.standings.length === 0) { subContent.innerHTML = '<div class="loading-pulse">No standings data available.</div>'; return; }
-
-      subContent.innerHTML = f1Cache.standings.map(d => `
-        <div class="f1-row">
-          <div class="f1-pos" style="color:${getPosColor(d.position)}">${d.position}</div>
-          <div class="f1-color" style="background:${TEAM_COLORS[d.Constructors[0].constructorId] || '#fff'}"></div>
-          <div class="f1-info">
-            <div class="f1-name">${d.Driver.givenName} ${d.Driver.familyName.toUpperCase()}</div>
-            <div class="f1-sub">${d.Constructors[0].name}</div>
-          </div>
-          <div class="f1-pts">${d.points}</div>
-        </div>
-      `).join('');
-    } else {
-      if (!f1Cache.constructors) {
-        subContent.innerHTML = '<div class="loading-pulse">Fetching Constructors...</div>';
-        const data = await fetchF1('constructorStandings');
-        f1Cache.constructors = data?.MRData?.StandingsTable?.StandingsLists[0]?.ConstructorStandings || [];
-      }
-
-      if (f1Cache.constructors.length === 0) { subContent.innerHTML = '<div class="loading-pulse">No constructor data available.</div>'; return; }
-
-      subContent.innerHTML = f1Cache.constructors.map(c => `
-        <div class="f1-row">
-          <div class="f1-pos" style="color:${getPosColor(c.position)}">${c.position}</div>
-          <div class="f1-color" style="background:${TEAM_COLORS[c.Constructor.constructorId] || '#fff'}"></div>
-          <div class="f1-info">
-            <div class="f1-name">${c.Constructor.name}</div>
-            <div class="f1-sub">${c.Constructor.nationality} • ${c.wins} Wins</div>
-          </div>
-          <div class="f1-pts">${c.points}</div>
-        </div>
-      `).join('');
+    if (!f1Cache.standings) {
+      sub.innerHTML = '<div class="loading-pulse">Fetching Drivers...</div>';
+      const data = await fetchF1('driverStandings');
+      f1Cache.standings = data?.MRData?.StandingsTable?.StandingsLists[0]?.DriverStandings || [];
     }
+    
+    if (f1Cache.standings.length === 0) { sub.innerHTML = '<div class="loading-pulse">No data available.</div>'; return; }
+
+    sub.innerHTML = f1Cache.standings.map(d => `
+      <div class="f1-row">
+        <div class="f1-pos" style="color:${getPosColor(d.position)}">${d.position}</div>
+        <div class="f1-color" style="background:${TEAM_COLORS[d.Constructors[0].constructorId] || '#fff'}"></div>
+        <div class="f1-info">
+          <div class="f1-name">${d.Driver.givenName} ${d.Driver.familyName.toUpperCase()}</div>
+          <div class="f1-sub">${d.Constructors[0].name}</div>
+        </div>
+        <div class="f1-pts">${d.points}</div>
+      </div>
+    `).join('');
   }
 
-  async function renderF1Races() {
+  async function renderF1Constructors() {
+    f1Container.innerHTML = `
+      <div class="f1-header-row">
+        <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
+        <div class="f1-header-label" style="flex:1;">Constructor</div>
+        <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
+      </div>
+      <div id="f1SubContent"></div>
+    `;
+    const sub = document.getElementById('f1SubContent');
+
+    if (!f1Cache.constructors) {
+      sub.innerHTML = '<div class="loading-pulse">Fetching Constructors...</div>';
+      const data = await fetchF1('constructorStandings');
+      f1Cache.constructors = data?.MRData?.StandingsTable?.StandingsLists[0]?.ConstructorStandings || [];
+    }
+
+    if (f1Cache.constructors.length === 0) { sub.innerHTML = '<div class="loading-pulse">No data available.</div>'; return; }
+
+    sub.innerHTML = f1Cache.constructors.map(c => `
+      <div class="f1-row">
+        <div class="f1-pos" style="color:${getPosColor(c.position)}">${c.position}</div>
+        <div class="f1-color" style="background:${TEAM_COLORS[c.Constructor.constructorId] || '#fff'}"></div>
+        <div class="f1-info">
+          <div class="f1-name">${c.Constructor.name}</div>
+          <div class="f1-sub">${c.Constructor.nationality} • ${c.wins} Wins</div>
+        </div>
+        <div class="f1-pts">${c.points}</div>
+      </div>
+    `).join('');
+  }
+
+  window.renderF1Races = async function() {
+    f1Container.innerHTML = '<div class="loading-pulse">Fetching Calendar...</div>';
     if (!f1Cache.races) {
-      f1Container.innerHTML = '<div class="loading-pulse">Fetching Calendar...</div>';
       const data = await fetchF1('');
       const resultsData = await fetchF1('results');
       
@@ -644,15 +646,16 @@
     tab.onclick = () => {
       f1Tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      f1ActiveMainTab = tab.dataset.tab;
-      if (f1ActiveMainTab === 'standings') renderF1Standings();
+      f1ActiveTab = tab.dataset.tab;
+      if (f1ActiveTab === 'drivers') renderF1Drivers();
+      else if (f1ActiveTab === 'constructors') renderF1Constructors();
       else renderF1Races();
     };
   });
 
   const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
-      renderF1Standings();
+      renderF1Drivers();
       observer.disconnect();
     }
   }, { threshold: 0.1 });
