@@ -82,14 +82,6 @@
 
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 2px; width: 100%; }
     .section-label { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-dim); }
-    .section-clear { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
-    .section-clear:active { color: var(--danger); }
-
-    .recent-section { width: 100%; margin-top: 22px; }
-    .recent-inline-list { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
-    .recent-inline-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.15s; }
-    .recent-inline-item:active { background: var(--surface-hover); }
-    .recent-inline-text { flex: 1; font-size: 14px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .shortcuts-section { width: 100%; margin-top: 22px; }
     .shortcuts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 16px 12px; width: 100%; }
@@ -127,7 +119,7 @@
     .sc-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 16px; outline: none; caret-color: var(--accent); }
     .sc-preview-row { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
     .sc-preview-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; }
+    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; opacity: 0; transition: opacity 0.2s; }
     .sc-preview-letter { font-size: 20px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; }
     .sc-preview-info { display: flex; flex-direction: column; gap: 2px; }
     .sc-preview-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
@@ -176,12 +168,7 @@
       </div>
     </section>
 
-    <section class="recent-section">
-      <div class="section-header"><span class="section-label">Recent Searches</span><button class="section-clear" id="recentClearAll">Clear</button></div>
-      <div class="recent-inline-list" id="recentInlineList"></div>
-    </section>
-
-    <section class="shortcuts-section">
+    <section class="shortcuts-section" id="shortcutsSection" aria-label="Shortcuts">
       <div class="section-header"><span class="section-label">Shortcuts</span></div>
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
     </section>
@@ -349,7 +336,6 @@
 
   const doSearch = () => {
     let q = sInput.value.trim(); if(!q) return;
-    addRecent(q);
     if(/^https?:\/\//i.test(q) || (!q.includes(' ') && q.includes('.'))) {
       window.location.href = q.includes('://') ? q : 'https://' + q;
     } else {
@@ -359,44 +345,53 @@
   document.getElementById('searchSubmit').onclick = doSearch;
   sInput.onkeydown = e => { if(e.key === 'Enter') doSearch(); };
 
-  /* ══ Recent ══ */
-  const renderRecent = () => {
-    const list = document.getElementById('recentInlineList'), items = JSON.parse(localStorage.getItem('recent') || '[]');
-    list.innerHTML = items.length ? '' : '<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px;">No recent searches</div>';
-    items.forEach(q => {
-      const el = document.createElement('div'); el.className = 'recent-inline-item';
-      el.innerHTML = `<span class="recent-inline-text">${q}</span>`;
-      el.onclick = () => { sInput.value = q; doSearch(); };
-      list.appendChild(el);
-    });
-  };
-  const addRecent = q => {
-    let arr = JSON.parse(localStorage.getItem('recent') || '[]').filter(i => i !== q);
-    arr.unshift(q); localStorage.setItem('recent', JSON.stringify(arr.slice(0, 5)));
-    renderRecent();
-  };
-  document.getElementById('recentClearAll').onclick = () => { localStorage.setItem('recent', '[]'); renderRecent(); };
-
   /* ══ Shortcuts ══ */
-  const grid = document.getElementById('shortcutsGrid'), scUrl = document.getElementById('scUrlInput'), scName = document.getElementById('scNameInput');
+  const grid = document.getElementById('shortcutsGrid'), scUrlInput = document.getElementById('scUrlInput'), scNameInput = document.getElementById('scNameInput');
   const pIcon = document.getElementById('scPreviewIcon'), pName = document.getElementById('scPreviewName'), pUrl = document.getElementById('scPreviewUrl');
   let scList = [], scEditMode = false;
 
   onValue(shortcutsRef, s => { scList = ensureArray(s.val()); renderShortcuts(); });
   
   const updateScPreview = () => {
-    let url = scUrl.value.trim(); if(!url) { pIcon.innerHTML = '?'; pName.textContent = 'New Shortcut'; pUrl.textContent = '—'; return; }
+    let url = scUrlInput.value.trim(); 
+    if(!url) { 
+      pIcon.innerHTML = '<span class="sc-preview-letter">?</span>'; 
+      pName.textContent = 'New Shortcut'; 
+      pUrl.textContent = '—'; 
+      return; 
+    }
     let clean = url.includes('://') ? url : 'https://' + url;
-    pName.textContent = scName.value.trim() || nameFromUrl(url); pUrl.textContent = clean;
-    pIcon.innerHTML = `<img src="${getFaviconUrl(clean)}" onerror="this.parentElement.innerHTML='<span class=\"sc-preview-letter\">${pName.textContent[0]}</span>'">`;
+    const name = scNameInput.value.trim() || nameFromUrl(url);
+    pName.textContent = name; 
+    pUrl.textContent = clean;
+    
+    const fav = getFaviconUrl(clean);
+    pIcon.innerHTML = ''; // Clear previous
+    const img = document.createElement('img');
+    img.src = fav;
+    img.style.width = '26px';
+    img.style.height = '26px';
+    img.style.borderRadius = '4px';
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 0.2s';
+    img.onload = () => img.style.opacity = '1';
+    img.onerror = () => {
+      img.remove();
+      const span = document.createElement('span');
+      span.className = 'sc-preview-letter';
+      span.textContent = name[0].toUpperCase();
+      pIcon.appendChild(span);
+    };
+    pIcon.appendChild(img);
   };
-  scUrl.oninput = scName.oninput = updateScPreview;
+  scUrlInput.oninput = scNameInput.oninput = updateScPreview;
 
   const renderShortcuts = () => {
     grid.innerHTML = '';
     scList.forEach((sc, i) => {
       const item = document.createElement('div'); item.className = 'shortcut-item';
-      item.innerHTML = `<div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}"></div><div class="shortcut-del-btn">&times;</div><div class="shortcut-label">${sc.name || nameFromUrl(sc.url)}</div>`;
+      const iconHtml = `<div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}"></div>`;
+      item.innerHTML = `${iconHtml}<div class="shortcut-del-btn">&times;</div><div class="shortcut-label">${sc.name || nameFromUrl(sc.url)}</div>`;
       item.onclick = () => { if(scEditMode) return; let t = sc.url.trim(); window.location.href = t.includes('://') ? t : 'https://' + t; };
       item.querySelector('.shortcut-del-btn').onclick = e => { e.stopPropagation(); scList.splice(i,1); set(shortcutsRef, scList); };
       let timer;
@@ -405,12 +400,12 @@
       grid.appendChild(item);
     });
     const add = document.createElement('div'); add.className = 'shortcut-item'; add.innerHTML = '<div class="shortcut-icon shortcut-add-icon">+</div><div class="shortcut-label">Add</div>';
-    add.onclick = () => { if(scEditMode) return; scUrl.value = scName.value = ''; updateScPreview(); openSheet(document.getElementById('scBackdrop')); };
+    add.onclick = () => { if(scEditMode) return; scUrlInput.value = scNameInput.value = ''; updateScPreview(); openSheet(document.getElementById('scBackdrop')); };
     grid.appendChild(add);
   };
   document.getElementById('scSave').onclick = () => {
-    let url = scUrl.value.trim(); if(!url) return;
-    scList.push({ url: url.includes('://') ? url : 'https://' + url, name: scName.value.trim() });
+    let url = scUrlInput.value.trim(); if(!url) return;
+    scList.push({ url: url.includes('://') ? url : 'https://' + url, name: scNameInput.value.trim() });
     set(shortcutsRef, scList); closeSheet(document.getElementById('scBackdrop'));
   };
   document.addEventListener('click', e => { if(scEditMode && !grid.contains(e.target) && !document.getElementById('menuBtn').contains(e.target)) { scEditMode = false; grid.classList.remove('edit-mode'); } });
@@ -468,12 +463,10 @@
     if(name && url) { ENGINES[name.toLowerCase()] = { label: name, url: url }; document.getElementById('newEngineName').value = document.getElementById('newEngineUrl').value = ''; document.getElementById('dropSettings').click(); }
   };
   document.getElementById('settingsSave').onclick = () => { set(settingsRef, { birthDate: document.getElementById('birthDateInput').value, engines: ENGINES }); closeSheet(document.getElementById('settingsBackdrop')); };
-  document.getElementById('settingsClose').onclick = () => closeSheet(document.getElementById('settingsBackdrop'));
 
   /* ══ Init ══ */
   document.getElementById('menuBtn').onclick = () => document.getElementById('dropMenu').classList.toggle('open');
-  document.getElementById('dropShortcuts').onclick = () => { scEditMode = true; grid.classList.add('edit-mode'); document.getElementById('dropMenu').classList.remove('open'); };
-  renderRecent(); setEngine(activeEngine);
+  setEngine(activeEngine);
 </script>
 </body>
 </html>
