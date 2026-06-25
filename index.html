@@ -123,8 +123,19 @@
     .btn { height: 50px; border-radius: 14px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.12s; flex: 1; }
     .btn-apply { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
     .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
-    .sc-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 16px; outline: none; }
-    
+    .sc-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .sc-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); font-weight: 400; }
+    .sc-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 300; outline: none; appearance: none; -webkit-appearance: none; caret-color: var(--accent); transition: border-color 0.2s, background 0.2s; user-select: text; -webkit-user-select: text; }
+    .sc-input::placeholder { color: var(--text-dim); }
+    .sc-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
+    .sc-preview-row { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); margin-bottom: 16px; flex-shrink: 0; }
+    .sc-preview-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; }
+    .sc-preview-letter { font-size: 20px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; }
+    .sc-preview-info { display: flex; flex-direction: column; gap: 3px; }
+    .sc-preview-name { font-size: 15px; font-weight: 400; color: var(--text-primary); }
+    .sc-preview-url  { font-size: 12px; color: var(--text-muted); word-break: break-all; }
+
     .toast { position: fixed; bottom: calc(var(--safe-bot) + 28px); left: 50%; transform: translateX(-50%) translateY(16px); background: rgba(28,28,28,0.96); border: 1px solid var(--border); color: var(--text-primary); font-size: 14px; padding: 11px 22px; border-radius: var(--pill); opacity: 0; transition: all 0.18s; z-index: 400; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
@@ -194,25 +205,25 @@
 <div class="sheet-backdrop" id="scBackdrop">
   <div class="sheet" id="scSheet">
     <div class="sheet-handle" style="width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin:0 auto 12px;"></div>
-    <p class="sheet-title" id="scSheetTitle" style="margin-bottom:12px;">Shortcut</p>
+    <p class="sheet-title" id="scSheetTitle">Shortcut</p>
     
-    <div class="sc-preview-row" style="display:flex; align-items:center; gap:14px; padding:14px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); margin-bottom:16px;">
-      <div class="sc-preview-icon" id="scPreviewIcon" style="width:48px; height:48px; border-radius:14px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-        <span class="sc-preview-letter" id="scPreviewLetter" style="font-size:20px; font-weight:500; color:var(--text-primary); text-transform:uppercase;">?</span>
+    <div class="sc-preview-row">
+      <div class="sc-preview-icon" id="scPreviewIcon">
+        <span class="sc-preview-letter" id="scPreviewLetter">?</span>
       </div>
       <div class="sc-preview-info">
-        <div class="sc-preview-name" id="scPreviewName" style="font-size:15px; font-weight:400; color:var(--text-primary);">Enter a URL</div>
-        <div class="sc-preview-url" id="scPreviewUrl" style="font-size:12px; color:var(--text-muted); word-break:break-all;">—</div>
+        <div class="sc-preview-name" id="scPreviewName">Enter a URL</div>
+        <div class="sc-preview-url" id="scPreviewUrl">—</div>
       </div>
     </div>
 
-    <div class="sc-field" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
-      <label class="sc-label" style="font-size:11px; letter-spacing:0.10em; text-transform:uppercase; color:var(--text-dim);">URL</label>
+    <div class="sc-field">
+      <label class="sc-label">URL</label>
       <input class="sc-input" id="scUrlInput" type="text" placeholder="https://example.com" autocomplete="off" spellcheck="false">
     </div>
 
-    <div class="sc-field" style="display:flex; flex-direction:column; gap:6px; margin-bottom:20px;">
-      <label class="sc-label" style="font-size:11px; letter-spacing:0.10em; text-transform:uppercase; color:var(--text-dim);">Name (optional)</label>
+    <div class="sc-field" style="margin-bottom: 20px;">
+      <label class="sc-label">Name (optional)</label>
       <input class="sc-input" id="scNameInput" type="text" placeholder="Auto-detected" autocomplete="off" spellcheck="false">
     </div>
 
@@ -418,16 +429,17 @@
     let url = scUrlInput.value.trim();
     const name = scNameInput.value.trim();
     if(!url) {
-      scPreviewIcon.innerHTML = '<span style="font-size:20px;color:var(--text-primary);">?</span>';
+      scPreviewIcon.innerHTML = '<span class="sc-preview-letter">?</span>';
       scPreviewName.textContent = 'Enter a URL';
       scPreviewUrl.textContent = '—';
       return;
     }
-    if(!url.includes('://')) url = 'https://' + url;
-    scPreviewName.textContent = name || nameFromUrl(url);
-    scPreviewUrl.textContent = url;
-    const fav = getFaviconUrl(url);
-    scPreviewIcon.innerHTML = `<img src="${fav}" style="width:26px;height:26px;object-fit:contain;border-radius:4px;" onerror="this.innerHTML='<span style=\'font-size:20px;\'>${scPreviewName.textContent[0]}</span>'">`;
+    const cleanUrl = url.includes('://') ? url : 'https://' + url;
+    const displayName = name || nameFromUrl(cleanUrl);
+    scPreviewName.textContent = displayName;
+    scPreviewUrl.textContent = cleanUrl;
+    const fav = getFaviconUrl(cleanUrl);
+    scPreviewIcon.innerHTML = `<img src="${fav}" onload="this.style.opacity=1" onerror="this.parentElement.innerHTML='<span class=\"sc-preview-letter\">${displayName[0]}</span>'">`;
   };
 
   scUrlInput.oninput = updateScPreview;
@@ -554,5 +566,5 @@
   document.getElementById('menuBtn').onclick = () => document.getElementById('dropMenu').classList.toggle('open');
   buildEngines(); setEngine('google'); renderRecent();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1142dd3feb3551d',t:'MTc4MjM5MjY3Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
