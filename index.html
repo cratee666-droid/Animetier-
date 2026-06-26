@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0a0a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Home</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,157 +15,395 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg:            #0a0a0a;
-      --surface:       rgba(255,255,255,0.055);
-      --surface-hover: rgba(255,255,255,0.085);
+      --surface:       rgba(255,255,255,0.06);
+      --surface-hover: rgba(255,255,255,0.10);
       --border:        rgba(255,255,255,0.10);
       --border-focus:  rgba(255,255,255,0.30);
       --text-primary:  rgba(255,255,255,0.92);
-      --text-muted:    rgba(255,255,255,0.42);
-      --text-dim:      rgba(255,255,255,0.20);
-      --glow-focus:    rgba(255,255,255,0.10);
+      --text-muted:    rgba(255,255,255,0.45);
+      --text-dim:      rgba(255,255,255,0.22);
       --accent:        rgba(138,180,248,0.85);
       --danger:        rgba(255,80,80,0.90);
       --f1-red:        #E10600;
       --pill:          9999px;
       --safe-top:      env(safe-area-inset-top, 0px);
       --safe-bot:      env(safe-area-inset-bottom, 0px);
+      /* Android-safe touch target minimum */
+      --tap-min:       48px;
     }
 
-    html { height: 100%; overflow: hidden; overscroll-behavior: none; }
-    body { height: 100%; width: 100%; overflow: hidden; background-color: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text-primary); -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
+    /* ── Base: no overflow:hidden on html/body so keyboard doesn't break layout ── */
+    html {
+      height: 100%;
+      /* Prevent bounce/overscroll on Android Chrome */
+      overscroll-behavior-y: none;
+    }
+    body {
+      min-height: 100%;
+      width: 100%;
+      background-color: var(--bg);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
 
+    /* Inputs need user-select: text explicitly */
+    input, textarea { user-select: text; -webkit-user-select: text; }
+
+    /* Non-interactive areas: suppress selection */
+    .page, .clock-wrapper, .section-header, .f1-row, .f1-race-card,
+    .shortcut-item, .note-card, .next-race-banner {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* ── Wallpaper ── */
     #wallpaperLayer { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
     #wallpaperLayer.loaded { opacity: 1; }
     #wallpaperDim { position: fixed; inset: 0; z-index: 1; background: rgba(0,0,0,0.45); opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
     #wallpaperDim.loaded { opacity: 1; }
 
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
-    @keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
-    @keyframes wiggle { from { transform: rotate(-1.5deg); } to { transform: rotate(1.5deg); } }
+    /* ── Animations ── */
+    @keyframes fadeUp  { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes blink   { 0%,100% { opacity:1; } 50% { opacity:0.15; } }
+    @keyframes popIn   { from { opacity:0; transform:scale(0.88); } to { opacity:1; transform:scale(1); } }
+    @keyframes wiggle  { from { transform:rotate(-1.5deg); } to { transform:rotate(1.5deg); } }
+    @keyframes pulseRed{ 0%,100%{ box-shadow:0 0 0 0 rgba(225,6,0,0.4); } 50%{ box-shadow:0 0 0 6px rgba(225,6,0,0); } }
 
-    #menuBtn { position: fixed; top: calc(var(--safe-top) + 12px); right: 16px; z-index: 60; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: rgba(10,10,10,0.60); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: color 0.2s, background 0.2s; }
-    #menuBtn:active { color: var(--text-primary); background: rgba(40,40,40,0.80); }
+    /* ── Menu button ── */
+    #menuBtn {
+      position: fixed; top: calc(var(--safe-top) + 12px); right: 16px; z-index: 60;
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(10,10,10,0.70);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-muted);
+      transition: color 0.2s, background 0.2s;
+      padding: 0;
+    }
+    #menuBtn:active { color: var(--text-primary); background: rgba(40,40,40,0.90); }
     #menuBtn svg { width: 20px; height: 20px; }
 
-    #dropMenu { position: fixed; top: calc(var(--safe-top) + 60px); right: 16px; z-index: 61; background: rgba(22,22,22,0.96); border: 1px solid var(--border); border-radius: 16px; padding: 6px; display: flex; flex-direction: column; gap: 2px; min-width: 200px; box-shadow: 0 16px 48px rgba(0,0,0,0.70); backdrop-filter: blur(20px); opacity: 0; pointer-events: none; transform: scale(0.92) translateY(-10px); transform-origin: top right; transition: opacity 0.2s, transform 0.2s cubic-bezier(0.22,1,0.36,1); }
+    /* ── Drop menu ── */
+    #dropMenu {
+      position: fixed; top: calc(var(--safe-top) + 64px); right: 16px; z-index: 61;
+      background: rgba(22,22,22,0.97);
+      border: 1px solid var(--border); border-radius: 16px;
+      padding: 6px; display: flex; flex-direction: column; gap: 2px;
+      min-width: 200px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.70);
+      opacity: 0; pointer-events: none;
+      transform: scale(0.92) translateY(-8px);
+      transform-origin: top right;
+      transition: opacity 0.2s, transform 0.2s cubic-bezier(0.22,1,0.36,1);
+    }
     #dropMenu.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
-    .drop-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 11px; cursor: pointer; font-size: 15px; color: var(--text-primary); background: transparent; border: none; width: 100%; text-align: left; transition: background 0.15s; }
+    .drop-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 14px; border-radius: 11px; cursor: pointer;
+      font-size: 15px; color: var(--text-primary);
+      background: transparent; border: none; width: 100%;
+      text-align: left; min-height: var(--tap-min);
+      transition: background 0.15s;
+    }
     .drop-item:active { background: var(--surface-hover); }
-    .drop-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--text-muted); }
 
-    #scrollRoot { position: relative; z-index: 2; height: 100%; width: 100%; overflow-y: auto; padding: calc(var(--safe-top) + 64px) 16px calc(var(--safe-bot) + 32px); scrollbar-width: none; }
-    #scrollRoot::-webkit-scrollbar { display: none; }
+    /* ── Scroll root: the main scroller ── */
+    #scrollRoot {
+      position: relative; z-index: 2;
+      min-height: 100dvh;
+      padding: calc(var(--safe-top) + 64px) 16px calc(var(--safe-bot) + 40px);
+      -webkit-overflow-scrolling: touch;
+      overflow-anchor: none;
+    }
 
-    .page { display: flex; flex-direction: column; align-items: center; width: 100%; animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+    .page { display: flex; flex-direction: column; align-items: center; width: 100%; animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 
-    .clock-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 28px; }
-    .clock { font-family: 'JetBrains Mono', monospace; font-weight: 300; font-size: clamp(64px, 20vw, 100px); letter-spacing: -0.04em; color: var(--text-primary); text-shadow: 0 2px 8px rgba(0,0,0,0.70); display: flex; align-items: baseline; }
+    /* ── Clock ── */
+    .clock-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 24px; }
+    .clock {
+      font-family: 'JetBrains Mono', monospace; font-weight: 300;
+      font-size: clamp(56px, 18vw, 88px);
+      letter-spacing: -0.04em; color: var(--text-primary);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.60);
+      display: flex; align-items: baseline;
+    }
     .clock-sep { animation: blink 1s step-start infinite; margin: 0 2px; }
-    .clock-ampm { font-size: clamp(16px, 4.5vw, 24px); color: var(--text-muted); margin-left: 6px; }
-    .date-label { font-size: clamp(11px, 3vw, 13px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
-    .age-display { margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); cursor: pointer; }
+    .clock-ampm { font-size: clamp(14px, 4vw, 20px); color: var(--text-muted); margin-left: 6px; }
+    .date-label { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
+    .age-display { margin-top: 3px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
 
+    /* ── Search ── */
     .search-section { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-    .engine-row { display: flex; overflow-x: auto; width: 100%; gap: 4px; padding-bottom: 2px; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent); }
+    .engine-row {
+      display: flex; overflow-x: auto; width: 100%; gap: 4px;
+      padding-bottom: 2px; scrollbar-width: none;
+      -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+      -webkit-overflow-scrolling: touch;
+    }
     .engine-row::-webkit-scrollbar { display: none; }
-    .engine-btn { display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: var(--pill); border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+    .engine-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px; min-height: var(--tap-min);
+      border-radius: var(--pill); border: 1px solid transparent;
+      background: transparent; color: var(--text-muted);
+      font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: all 0.2s;
+    }
     .engine-btn.active { color: var(--text-primary); background: rgba(255,255,255,0.08); border-color: var(--border-focus); }
-    .eng-icon { width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; }
-    .eng-icon img, .eng-icon svg { width: 15px; height: 15px; object-fit: contain; }
+    .eng-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+    .eng-icon img, .eng-icon svg { width: 16px; height: 16px; object-fit: contain; }
 
     .search-bar-wrap { position: relative; width: 100%; }
     .search-badge { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 2; }
     .badge-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; }
     .badge-icon img, .badge-icon svg { width: 18px; height: 18px; object-fit: contain; }
     .badge-sep { width: 1px; height: 16px; background: var(--border); }
-    .search-input { width: 100%; height: 54px; padding: 0 52px 0 52px; border-radius: var(--pill); border: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(20px); color: var(--text-primary); font-size: 16px; outline: none; caret-color: var(--accent); box-shadow: 0 6px 24px rgba(0,0,0,0.50); transition: all 0.25s; }
-    .search-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.07); }
-    .search-submit { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .search-input {
+      width: 100%; height: 52px; padding: 0 52px 0 52px;
+      border-radius: var(--pill); border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      color: var(--text-primary); font-size: 16px; outline: none;
+      caret-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.40);
+      transition: border-color 0.25s, background 0.25s;
+      font-size: max(16px, 1rem);
+    }
+    .search-input:focus { border-color: var(--border-focus); background: rgba(255,255,255,0.09); }
+    .search-submit {
+      position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: transparent; cursor: pointer; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
     .search-submit:active { color: var(--text-primary); background: var(--surface-hover); }
 
+    /* ── Section headers ── */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 2px; width: 100%; }
     .section-label { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-dim); }
+    .section-hint { font-size: 10px; color: var(--text-dim); }
 
+    /* ── Shortcuts ── */
     .shortcuts-section { width: 100%; margin-top: 22px; }
-    .shortcuts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 16px 12px; width: 100%; }
-    .shortcut-item { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; position: relative; animation: popIn 0.25s both; }
-    .shortcut-icon { width: 54px; height: 54px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.40); transition: transform 0.15s; }
-    .shortcut-item:active .shortcut-icon { transform: scale(0.91); }
+    .shortcuts-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px 8px; width: 100%; }
+    .shortcut-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; position: relative; animation: popIn 0.25s both; }
+    .shortcut-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+      transition: transform 0.12s;
+    }
+    .shortcut-item:active .shortcut-icon { transform: scale(0.90); }
     .shortcut-icon img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
-    .shortcut-letter { font-size: 22px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; }
-    .shortcut-label { font-size: 11px; color: var(--text-muted); text-align: center; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
-    .shortcut-del-btn { position: absolute; top: -5px; right: -5px; width: 22px; height: 22px; border-radius: 50%; background: var(--danger); border: 2px solid var(--bg); display: none; align-items: center; justify-content: center; z-index: 2; color: #fff; font-size: 16px; font-weight: bold; line-height: 1; }
-    .shortcuts-grid.edit-mode .shortcut-del-btn { display: flex; }
+    .shortcut-letter { font-size: 20px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; }
+    .shortcut-label { font-size: 10px; color: var(--text-muted); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .shortcut-edit-btn {
+      position: absolute; top: -6px; left: calc(50% - 34px);
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); border: 2px solid var(--bg);
+      display: none; align-items: center; justify-content: center;
+      z-index: 2; color: #111; font-size: 11px; line-height: 1;
+    }
+    .shortcut-del-btn {
+      position: absolute; top: -6px; right: calc(50% - 34px);
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--danger); border: 2px solid var(--bg);
+      display: none; align-items: center; justify-content: center;
+      z-index: 2; color: #fff; font-size: 14px; font-weight: bold; line-height: 1;
+    }
+    .shortcuts-grid.edit-mode .shortcut-del-btn,
+    .shortcuts-grid.edit-mode .shortcut-edit-btn { display: flex; }
     .shortcuts-grid.edit-mode .shortcut-icon { animation: wiggle 0.3s infinite alternate; }
-    .shortcut-add-icon { width: 54px; height: 54px; border-radius: 16px; border: 1.5px dashed rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 24px; }
+    .shortcut-add-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      border: 1.5px dashed rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 22px;
+    }
+    .edit-done-btn {
+      display: none; align-items: center; justify-content: center;
+      gap: 6px; min-height: 38px; padding: 0 14px; border-radius: var(--pill);
+      background: rgba(138,180,248,0.16); color: var(--accent);
+      border: 1px solid rgba(138,180,248,0.26); font-size: 12px; font-weight: 500;
+    }
+    .shortcuts-section.edit-mode .edit-done-btn { display: flex; }
 
-    /* Sticky Notes */
-    .notes-section { width: 100%; margin-top: 26px; }
-    .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-    .note-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 38px; position: relative; }
+    /* ── Sticky Notes ── */
+    .notes-section { width: 100%; margin-top: 24px; }
+    .notes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .note-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px;
+      cursor: pointer; transition: background 0.12s, transform 0.12s;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; min-height: 44px; position: relative;
+    }
     .note-card:active { background: var(--surface-hover); transform: scale(0.97); }
-    .note-card-title { font-size: 11px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
-    .note-edit-icon { position: absolute; bottom: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--text-dim); transition: all 0.2s; }
-    .note-edit-icon:active { background: rgba(255,255,255,0.15); color: var(--text-primary); }
-    .note-add-btn { border: 1.5px dashed var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; min-height: 38px; }
+    .note-card-title { font-size: 12px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+    .note-edit-icon {
+      position: absolute; bottom: 0; right: 0;
+      width: 32px; height: 32px; border-radius: 10px 0 10px 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); transition: color 0.15s;
+    }
+    .note-edit-icon:active { color: var(--text-primary); }
+    .note-add-btn {
+      border: 1.5px dashed var(--border); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); cursor: pointer; min-height: 44px;
+      font-size: 20px;
+    }
 
-    /* F1 Section Styles */
-    .f1-section { width: 100%; margin-top: 26px; animation: fadeUp 0.55s 0.22s cubic-bezier(0.22,1,0.36,1) both; }
-    .f1-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; backdrop-filter: blur(16px); display: flex; flex-direction: column; gap: 16px; min-height: 200px; }
-    
-    .f1-tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; width: fit-content; }
-    .f1-tab { padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    /* ── Next Race Banner ── */
+    .next-race-section { width: 100%; margin-top: 20px; animation: fadeUp 0.5s 0.12s cubic-bezier(0.22,1,0.36,1) both; }
+    .next-race-banner {
+      position: relative; overflow: hidden; border-radius: 14px;
+      border: 1px solid rgba(225,6,0,0.35);
+      background: linear-gradient(135deg, rgba(225,6,0,0.11) 0%, rgba(225,6,0,0.04) 60%, rgba(255,255,255,0.02) 100%);
+      padding: 14px 14px; display: flex; flex-direction: column; gap: 10px;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .next-race-banner:active { border-color: rgba(225,6,0,0.65); }
+    .next-race-banner::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, var(--f1-red), transparent); }
+    .nr-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .nr-badge { display: flex; align-items: center; gap: 6px; }
+    .nr-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--f1-red); animation: pulseRed 2s infinite; flex-shrink: 0; }
+    .nr-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--f1-red); font-weight: 600; }
+    .nr-countdown { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+    .nr-name { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+    .nr-circuit { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .nr-times { display: flex; flex-direction: column; gap: 5px; }
+    .nr-session-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); min-height: 38px; }
+    .nr-session-row.highlight { background: rgba(225,6,0,0.12); border-color: rgba(225,6,0,0.25); }
+    .nr-session-name { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .nr-session-row.highlight .nr-session-name { color: var(--text-primary); }
+    .nr-session-ist { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-primary); }
+    .nr-session-date { font-size: 10px; color: var(--text-dim); margin-left: 5px; }
+
+    /* ── F1 Section ── */
+    .f1-section { width: 100%; margin-top: 24px; animation: fadeUp 0.5s 0.20s cubic-bezier(0.22,1,0.36,1) both; }
+    .f1-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 14px; min-height: 180px; }
+
+    .f1-tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.25); padding: 4px; border-radius: 12px; width: 100%; }
+    .f1-tab {
+      flex: 1; padding: 9px 4px; border-radius: 8px; border: none;
+      background: transparent; color: var(--text-muted);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      min-height: var(--tap-min); transition: all 0.2s;
+    }
     .f1-tab.active { background: var(--f1-red); color: white; }
-    
-    .f1-row { border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; align-items: center; padding: 10px 0; gap: 12px; }
+
+    .f1-row { border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; padding: 10px 0; gap: 10px; }
     .f1-row:last-child { border: none; }
-    .f1-pos { font-family: 'JetBrains Mono', monospace; width: 28px; font-size: 14px; font-weight: 600; text-align: center; flex-shrink: 0; }
-    .f1-img { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); font-family: 'Inter', system-ui, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+    .f1-pos { font-family: 'JetBrains Mono', monospace; width: 26px; font-size: 13px; font-weight: 600; text-align: center; flex-shrink: 0; }
+    .f1-img { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); font-size: 11px; font-weight: 600; }
     .f1-img img { display: block; }
-    .f1-color { width: 3px; height: 26px; border-radius: 2px; flex-shrink: 0; }
+    .f1-color { width: 3px; height: 24px; border-radius: 2px; flex-shrink: 0; }
     .f1-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .f1-name { font-size: 13px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .f1-sub { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .f1-pts { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--text-primary); text-align: right; min-width: 44px; flex-shrink: 0; }
+    .f1-name { font-size: 12px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .f1-sub { font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .f1-pts { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-primary); text-align: right; min-width: 40px; flex-shrink: 0; }
 
-    .f1-race-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-    .f1-race-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 4px; }
-    .f1-race-card:active { transform: scale(0.97); background: var(--surface-hover); }
+    .f1-race-grid { display: flex; flex-direction: column; gap: 8px; }
+    .f1-race-card {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; cursor: pointer;
+      transition: background 0.15s; display: flex; flex-direction: column; gap: 3px;
+    }
+    .f1-race-card:active { background: var(--surface-hover); }
     .f1-race-card.completed { border-left: 3px solid var(--f1-red); }
+    .f1-race-card.next-up { border-color: rgba(225,6,0,0.50); background: rgba(225,6,0,0.07); }
+    .f1-race-card-inner { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .f1-race-card-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .f1-race-card-right { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
     .f1-round { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
-    .f1-race-winner { font-size: 11px; color: var(--accent); display: flex; align-items: center; gap: 4px; margin-top: 4px; font-weight: 500; }
+    .f1-race-name-text { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .f1-race-country { font-size: 11px; color: var(--text-muted); }
+    .f1-race-winner { font-size: 11px; color: var(--accent); display: flex; align-items: center; gap: 3px; font-weight: 500; }
+    .f1-race-ist { font-size: 10px; color: rgba(225,6,0,0.85); font-family: 'JetBrains Mono', monospace; }
+    .f1-race-date { font-size: 11px; color: var(--text-dim); }
 
-    .f1-header-row { display: flex; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .f1-header-row { display: flex; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
     .f1-header-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em; }
+    .loading-pulse { animation: blink 1.5s infinite; color: var(--text-muted); font-size: 13px; text-align: center; padding: 36px 0; }
 
-    .loading-pulse { animation: blink 1.5s infinite; color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0; }
-
-    /* Sheets */
-    .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+    /* ── Bottom Sheets ── */
+    .sheet-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
     .sheet-backdrop.open { opacity: 1; pointer-events: all; }
-    .sheet { background: #181818; border: 1px solid var(--border); border-radius: 24px 24px 0 0; width: 100%; max-height: 92svh; padding: 20px 18px calc(var(--safe-bot) + 20px); display: flex; flex-direction: column; gap: 14px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+    .sheet {
+      background: #1a1a1a; border: 1px solid var(--border);
+      border-radius: 22px 22px 0 0; width: 100%;
+      max-height: 88dvh;
+      padding: 18px 16px calc(var(--safe-bot) + 20px);
+      display: flex; flex-direction: column; gap: 13px;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     .sheet-backdrop.open .sheet { transform: translateY(0); }
-    .sheet-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 0 auto 8px; flex-shrink: 0; }
-    .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
-    
+    .sheet-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.12); border-radius: 2px; margin: 0 auto 6px; flex-shrink: 0; }
+    .sheet-title { font-size: 17px; font-weight: 500; color: var(--text-primary); }
+
     .sc-field { display: flex; flex-direction: column; gap: 6px; }
-    .sc-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); font-weight: 400; }
-    .sc-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 16px; outline: none; caret-color: var(--accent); }
-    .sc-preview-row { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
-    .sc-preview-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; opacity: 1; transition: opacity 0.2s; }
+    .sc-label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); }
+    .sc-input {
+      width: 100%; height: 50px; padding: 0 14px;
+      border-radius: 13px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06); color: var(--text-primary);
+      font-size: 16px; outline: none; caret-color: var(--accent);
+    }
+    .sc-preview-row { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+    .sc-preview-icon { width: 46px; height: 46px; border-radius: 13px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .sc-preview-icon img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; }
     .sc-preview-letter { font-size: 20px; font-weight: 500; color: var(--text-primary); text-transform: uppercase; }
-    .sc-preview-info { display: flex; flex-direction: column; gap: 2px; }
+    .sc-preview-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .sc-preview-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
     .sc-preview-url { font-size: 11px; color: var(--text-muted); word-break: break-all; }
 
-    .btn { height: 50px; border-radius: 14px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.12s; flex: 1; display: flex; align-items: center; justify-content: center; }
-    .btn-apply { background: rgba(138,180,248,0.18); color: var(--accent); border: 1px solid rgba(138,180,248,0.28); }
-    .btn-cancel { background: rgba(255,255,255,0.07); color: var(--text-muted); }
-    .btn-apply:active { transform: scale(0.97); background: rgba(138,180,248,0.25); }
+    /* Wallpaper preview */
+    .wp-preview-frame {
+      width: 100%; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .wp-preview-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .wp-preview-empty { color: var(--text-dim); font-size: 12px; text-align: center; padding: 0 20px; }
+    .wp-preview-error { color: var(--danger); font-size: 12px; text-align: center; padding: 0 20px; }
 
-    .toast { position: fixed; bottom: calc(var(--safe-bot) + 28px); left: 50%; transform: translateX(-50%) translateY(16px); background: rgba(28,28,28,0.96); border: 1px solid var(--border); color: var(--text-primary); font-size: 13px; padding: 10px 20px; border-radius: var(--pill); opacity: 0; transition: all 0.18s; z-index: 400; backdrop-filter: blur(10px); pointer-events: none; }
+    .btn {
+      height: 52px; border-radius: 13px; border: none;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      transition: transform 0.1s; flex: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-apply { background: rgba(138,180,248,0.16); color: var(--accent); border: 1px solid rgba(138,180,248,0.26); }
+    .btn-apply:active { background: rgba(138,180,248,0.24); }
+    .btn-danger { background: rgba(255,80,80,0.10); color: var(--danger); border: 1px solid rgba(255,80,80,0.20); }
+    .btn-danger:active { background: rgba(255,80,80,0.18); }
+
+    .toast {
+      position: fixed; bottom: calc(var(--safe-bot) + 28px); left: 50%;
+      transform: translateX(-50%) translateY(14px);
+      background: rgba(28,28,28,0.97); border: 1px solid var(--border);
+      color: var(--text-primary); font-size: 13px;
+      padding: 10px 20px; border-radius: var(--pill);
+      opacity: 0; transition: all 0.18s; z-index: 400; pointer-events: none;
+      white-space: nowrap;
+    }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
@@ -184,7 +425,7 @@
 <div id="scrollRoot">
   <main class="page">
     <div class="clock-wrapper">
-      <div class="clock" id="clock"><span id="hrs">12</span><span class="clock-sep">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span></div>
+      <div class="clock"><span id="hrs">12</span><span class="clock-sep">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span></div>
       <div class="date-label" id="date"></div>
       <div class="age-display" id="ageDisplay">Set Birthday</div>
     </div>
@@ -192,16 +433,22 @@
     <section class="search-section">
       <div class="engine-row" id="engineRow"></div>
       <div class="search-bar-wrap">
-        <div class="search-badge"><div class="badge-icon" id="badgeIcon"></div><div class="badge-sep"></div></div>
-        <input class="search-input" id="searchInput" type="search" placeholder="Search..." autocomplete="off" spellcheck="false">
-        <button class="search-submit" id="searchSubmit">
+        <div class="search-badge">
+          <div class="badge-icon" id="badgeIcon"></div>
+          <div class="badge-sep"></div>
+        </div>
+        <input class="search-input" id="searchInput" type="search" placeholder="Search..." autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button class="search-submit" id="searchSubmit" aria-label="Search">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </div>
     </section>
 
     <section class="shortcuts-section" id="shortcutsSection" aria-label="Shortcuts">
-      <div class="section-header"><span class="section-label">Shortcuts</span></div>
+      <div class="section-header">
+        <span class="section-label">Shortcuts</span>
+        <button class="edit-done-btn" id="editDoneBtn">Done</button>
+      </div>
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
     </section>
 
@@ -210,10 +457,26 @@
       <div class="notes-grid" id="notesGrid"></div>
     </section>
 
+    <!-- Next Race Banner -->
+    <section class="next-race-section" id="nextRaceSection" style="display:none;">
+      <div class="section-header"><span class="section-label">Next Race</span></div>
+      <div class="next-race-banner" id="nextRaceBanner" onclick="scrollToF1Races()">
+        <div class="nr-top">
+          <div class="nr-badge"><div class="nr-dot"></div><span class="nr-label">Upcoming</span></div>
+          <div class="nr-countdown" id="nrCountdown">—</div>
+        </div>
+        <div>
+          <div class="nr-name" id="nrName">—</div>
+          <div class="nr-circuit" id="nrCircuit">—</div>
+        </div>
+        <div class="nr-times" id="nrTimes"></div>
+      </div>
+    </section>
+
     <section class="f1-section" id="f1ObserverTarget">
       <div class="section-header">
-        <span class="section-label">Formula 1 <span style="background:var(--f1-red); color:white; padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:bold;">2026</span></span>
-        <span class="section-label" style="opacity:0.5;">• LIVE DATA</span>
+        <span class="section-label">Formula 1 <span style="background:var(--f1-red);color:white;padding:1px 6px;border-radius:4px;margin-left:4px;font-weight:bold;">2026</span></span>
+        <span class="section-label" style="opacity:0.5;">LIVE DATA</span>
       </div>
       <div class="f1-card" id="f1Content">
         <div class="f1-tabs">
@@ -232,11 +495,15 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <p class="sheet-title">Wallpaper</p>
+    <div class="wp-preview-frame" id="wpPreviewFrame">
+      <span class="wp-preview-empty" id="wpPreviewEmpty">No wallpaper set</span>
+    </div>
     <div class="sc-field">
       <label class="sc-label">Image URL</label>
-      <input class="sc-input" id="wpUrlInput" type="text" placeholder="https://example.com/image.jpg">
+      <input class="sc-input" id="wpUrlInput" type="url" placeholder="https://example.com/image.jpg" inputmode="url">
     </div>
-    <div class="sheet-actions" style="display:flex;gap:8px;margin-top:8px;">
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-danger" id="wpRemove">Remove</button>
       <button class="btn btn-apply" id="wpApply">Apply</button>
     </div>
   </div>
@@ -246,7 +513,7 @@
 <div class="sheet-backdrop" id="scBackdrop">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <p class="sheet-title">Add Shortcut</p>
+    <p class="sheet-title" id="scSheetTitle">Add Shortcut</p>
     <div class="sc-preview-row">
       <div class="sc-preview-icon" id="scPreviewIcon"><span class="sc-preview-letter">?</span></div>
       <div class="sc-preview-info">
@@ -254,9 +521,12 @@
         <div class="sc-preview-url" id="scPreviewUrl">—</div>
       </div>
     </div>
-    <div class="sc-field"><label class="sc-label">URL</label><input class="sc-input" id="scUrlInput" type="text" placeholder="google.com"></div>
+    <div class="sc-field"><label class="sc-label">URL</label><input class="sc-input" id="scUrlInput" type="url" placeholder="google.com" inputmode="url"></div>
     <div class="sc-field"><label class="sc-label">Name (optional)</label><input class="sc-input" id="scNameInput" type="text" placeholder="Auto-detected"></div>
-    <div class="sheet-actions" style="display:flex;gap:8px;"><button class="btn btn-apply" id="scSave">Save Shortcut</button></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-danger" id="scDelete" style="display:none;">Delete</button>
+      <button class="btn btn-apply" id="scSave">Save Shortcut</button>
+    </div>
   </div>
 </div>
 
@@ -266,9 +536,9 @@
     <div class="sheet-handle"></div>
     <p class="sheet-title" id="noteSheetTitle">Note</p>
     <div class="sc-field"><label class="sc-label">Title</label><input class="sc-input" id="noteTitleInput" type="text" placeholder="Title"></div>
-    <div class="sc-field" style="flex:1;"><label class="sc-label">Content</label><textarea class="sc-input" id="noteTextInput" style="height:160px;resize:none;padding:14px;" placeholder="Content"></textarea></div>
-    <div class="sheet-actions" style="display:flex;gap:8px;">
-      <button class="btn btn-apply" style="background:rgba(255,80,80,0.1);color:var(--danger);border-color:rgba(255,80,80,0.2);" id="noteDelete">Delete</button>
+    <div class="sc-field"><label class="sc-label">Content</label><textarea class="sc-input" id="noteTextInput" style="height:140px;resize:none;padding:14px;font-family:inherit;" placeholder="Content"></textarea></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-danger" id="noteDelete">Delete</button>
       <button class="btn btn-apply" id="noteSave">Save</button>
     </div>
   </div>
@@ -276,19 +546,17 @@
 
 <!-- Settings Sheet -->
 <div class="sheet-backdrop" id="settingsBackdrop">
-  <div class="sheet" style="overflow-y:auto;">
+  <div class="sheet">
     <div class="sheet-handle"></div>
     <p class="sheet-title">Settings</p>
     <div class="sc-field"><label class="sc-label">Birth Date</label><input class="sc-input" id="birthDateInput" type="datetime-local"></div>
-    <div class="sc-field" style="margin-top:8px;"><label class="sc-label">Custom Engines</label><div id="settingsEngineList" style="display:flex;flex-direction:column;gap:6px;"></div></div>
-    <div style="display:flex;gap:6px;">
-      <input class="sc-input" id="newEngineName" placeholder="Name" style="flex:1;">
-      <input class="sc-input" id="newEngineUrl" placeholder="URL" style="flex:2;">
-      <button class="btn btn-apply" id="addEngineBtn" style="flex:0.6;height:48px;">Add</button>
+    <div class="sc-field" style="margin-top:6px;"><label class="sc-label">Custom Engines</label><div id="settingsEngineList" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <input class="sc-input" id="newEngineName" placeholder="Name" style="flex:1;min-width:80px;">
+      <input class="sc-input" id="newEngineUrl" placeholder="Search URL with %s" style="flex:2;min-width:120px;" inputmode="url">
     </div>
-    <div class="sheet-actions" style="display:flex;gap:8px;margin-top:8px;">
-      <button class="btn btn-apply" id="settingsSave">Save Settings</button>
-    </div>
+    <button class="btn btn-apply" id="addEngineBtn" style="width:100%;">Add Engine</button>
+    <button class="btn btn-apply" id="settingsSave" style="width:100%;margin-top:2px;">Save Settings</button>
   </div>
 </div>
 
@@ -315,495 +583,584 @@
   const notesRef     = ref(db, 'notes/' + sharedId);
   const settingsRef  = ref(db, 'settings/' + sharedId);
 
-  /* ══ Helpers ══ */
+  /* ── Helpers ── */
   const ensureArray = v => Array.isArray(v) ? v : (v ? Object.values(v) : []);
-  const getFaviconUrl = url => { try { const u = new URL(url.replace('%s', 'g.com')); return `https://www.google.com/s2/favicons?sz=64&domain_url=${u.origin}`; } catch(e) { return ''; } };
-  const nameFromUrl = url => { try { let h = new URL(url.includes('://') ? url : 'https://'+url).hostname; return h.replace('www.','').split('.')[0].replace(/^\w/, c => c.toUpperCase()); } catch(e) { return url; } };
-  const showToast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); };
+  const getFaviconUrl = url => { try { const u = new URL(url.replace('%s','g.com')); return `https://www.google.com/s2/favicons?sz=64&domain_url=${u.origin}`; } catch(e){ return ''; } };
+  const nameFromUrl = url => { try { let h = new URL(url.includes('://')?url:'https://'+url).hostname; return h.replace('www.','').split('.')[0].replace(/^\w/,c=>c.toUpperCase()); } catch(e){ return url; } };
+  const showToast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2200); };
 
-  /* ══ Clock ══ */
-  const tick = () => {
-    const now = new Date(), pm = now.getHours() >= 12;
-    document.getElementById('hrs').textContent = String(now.getHours() % 12 || 12).padStart(2, '0');
-    document.getElementById('mins').textContent = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById('ampm').textContent = pm ? 'PM' : 'AM';
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' });
+  /* ── IST Helpers ── */
+  const utcToIST = (dateStr, timeStr) => {
+    const iso = timeStr ? `${dateStr}T${timeStr}` : `${dateStr}T00:00:00Z`;
+    return new Date(new Date(iso).getTime() + 5.5*3600000);
   };
-  setInterval(tick, 1000); tick();
+  const fmtIST = d => d.toLocaleTimeString('en-IN',{ hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'UTC' });
+  const fmtDateShort = d => d.toLocaleDateString('en-IN',{ weekday:'short', day:'numeric', month:'short', timeZone:'UTC' });
+  const fmtCountdown = ms => {
+    if(ms<=0) return 'Now';
+    const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000);
+    if(d>0) return `${d}d ${h}h`;
+    if(h>0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
 
-  /* ══ Sheets ══ */
+  /* ── Clock ── */
+  const tick = () => {
+    const now = new Date(), pm = now.getHours()>=12;
+    document.getElementById('hrs').textContent = String(now.getHours()%12||12).padStart(2,'0');
+    document.getElementById('mins').textContent = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('ampm').textContent = pm?'PM':'AM';
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    if(window._nextRaceUTC){
+      const ms = window._nextRaceUTC - Date.now();
+      const el = document.getElementById('nrCountdown');
+      if(el) el.textContent = ms>0 ? fmtCountdown(ms) : 'Underway 🏁';
+    }
+  };
+  setInterval(tick,1000); tick();
+
+  /* ── Sheets ── */
   const openSheet = b => b.classList.add('open');
   const closeSheet = b => b.classList.remove('open');
-  const setupDismiss = (id) => {
+  const setupDismiss = id => {
     const b = document.getElementById(id), s = b.querySelector('.sheet');
-    if(!b || !s) return;
-    b.onclick = e => { if(e.target === b) closeSheet(b); };
-    let startY = 0;
-    s.addEventListener('touchstart', e => startY = e.touches[0].clientY, {passive:true});
-    s.addEventListener('touchmove', e => { let d = e.touches[0].clientY - startY; if(d > 0) s.style.transform = `translateY(${d}px)`; }, {passive:true});
-    s.addEventListener('touchend', e => { let d = e.changedTouches[0].clientY - startY; s.style.transform = ''; if(d > 100) closeSheet(b); }, {passive:true});
+    if(!b||!s) return;
+    b.addEventListener('click', e => { if(e.target===b) closeSheet(b); });
+    let startY=0;
+    s.addEventListener('touchstart', e=>{ startY=e.touches[0].clientY; },{passive:true});
+    s.addEventListener('touchmove', e=>{
+      const dy = e.touches[0].clientY - startY;
+      if(dy>0 && s.scrollTop===0) s.style.transform=`translateY(${dy}px)`;
+    },{passive:true});
+    s.addEventListener('touchend', e=>{
+      const dy = e.changedTouches[0].clientY - startY;
+      s.style.transform='';
+      if(dy>90) closeSheet(b);
+    },{passive:true});
   };
-  ['wpBackdrop', 'scBackdrop', 'noteBackdrop', 'settingsBackdrop'].forEach(setupDismiss);
+  ['wpBackdrop','scBackdrop','noteBackdrop','settingsBackdrop'].forEach(setupDismiss);
 
-  /* ══ Wallpaper ══ */
+  /* ── Wallpaper ── */
+  const wpFrame = document.getElementById('wpPreviewFrame');
+  const wpUrlInput = document.getElementById('wpUrlInput');
+
+  const renderWpPreview = url => {
+    wpFrame.innerHTML = '';
+    if (!url) {
+      wpFrame.innerHTML = '<span class="wp-preview-empty">No wallpaper set</span>';
+      return;
+    }
+    const img = new Image();
+    img.onload = () => { wpFrame.innerHTML = ''; const i = document.createElement('img'); i.src = url; wpFrame.appendChild(i); };
+    img.onerror = () => { wpFrame.innerHTML = '<span class="wp-preview-error">Couldn\'t load this image</span>'; };
+    img.src = url;
+    wpFrame.innerHTML = '<span class="wp-preview-empty">Loading…</span>';
+  };
+
   const applyWall = url => {
-    if(!url) return;
-    const l = document.getElementById('wallpaperLayer'), d = document.getElementById('wallpaperDim');
-    const img = new Image(); img.src = url;
-    img.onload = () => { l.style.backgroundImage = `url(${url})`; l.classList.add('loaded'); d.classList.add('loaded'); };
-    localStorage.setItem('wp', url);
+    const l=document.getElementById('wallpaperLayer'), d=document.getElementById('wallpaperDim');
+    if (!url) {
+      l.style.backgroundImage = '';
+      l.classList.remove('loaded');
+      d.classList.remove('loaded');
+      localStorage.removeItem('wp');
+      return;
+    }
+    const img=new Image(); img.src=url;
+    img.onload=()=>{ l.style.backgroundImage=`url(${url})`; l.classList.add('loaded'); d.classList.add('loaded'); };
+    localStorage.setItem('wp',url);
   };
   applyWall(localStorage.getItem('wp'));
-  document.getElementById('dropWallpaper').onclick = () => openSheet(document.getElementById('wpBackdrop'));
-  document.getElementById('wpApply').onclick = () => { applyWall(document.getElementById('wpUrlInput').value); closeSheet(document.getElementById('wpBackdrop')); };
 
-  /* ══ Search & Engines ══ */
-  let ENGINES = { google: { label:'Google', url:'https://www.google.com/search?q=%s' } };
-  let activeEngine = localStorage.getItem('engine_key') || 'google';
-  const engineRow = document.getElementById('engineRow'), badgeIcon = document.getElementById('badgeIcon'), sInput = document.getElementById('searchInput');
-  
+  document.getElementById('dropWallpaper').onclick=()=>{
+    document.getElementById('dropMenu').classList.remove('open');
+    const current = localStorage.getItem('wp') || '';
+    wpUrlInput.value = current;
+    renderWpPreview(current);
+    openSheet(document.getElementById('wpBackdrop'));
+  };
+  wpUrlInput.addEventListener('input', () => renderWpPreview(wpUrlInput.value.trim()));
+  document.getElementById('wpApply').onclick=()=>{
+    const url = wpUrlInput.value.trim();
+    if (!url) { showToast('Enter an image URL'); return; }
+    applyWall(url);
+    closeSheet(document.getElementById('wpBackdrop'));
+    showToast('Wallpaper updated');
+  };
+  document.getElementById('wpRemove').onclick=()=>{
+    applyWall('');
+    wpUrlInput.value = '';
+    renderWpPreview('');
+    closeSheet(document.getElementById('wpBackdrop'));
+    showToast('Wallpaper removed');
+  };
+
+  /* ── Search & Engines ── */
+  let ENGINES = { google:{ label:'Google', url:'https://www.google.com/search?q=%s' } };
+  let activeEngine = localStorage.getItem('engine_key')||'google';
+  const engineRow=document.getElementById('engineRow'), badgeIcon=document.getElementById('badgeIcon'), sInput=document.getElementById('searchInput');
+
   const renderEngines = () => {
-    engineRow.innerHTML = '';
-    Object.entries(ENGINES).forEach(([k, e]) => {
-      const b = document.createElement('button');
-      b.className = 'engine-btn' + (k === activeEngine ? ' active' : '');
-      const icon = e.svg || `<img src="${getFaviconUrl(e.url)}">`;
-      b.innerHTML = `<span class="eng-icon">${icon}</span><span>${e.label}</span>`;
-      b.onclick = () => setEngine(k);
+    engineRow.innerHTML='';
+    Object.entries(ENGINES).forEach(([k,e])=>{
+      const b=document.createElement('button');
+      b.className='engine-btn'+(k===activeEngine?' active':'');
+      b.innerHTML=`<span class="eng-icon">${e.svg||`<img src="${getFaviconUrl(e.url)}">`}</span><span>${e.label}</span>`;
+      b.onclick=()=>setEngine(k);
       engineRow.appendChild(b);
     });
   };
   const setEngine = k => {
-    if(!ENGINES[k]) k = 'google';
-    activeEngine = k; localStorage.setItem('engine_key', k);
-    const e = ENGINES[k];
-    badgeIcon.innerHTML = e.svg || `<img src="${getFaviconUrl(e.url)}">`;
-    sInput.placeholder = `Search ${e.label}...`;
+    if(!ENGINES[k]) k='google';
+    activeEngine=k; localStorage.setItem('engine_key',k);
+    const e=ENGINES[k];
+    badgeIcon.innerHTML=e.svg||`<img src="${getFaviconUrl(e.url)}">`;
+    sInput.placeholder=`Search ${e.label}...`;
     renderEngines();
   };
-
   const doSearch = () => {
-    let q = sInput.value.trim(); if(!q) return;
-    if(/^https?:\/\//i.test(q) || (!q.includes(' ') && q.includes('.'))) {
-      window.location.href = q.includes('://') ? q : 'https://' + q;
-    } else {
-      window.location.href = ENGINES[activeEngine].url.replace('%s', encodeURIComponent(q));
-    }
+    let q=sInput.value.trim(); if(!q) return;
+    if(/^https?:\/\//i.test(q)||(!q.includes(' ')&&q.includes('.')))
+      window.location.href = q.includes('://')?q:'https://'+q;
+    else
+      window.location.href = ENGINES[activeEngine].url.replace('%s',encodeURIComponent(q));
   };
-  document.getElementById('searchSubmit').onclick = doSearch;
-  sInput.onkeydown = e => { if(e.key === 'Enter') doSearch(); };
+  document.getElementById('searchSubmit').onclick=doSearch;
+  sInput.onkeydown=e=>{ if(e.key==='Enter') doSearch(); };
 
-  /* ══ Shortcuts ══ */
-  const grid = document.getElementById('shortcutsGrid'), scUrlInput = document.getElementById('scUrlInput'), scNameInput = document.getElementById('scNameInput');
-  const pIcon = document.getElementById('scPreviewIcon'), pName = document.getElementById('scPreviewName'), pUrl = document.getElementById('scPreviewUrl');
-  let scList = [], scEditMode = false;
+  /* ── Shortcuts ── */
+  const shortcutsSection = document.getElementById('shortcutsSection');
+  const grid=document.getElementById('shortcutsGrid');
+  const scUrlInput=document.getElementById('scUrlInput'), scNameInput=document.getElementById('scNameInput');
+  const pIcon=document.getElementById('scPreviewIcon'), pName=document.getElementById('scPreviewName'), pUrl=document.getElementById('scPreviewUrl');
+  const scDeleteBtn = document.getElementById('scDelete'), scSheetTitle = document.getElementById('scSheetTitle');
+  let scList=[], scEditMode=false, scEditingIndex=-1;
 
-  onValue(shortcutsRef, s => { scList = ensureArray(s.val()); renderShortcuts(); });
-  
+  onValue(shortcutsRef, s=>{ scList=ensureArray(s.val()); renderShortcuts(); });
+
   const updateScPreview = () => {
-    let url = scUrlInput.value.trim(); 
-    if(!url) { 
-      pIcon.innerHTML = '<span class="sc-preview-letter">?</span>'; 
-      pName.textContent = 'New Shortcut'; 
-      pUrl.textContent = '—'; 
-      return; 
-    }
-    let clean = url.includes('://') ? url : 'https://' + url;
-    const name = scNameInput.value.trim() || nameFromUrl(url);
-    pName.textContent = name; 
-    pUrl.textContent = clean;
-    
-    const fav = getFaviconUrl(clean);
-    pIcon.innerHTML = '';
-    const img = new Image();
-    img.src = fav;
-    img.onload = () => {
-      img.style.width = '26px'; img.style.height = '26px'; img.style.borderRadius = '4px'; img.style.opacity = '1';
-      pIcon.appendChild(img);
-    };
-    img.onerror = () => {
-      pIcon.innerHTML = `<span class="sc-preview-letter">${name[0]}</span>`;
-    };
+    let url=scUrlInput.value.trim();
+    if(!url){ pIcon.innerHTML='<span class="sc-preview-letter">?</span>'; pName.textContent='New Shortcut'; pUrl.textContent='—'; return; }
+    let clean=url.includes('://')?url:'https://'+url;
+    const name=scNameInput.value.trim()||nameFromUrl(url);
+    pName.textContent=name; pUrl.textContent=clean;
+    pIcon.innerHTML='';
+    const img=new Image(); img.src=getFaviconUrl(clean);
+    img.onload=()=>{ img.style.cssText='width:26px;height:26px;border-radius:4px;'; pIcon.appendChild(img); };
+    img.onerror=()=>{ pIcon.innerHTML=`<span class="sc-preview-letter">${name[0]}</span>`; };
   };
-  scUrlInput.oninput = scNameInput.oninput = updateScPreview;
+  scUrlInput.oninput=scNameInput.oninput=updateScPreview;
+
+  const enterEditMode = () => {
+    scEditMode = true;
+    grid.classList.add('edit-mode');
+    shortcutsSection.classList.add('edit-mode');
+  };
+  const exitEditMode = () => {
+    scEditMode = false;
+    grid.classList.remove('edit-mode');
+    shortcutsSection.classList.remove('edit-mode');
+  };
+
+  const openShortcutSheet = (index) => {
+    scEditingIndex = index;
+    if (index >= 0) {
+      const sc = scList[index];
+      scUrlInput.value = sc.url || '';
+      scNameInput.value = sc.name || '';
+      scSheetTitle.textContent = 'Edit Shortcut';
+      scDeleteBtn.style.display = 'flex';
+    } else {
+      scUrlInput.value = '';
+      scNameInput.value = '';
+      scSheetTitle.textContent = 'Add Shortcut';
+      scDeleteBtn.style.display = 'none';
+    }
+    updateScPreview();
+    openSheet(document.getElementById('scBackdrop'));
+  };
 
   const renderShortcuts = () => {
-    grid.innerHTML = '';
-    scList.forEach((sc, i) => {
-      const item = document.createElement('div'); item.className = 'shortcut-item';
-      const iconHtml = `<div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}"></div>`;
-      item.innerHTML = `${iconHtml}<div class="shortcut-del-btn">&times;</div><div class="shortcut-label">${sc.name || nameFromUrl(sc.url)}</div>`;
-      item.onclick = () => { if(scEditMode) return; let t = sc.url.trim(); window.location.href = t.includes('://') ? t : 'https://' + t; };
-      item.querySelector('.shortcut-del-btn').onclick = e => { e.stopPropagation(); scList.splice(i,1); set(shortcutsRef, scList); };
+    grid.innerHTML='';
+    scList.forEach((sc,i)=>{
+      const item=document.createElement('div'); item.className='shortcut-item';
+      item.innerHTML=`<div class="shortcut-edit-btn">✎</div><div class="shortcut-icon"><img src="${getFaviconUrl(sc.url)}" onerror="this.style.display='none'"></div><div class="shortcut-del-btn">&times;</div><div class="shortcut-label">${sc.name||nameFromUrl(sc.url)}</div>`;
+      item.onclick=(e)=>{
+        if(scEditMode){ openShortcutSheet(i); return; }
+        let t=sc.url.trim(); window.location.href=t.includes('://')?t:'https://'+t;
+      };
+      item.querySelector('.shortcut-del-btn').onclick=e=>{ e.stopPropagation(); scList.splice(i,1); set(shortcutsRef,scList); };
+      item.querySelector('.shortcut-edit-btn').onclick=e=>{ e.stopPropagation(); openShortcutSheet(i); };
       let timer;
-      item.onpointerdown = () => timer = setTimeout(() => { scEditMode = true; grid.classList.add('edit-mode'); }, 600);
-      item.onpointerup = item.onpointercancel = () => clearTimeout(timer);
+      item.addEventListener('pointerdown', ()=>{ timer=setTimeout(()=>{ enterEditMode(); },550); });
+      item.addEventListener('pointerup', ()=>clearTimeout(timer));
+      item.addEventListener('pointercancel', ()=>clearTimeout(timer));
       grid.appendChild(item);
     });
-    const add = document.createElement('div'); add.className = 'shortcut-item'; add.innerHTML = '<div class="shortcut-icon shortcut-add-icon">+</div><div class="shortcut-label">Add</div>';
-    add.onclick = () => { if(scEditMode) return; scUrlInput.value = scNameInput.value = ''; updateScPreview(); openSheet(document.getElementById('scBackdrop')); };
+    const add=document.createElement('div'); add.className='shortcut-item';
+    add.innerHTML='<div class="shortcut-icon shortcut-add-icon">+</div><div class="shortcut-label">Add</div>';
+    add.onclick=()=>{ if(scEditMode)return; openShortcutSheet(-1); };
     grid.appendChild(add);
   };
-  document.getElementById('scSave').onclick = () => {
-    let url = scUrlInput.value.trim(); if(!url) return;
-    scList.push({ url: url.includes('://') ? url : 'https://' + url, name: scNameInput.value.trim() });
-    set(shortcutsRef, scList); closeSheet(document.getElementById('scBackdrop'));
-  };
-  document.addEventListener('click', e => { if(scEditMode && !grid.contains(e.target) && !document.getElementById('menuBtn').contains(e.target)) { scEditMode = false; grid.classList.remove('edit-mode'); } });
 
-  /* ══ Notes ══ */
-  const nGrid = document.getElementById('notesGrid');
-  let nList = [], nIdx = -1;
-  onValue(notesRef, s => { nList = ensureArray(s.val()); renderNotes(); });
-  const renderNotes = () => {
-    nGrid.innerHTML = '';
-    nList.forEach((n, i) => {
-      const c = document.createElement('div'); c.className = 'note-card';
-      c.innerHTML = `<div class="note-card-title">${n.title || 'Note'}</div><div class="note-edit-icon"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>`;
-      c.onclick = () => { if(n.text) navigator.clipboard.writeText(n.text).then(() => showToast('Copied!')); else showToast('Empty note'); };
-      c.querySelector('.note-edit-icon').onclick = e => { e.stopPropagation(); nIdx = i; document.getElementById('noteTitleInput').value = n.title; document.getElementById('noteTextInput').value = n.text; document.getElementById('noteSheetTitle').textContent = 'Edit Note'; openSheet(document.getElementById('noteBackdrop')); };
+  document.getElementById('scSave').onclick=()=>{
+    let url=scUrlInput.value.trim(); if(!url)return;
+    const entry = { url: url.includes('://')?url:'https://'+url, name: scNameInput.value.trim() };
+    if (scEditingIndex >= 0) scList[scEditingIndex] = entry;
+    else scList.push(entry);
+    set(shortcutsRef,scList);
+    closeSheet(document.getElementById('scBackdrop'));
+  };
+  scDeleteBtn.onclick=()=>{
+    if (scEditingIndex >= 0) { scList.splice(scEditingIndex,1); set(shortcutsRef,scList); }
+    closeSheet(document.getElementById('scBackdrop'));
+  };
+
+  document.getElementById('editDoneBtn').onclick = exitEditMode;
+
+  document.getElementById('dropShortcuts').onclick=()=>{
+    enterEditMode();
+    document.getElementById('dropMenu').classList.remove('open');
+  };
+
+  /* ── Notes ── */
+  const nGrid=document.getElementById('notesGrid');
+  let nList=[], nIdx=-1;
+  onValue(notesRef, s=>{ nList=ensureArray(s.val()); renderNotes(); });
+  const renderNotes=()=>{
+    nGrid.innerHTML='';
+    nList.forEach((n,i)=>{
+      const c=document.createElement('div'); c.className='note-card';
+      c.innerHTML=`<div class="note-card-title">${n.title||'Note'}</div><div class="note-edit-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>`;
+      c.onclick=()=>{ if(n.text) navigator.clipboard.writeText(n.text).then(()=>showToast('Copied!')); else showToast('Empty note'); };
+      c.querySelector('.note-edit-icon').onclick=e=>{ e.stopPropagation(); nIdx=i; document.getElementById('noteTitleInput').value=n.title; document.getElementById('noteTextInput').value=n.text; document.getElementById('noteSheetTitle').textContent='Edit Note'; openSheet(document.getElementById('noteBackdrop')); };
       nGrid.appendChild(c);
     });
-    const add = document.createElement('div'); add.className = 'note-add-btn'; add.innerHTML = '+';
-    add.onclick = () => { nIdx = -1; document.getElementById('noteTitleInput').value = document.getElementById('noteTextInput').value = ''; document.getElementById('noteSheetTitle').textContent = 'New Note'; openSheet(document.getElementById('noteBackdrop')); };
+    const add=document.createElement('div'); add.className='note-add-btn'; add.innerHTML='+';
+    add.onclick=()=>{ nIdx=-1; document.getElementById('noteTitleInput').value=document.getElementById('noteTextInput').value=''; document.getElementById('noteSheetTitle').textContent='New Note'; openSheet(document.getElementById('noteBackdrop')); };
     nGrid.appendChild(add);
   };
-  document.getElementById('noteSave').onclick = () => {
-    const t = document.getElementById('noteTitleInput').value, x = document.getElementById('noteTextInput').value;
-    if(nIdx >= 0) nList[nIdx] = { title:t, text:x }; else nList.push({ title:t, text:x });
-    set(notesRef, nList); closeSheet(document.getElementById('noteBackdrop'));
+  document.getElementById('noteSave').onclick=()=>{
+    const t=document.getElementById('noteTitleInput').value, x=document.getElementById('noteTextInput').value;
+    if(nIdx>=0) nList[nIdx]={title:t,text:x}; else nList.push({title:t,text:x});
+    set(notesRef,nList); closeSheet(document.getElementById('noteBackdrop'));
   };
-  document.getElementById('noteDelete').onclick = () => { if(nIdx >= 0) nList.splice(nIdx,1); set(notesRef, nList); closeSheet(document.getElementById('noteBackdrop')); };
+  document.getElementById('noteDelete').onclick=()=>{ if(nIdx>=0) nList.splice(nIdx,1); set(notesRef,nList); closeSheet(document.getElementById('noteBackdrop')); };
 
-  /* ══ F1 2026 LOGIC ══ */
+  /* ── F1 ── */
   const TEAM_COLORS = {
-    red_bull: '#3671C6', ferrari: '#E8002D', mercedes: '#27F4D2',
-    mclaren: '#FF8000', aston_martin: '#229971', alpine: '#FF87BC',
-    williams: '#64C4FF', haas: '#B6BABD', audi: '#F50505',
-    sauber: '#52E252', rb: '#6692FF', racing_bulls: '#6692FF', cadillac: '#FFD700',
-    'Alpine F1 Team': '#FF87BC', 'RB F1 Team': '#6692FF', 'Red Bull Racing': '#3671C6'
+    red_bull:'#3671C6', ferrari:'#E8002D', mercedes:'#27F4D2',
+    mclaren:'#FF8000', aston_martin:'#229971', alpine:'#FF87BC',
+    williams:'#64C4FF', haas:'#B6BABD', audi:'#F50505',
+    sauber:'#52E252', rb:'#6692FF', racing_bulls:'#6692FF', cadillac:'#FFD700'
   };
-
-  // Picks a readable text color (black/white) against a given hex background
   const getContrastText = hex => {
-    if (!hex) return '#fff';
-    const c = hex.replace('#', '');
-    const r = parseInt(c.substring(0,2), 16), g = parseInt(c.substring(2,4), 16), b = parseInt(c.substring(4,6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 150 ? '#111' : '#fff';
+    if(!hex) return '#fff';
+    const c=hex.replace('#','');
+    const r=parseInt(c.substring(0,2),16),g=parseInt(c.substring(2,4),16),b=parseInt(c.substring(4,6),16);
+    return (r*299+g*587+b*114)/1000>=150?'#111':'#fff';
   };
+  const driverInitials=(given,family)=>((given||'')[0]||'').toUpperCase()+((family||'')[0]||'').toUpperCase()||'?';
 
-  // Builds initials from a driver's given/family name, e.g. "Max Verstappen" -> "MV"
-  const driverInitials = (given, family) => {
-    const a = (given || '').trim()[0] || '';
-    const b = (family || '').trim()[0] || '';
-    return (a + b).toUpperCase() || '?';
-  };
-
-  // Driver headshot URLs, keyed by uppercased family name
   const DRIVER_IMAGES = {
-    "ANTONELLI": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mercedes/andant01/2026mercedesandant01right.webp",
-    "HAMILTON": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/ferrari/lewham01/2026ferrarilewham01right.webp",
-    "RUSSELL": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mercedes/georus01/2026mercedesgeorus01right.webp",
-    "LECLERC": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/ferrari/chalec01/2026ferrarichalec01right.webp",
-    "NORRIS": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mclaren/lannor01/2026mclarenlannor01right.webp",
-    "PIASTRI": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mclaren/oscpia01/2026mclarenoscpia01right.webp",
-    "VERSTAPPEN": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/maxver01/2026redbullracingmaxver01right.webp",
-    "GASLY": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/alpine/piegas01/2026alpinepiegas01right.webp",
-    "HADJAR": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/isahad01/2026redbullracingisahad01right.webp",
-    "LAWSON": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/racingbulls/lialaw01/2026racingbullslialaw01right.webp",
-    "BEARMAN": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/haasf1team/olibea01/2026haasf1teamolibea01right.webp",
-    "COLAPINTO": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/alpine/fracol01/2026alpinefracol01right.webp",
-    "LINDBLAD": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/racingbulls/arvlin01/2026racingbullsarvlin01right.webp",
-    "SAINZ": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/williams/carsai01/2026williamscarsai01right.webp",
-    "ALBON": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/williams/alealb01/2026williamsalealb01right.webp",
-    "OCON": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/haasf1team/estoco01/2026haasf1teamestoco01right.webp",
-    "BORTOLETO": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/gabbor01/2026audigabbor01right.webp",
-    "ALONSO": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/astonmartin/feralo01/2026astonmartinferalo01right.webp",
-    "HÜLKENBERG": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
-    "HULKENBERG": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
-    "BOTTAS": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/valbot01/2026cadillacvalbot01right.webp",
-    "PÉREZ": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp",
-    "PEREZ": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp",
-    "STROLL": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/astonmartin/lanstr01/2026astonmartinlanstr01right.webp"
+    "ANTONELLI":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mercedes/andant01/2026mercedesandant01right.webp",
+    "HAMILTON":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/ferrari/lewham01/2026ferrarilewham01right.webp",
+    "RUSSELL":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mercedes/georus01/2026mercedesgeorus01right.webp",
+    "LECLERC":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/ferrari/chalec01/2026ferrarichalec01right.webp",
+    "NORRIS":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mclaren/lannor01/2026mclarenlannor01right.webp",
+    "PIASTRI":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mclaren/oscpia01/2026mclarenoscpia01right.webp",
+    "VERSTAPPEN":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/maxver01/2026redbullracingmaxver01right.webp",
+    "GASLY":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/alpine/piegas01/2026alpinepiegas01right.webp",
+    "HADJAR":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/isahad01/2026redbullracingisahad01right.webp",
+    "LAWSON":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/racingbulls/lialaw01/2026racingbullslialaw01right.webp",
+    "BEARMAN":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/haasf1team/olibea01/2026haasf1teamolibea01right.webp",
+    "COLAPINTO":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/alpine/fracol01/2026alpinefracol01right.webp",
+    "LINDBLAD":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/racingbulls/arvlin01/2026racingbullsarvlin01right.webp",
+    "SAINZ":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/williams/carsai01/2026williamscarsai01right.webp",
+    "ALBON":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/williams/alealb01/2026williamsalealb01right.webp",
+    "OCON":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/haasf1team/estoco01/2026haasf1teamestoco01right.webp",
+    "BORTOLETO":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/gabbor01/2026audigabbor01right.webp",
+    "ALONSO":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/astonmartin/feralo01/2026astonmartinferalo01right.webp",
+    "HULKENBERG":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
+    "HÜLKENBERG":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
+    "BOTTAS":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/valbot01/2026cadillacvalbot01right.webp",
+    "PEREZ":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp",
+    "PÉREZ":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp",
+    "STROLL":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/astonmartin/lanstr01/2026astonmartinlanstr01right.webp"
   };
-
-  // Team logo URLs, keyed by constructor display name as returned by the API
   const TEAM_IMAGES = {
-    "Mercedes": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mercedes/2026mercedeslogowhite.webp",
-    "Ferrari": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/ferrari/2026ferrarilogowhite.webp",
-    "McLaren": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mclaren/2026mclarenlogowhite.webp",
-    "Red Bull": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/2026redbullracinglogowhite.webp",
-    "Red Bull Racing": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/2026redbullracinglogowhite.webp",
-    "Alpine F1 Team": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/alpine/2026alpinelogowhite.webp",
-    "RB F1 Team": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/racingbulls/2026racingbullslogowhite.webp",
-    "Haas F1 Team": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/haasf1team/2026haasf1teamlogowhite.webp",
-    "Williams": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/williams/2026williamslogowhite.webp",
-    "Audi": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/2026audilogowhite.webp",
-    "Aston Martin": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/astonmartin/2026astonmartinlogowhite.webp",
-    "Cadillac": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/2026cadillaclogowhite.webp",
-    "Cadillac F1 Team": "https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/2026cadillaclogowhite.webp"
+    "Mercedes":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mercedes/2026mercedeslogowhite.webp",
+    "Ferrari":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/ferrari/2026ferrarilogowhite.webp",
+    "McLaren":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/mclaren/2026mclarenlogowhite.webp",
+    "Red Bull":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/2026redbullracinglogowhite.webp",
+    "Red Bull Racing":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/redbullracing/2026redbullracinglogowhite.webp",
+    "Alpine F1 Team":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/alpine/2026alpinelogowhite.webp",
+    "RB F1 Team":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/racingbulls/2026racingbullslogowhite.webp",
+    "Haas F1 Team":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/haasf1team/2026haasf1teamlogowhite.webp",
+    "Williams":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/williams/2026williamslogowhite.webp",
+    "Audi":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/audi/2026audilogowhite.webp",
+    "Aston Martin":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/astonmartin/2026astonmartinlogowhite.webp",
+    "Cadillac":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/2026cadillaclogowhite.webp",
+    "Cadillac F1 Team":"https://media.formula1.com/image/upload/c_lfill,w_64/q_auto/v1740000001/common/f1/2026/cadillac/2026cadillaclogowhite.webp"
   };
 
-  // Renders the .f1-img circle: tries a real photo/logo first, falls back to initials on error
-  // objectPosition lets driver headshots crop near the top (face), while team logos stay centered
-  const renderF1Img = (imgUrl, initials, bgColor, textColor, objectPosition = 'center') => {
-    if (!imgUrl) {
-      return `<div class="f1-img" style="background:${bgColor}; color:${textColor};">${initials}</div>`;
-    }
-    return `<div class="f1-img" style="background:${bgColor}; color:${textColor};">
-      <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; object-position:${objectPosition};"
-        onerror="this.parentElement.innerHTML='${initials}'; this.parentElement.style.background='${bgColor}'; this.parentElement.style.color='${textColor}';">
-    </div>`;
+  const renderF1Img=(imgUrl,initials,bgColor,textColor,pos='center')=>{
+    const safe=initials.replace(/'/g,"&#39;");
+    if(!imgUrl) return `<div class="f1-img" style="background:${bgColor};color:${textColor};">${safe}</div>`;
+    return `<div class="f1-img" style="background:${bgColor};color:${textColor};"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;object-position:${pos};" onerror="this.parentElement.textContent='${safe}';this.parentElement.style.background='${bgColor}';this.parentElement.style.color='${textColor}';"></div>`;
   };
 
-  let f1Cache = { standings: null, constructors: null, races: null, results: {} };
-  let f1ActiveTab = 'drivers';
+  let f1Cache={standings:null,constructors:null,races:null,results:{}};
+  let f1ActiveTab='drivers';
+  const f1Container=document.getElementById('f1TabContent');
 
-  const f1Container = document.getElementById('f1TabContent');
-
-  async function fetchF1(endpoint) {
-    try {
-      const url = endpoint 
-        ? `https://api.jolpi.ca/ergast/f1/2026/${endpoint}.json`
-        : `https://api.jolpi.ca/ergast/f1/2026.json`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('API Error');
+  async function fetchF1(endpoint){
+    try{
+      const url=endpoint?`https://api.jolpi.ca/ergast/f1/2026/${endpoint}.json`:`https://api.jolpi.ca/ergast/f1/2026.json`;
+      const res=await fetch(url); if(!res.ok) throw new Error('API Error');
       return await res.json();
-    } catch (e) { console.error(e); return null; }
+    }catch(e){console.error(e);return null;}
   }
 
-  function getPosColor(pos) {
-    if (pos == 1) return '#FFD700';
-    if (pos == 2) return '#C0C0C0';
-    if (pos == 3) return '#CD7F32';
-    return 'var(--text-primary)';
-  }
+  const getPosColor=p=>p==1?'#FFD700':p==2?'#C0C0C0':p==3?'#CD7F32':'var(--text-primary)';
 
-  async function renderF1Drivers() {
-    f1Container.innerHTML = `
+  async function renderF1Drivers(){
+    f1Container.innerHTML=`
       <div class="f1-header-row">
-        <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
-        <div class="f1-header-label" style="flex:1; margin-left:44px;">Driver</div>
-        <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
-        <div class="f1-header-label" style="width:44px; text-align:right;">Gap</div>
+        <div class="f1-header-label" style="width:26px;text-align:center;">#</div>
+        <div class="f1-header-label" style="flex:1;margin-left:42px;">Driver</div>
+        <div class="f1-header-label" style="width:40px;text-align:right;">Pts</div>
+        <div class="f1-header-label" style="width:40px;text-align:right;">Gap</div>
       </div>
-      <div id="f1SubContent"></div>
-    `;
-    const sub = document.getElementById('f1SubContent');
-
-    if (!f1Cache.standings) {
-      sub.innerHTML = '<div class="loading-pulse">Fetching Drivers...</div>';
-      const data = await fetchF1('driverStandings');
-      f1Cache.standings = data?.MRData?.StandingsTable?.StandingsLists[0]?.DriverStandings || [];
+      <div id="f1SubContent"><div class="loading-pulse">Fetching…</div></div>`;
+    if(!f1Cache.standings){
+      const data=await fetchF1('driverStandings');
+      f1Cache.standings=data?.MRData?.StandingsTable?.StandingsLists[0]?.DriverStandings||[];
     }
-    
-    if (f1Cache.standings.length === 0) { sub.innerHTML = '<div class="loading-pulse">No data available.</div>'; return; }
-
-    const leaderPoints = parseFloat(f1Cache.standings[0].points);
-
-    sub.innerHTML = f1Cache.standings.map(d => {
-      const pts = parseFloat(d.points);
-      const gap = leaderPoints - pts;
-      const familyName = d.Driver.familyName.toUpperCase();
-      const teamColor = TEAM_COLORS[d.Constructors[0].constructorId] || '#444';
-      const initials = driverInitials(d.Driver.givenName, d.Driver.familyName);
-      const photoUrl = DRIVER_IMAGES[familyName];
-      return `
-        <div class="f1-row">
-          <div class="f1-pos" style="color:${getPosColor(d.position)}">${d.position}</div>
-          ${renderF1Img(photoUrl, initials, teamColor + '33', getContrastText(teamColor), 'center 1%')}
-          <div class="f1-color" style="background:${teamColor}"></div>
-          <div class="f1-info">
-            <div class="f1-name">${d.Driver.givenName} ${familyName}</div>
-            <div class="f1-sub">${d.Constructors[0].name}</div>
-          </div>
-          <div class="f1-pts">${d.points}</div>
-          <div class="f1-pts" style="color:var(--text-dim); font-size:11px; width:44px;">${d.position == 1 ? '—' : `-${gap.toFixed(0)}`}</div>
+    const sub=document.getElementById('f1SubContent');
+    if(!f1Cache.standings.length){sub.innerHTML='<div class="loading-pulse">No data.</div>';return;}
+    const lead=parseFloat(f1Cache.standings[0].points);
+    sub.innerHTML=f1Cache.standings.map(d=>{
+      const fam=d.Driver.familyName.toUpperCase();
+      const tc=TEAM_COLORS[d.Constructors[0].constructorId]||'#444';
+      const gap=lead-parseFloat(d.points);
+      return `<div class="f1-row">
+        <div class="f1-pos" style="color:${getPosColor(d.position)}">${d.position}</div>
+        ${renderF1Img(DRIVER_IMAGES[fam],driverInitials(d.Driver.givenName,d.Driver.familyName),tc+'33',getContrastText(tc),'center 1%')}
+        <div class="f1-color" style="background:${tc}"></div>
+        <div class="f1-info">
+          <div class="f1-name">${d.Driver.givenName} ${fam}</div>
+          <div class="f1-sub">${d.Constructors[0].name}</div>
         </div>
-      `;
+        <div class="f1-pts">${d.points}</div>
+        <div class="f1-pts" style="color:var(--text-dim);font-size:10px;width:40px;">${d.position==1?'—':`-${gap.toFixed(0)}`}</div>
+      </div>`;
     }).join('');
   }
 
-  async function renderF1Constructors() {
-    f1Container.innerHTML = `
+  async function renderF1Constructors(){
+    f1Container.innerHTML=`
       <div class="f1-header-row">
-        <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
-        <div class="f1-header-label" style="flex:1; margin-left:44px;">Constructor</div>
-        <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
-        <div class="f1-header-label" style="width:44px; text-align:right;">Gap</div>
+        <div class="f1-header-label" style="width:26px;text-align:center;">#</div>
+        <div class="f1-header-label" style="flex:1;margin-left:42px;">Team</div>
+        <div class="f1-header-label" style="width:40px;text-align:right;">Pts</div>
+        <div class="f1-header-label" style="width:40px;text-align:right;">Gap</div>
       </div>
-      <div id="f1SubContent"></div>
-    `;
-    const sub = document.getElementById('f1SubContent');
-
-    if (!f1Cache.constructors) {
-      sub.innerHTML = '<div class="loading-pulse">Fetching Constructors...</div>';
-      const data = await fetchF1('constructorStandings');
-      f1Cache.constructors = data?.MRData?.StandingsTable?.StandingsLists[0]?.ConstructorStandings || [];
+      <div id="f1SubContent"><div class="loading-pulse">Fetching…</div></div>`;
+    if(!f1Cache.constructors){
+      const data=await fetchF1('constructorStandings');
+      f1Cache.constructors=data?.MRData?.StandingsTable?.StandingsLists[0]?.ConstructorStandings||[];
     }
+    const sub=document.getElementById('f1SubContent');
+    if(!f1Cache.constructors.length){sub.innerHTML='<div class="loading-pulse">No data.</div>';return;}
+    const lead=parseFloat(f1Cache.constructors[0].points);
+    sub.innerHTML=f1Cache.constructors.map(c=>{
+      const tc=TEAM_COLORS[c.Constructor.constructorId]||'#444';
+      const gap=lead-parseFloat(c.points);
+      return `<div class="f1-row">
+        <div class="f1-pos" style="color:${getPosColor(c.position)}">${c.position}</div>
+        ${renderF1Img(TEAM_IMAGES[c.Constructor.name],c.Constructor.name[0],tc,getContrastText(tc))}
+        <div class="f1-color" style="background:${tc}"></div>
+        <div class="f1-info">
+          <div class="f1-name">${c.Constructor.name}</div>
+          <div class="f1-sub">${c.Constructor.nationality} • ${c.wins} Wins</div>
+        </div>
+        <div class="f1-pts">${c.points}</div>
+        <div class="f1-pts" style="color:var(--text-dim);font-size:10px;width:40px;">${c.position==1?'—':`-${gap.toFixed(0)}`}</div>
+      </div>`;
+    }).join('');
+  }
 
-    if (f1Cache.constructors.length === 0) { sub.innerHTML = '<div class="loading-pulse">No data available.</div>'; return; }
-
-    const leaderPoints = parseFloat(f1Cache.constructors[0].points);
-
-    sub.innerHTML = f1Cache.constructors.map(c => {
-      const pts = parseFloat(c.points);
-      const gap = leaderPoints - pts;
-      const teamColor = TEAM_COLORS[c.Constructor.constructorId] || '#444';
-      const logoUrl = TEAM_IMAGES[c.Constructor.name];
-      return `
-        <div class="f1-row">
-          <div class="f1-pos" style="color:${getPosColor(c.position)}">${c.position}</div>
-          ${renderF1Img(logoUrl, c.Constructor.name[0], teamColor, getContrastText(teamColor))}
-          <div class="f1-color" style="background:${teamColor}"></div>
-          <div class="f1-info">
-            <div class="f1-name">${c.Constructor.name}</div>
-            <div class="f1-sub">${c.Constructor.nationality} • ${c.wins} Wins</div>
+  window.renderF1Races=async function(){
+    f1Container.innerHTML='<div class="loading-pulse">Fetching Calendar…</div>';
+    if(!f1Cache.races){
+      const[data,res2]=await Promise.all([fetchF1(''),fetchF1('results')]);
+      f1Cache.races=data?.MRData?.RaceTable?.Races||[];
+      (res2?.MRData?.RaceTable?.Races||[]).forEach(r=>{ f1Cache.results[r.round]=r.Results[0]?.Driver?.familyName||null; });
+    }
+    const now=new Date();
+    const nextIdx=f1Cache.races.findIndex(r=>new Date(r.time?`${r.date}T${r.time}`:`${r.date}T00:00:00Z`)>now);
+    f1Container.innerHTML='<div class="f1-race-grid" id="raceGrid"></div>';
+    const g=document.getElementById('raceGrid');
+    g.innerHTML=f1Cache.races.map((r,i)=>{
+      const isPast=new Date(r.date)<now, isNext=i===nextIdx;
+      const winner=f1Cache.results[r.round];
+      const istHtml=r.time?`<div class="f1-race-ist">🕐 ${fmtIST(utcToIST(r.date,r.time))} IST</div>`:'';
+      return `<div class="f1-race-card ${isPast?'completed':''} ${isNext?'next-up':''}" onclick="openRaceDetail(${r.round})">
+        <div class="f1-race-card-inner">
+          <div class="f1-race-card-left">
+            <div class="f1-round">R${r.round}${isNext?' · NEXT':''}</div>
+            <div class="f1-race-name-text">${r.raceName.replace('Grand Prix','GP')}</div>
+            <div class="f1-race-country">${r.Circuit.Location.country}</div>
+            ${winner?`<div class="f1-race-winner">🏆 ${winner}</div>`:''}
           </div>
-          <div class="f1-pts">${c.points}</div>
-          <div class="f1-pts" style="color:var(--text-dim); font-size:11px; width:44px;">${c.position == 1 ? '—' : `-${gap.toFixed(0)}`}</div>
+          <div class="f1-race-card-right">
+            <div class="f1-race-date">${new Date(r.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+            ${istHtml}
+          </div>
         </div>
-      `;
+      </div>`;
     }).join('');
-  }
+  };
 
-  window.renderF1Races = async function() {
-    f1Container.innerHTML = '<div class="loading-pulse">Fetching Calendar...</div>';
-    if (!f1Cache.races) {
-      const data = await fetchF1('');
-      const resultsData = await fetchF1('results');
-      
-      f1Cache.races = data?.MRData?.RaceTable?.Races || [];
-      const allResults = resultsData?.MRData?.RaceTable?.Races || [];
-      allResults.forEach(r => {
-        f1Cache.results[r.round] = r.Results[0]?.Driver?.familyName || null;
-      });
-    }
-
-    f1Container.innerHTML = `<div class="f1-race-grid"></div>`;
-    const gridEl = f1Container.querySelector('.f1-race-grid');
-    
-    gridEl.innerHTML = f1Cache.races.map(r => {
-      const isPast = new Date(r.date) < new Date();
-      const winner = f1Cache.results[r.round];
-      return `
-        <div class="f1-race-card ${isPast ? 'completed' : ''}" onclick="openRaceDetail(${r.round})">
-          <div class="f1-round">Round ${r.round}</div>
-          <div class="f1-race-name">${r.raceName.replace('Grand Prix', '')}</div>
-          <div class="f1-sub">${r.Circuit.circuitName}</div>
-          <div class="f1-sub" style="margin-top:2px; opacity:0.6;">${new Date(r.date).toLocaleDateString('en-GB', { day:'numeric', month:'short' })}</div>
-          ${winner ? `<div class="f1-race-winner">🏆 ${winner}</div>` : ''}
-        </div>
-      `;
-    }).join('');
-  }
-
-  window.openRaceDetail = async (round) => {
-    f1Container.innerHTML = '<div class="loading-pulse">Loading Results...</div>';
-    const data = await fetchF1(`${round}/results`);
-    const race = data?.MRData?.RaceTable?.Races[0];
-
-    if (!race || !race.Results) {
-      f1Container.innerHTML = `
-        <div class="f1-sub" style="text-align:center; padding:20px;">No results available for this round yet.</div>
-        <button class="btn btn-apply" onclick="renderF1Races()" style="height:36px; font-size:12px;">← Back to Calendar</button>
-      `;
+  window.openRaceDetail=async round=>{
+    f1Container.innerHTML='<div class="loading-pulse">Loading…</div>';
+    const data=await fetchF1(`${round}/results`);
+    const race=data?.MRData?.RaceTable?.Races[0];
+    if(!race?.Results){
+      f1Container.innerHTML=`<div class="f1-sub" style="text-align:center;padding:20px;">No results yet.</div>
+        <button onclick="renderF1Races()" style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text-primary);padding:10px 16px;font-size:13px;cursor:pointer;width:100%;">← Back to Calendar</button>`;
       return;
     }
-
-    f1Container.innerHTML = `
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-        <button id="f1BackToCalendar" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); cursor:pointer; padding:6px 12px; font-size:12px;">← Back</button>
+    const raceTimeStr=race.time?`<div class="f1-sub" style="color:rgba(225,6,0,0.85);">🕐 ${fmtIST(utcToIST(race.date,race.time))} IST · ${fmtDateShort(utcToIST(race.date,race.time))}</div>`:'';
+    f1Container.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <button id="f1Back" style="background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text-primary);padding:10px 14px;font-size:13px;cursor:pointer;min-height:44px;">← Back</button>
         <div style="min-width:0;">
-          <div class="f1-name" style="font-size:14px;">${race.raceName}</div>
+          <div class="f1-name" style="font-size:13px;">${race.raceName}</div>
           <div class="f1-sub">${race.Circuit.circuitName}</div>
+          ${raceTimeStr}
         </div>
       </div>
       <div class="f1-header-row">
-        <div class="f1-header-label" style="width:28px; text-align:center;">Pos</div>
-        <div class="f1-header-label" style="flex:1; margin-left:44px;">Driver</div>
-        <div class="f1-header-label" style="width:44px; text-align:right;">Pts</div>
+        <div class="f1-header-label" style="width:26px;text-align:center;">#</div>
+        <div class="f1-header-label" style="flex:1;margin-left:42px;">Driver</div>
+        <div class="f1-header-label" style="width:40px;text-align:right;">Pts</div>
       </div>
-      <div id="resultsList"></div>
-    `;
-
-    document.getElementById('f1BackToCalendar').onclick = renderF1Races;
-
-    document.getElementById('resultsList').innerHTML = race.Results.map(res => {
-      const familyName = res.Driver.familyName.toUpperCase();
-      const teamColor = TEAM_COLORS[res.Constructor.constructorId] || '#444';
-      const initials = driverInitials(res.Driver.givenName, res.Driver.familyName);
-      const photoUrl = DRIVER_IMAGES[familyName];
-      return `
-        <div class="f1-row">
-          <div class="f1-pos" style="color:${getPosColor(res.position)}">${res.position}</div>
-          ${renderF1Img(photoUrl, initials, teamColor + '33', getContrastText(teamColor), 'center 1%')}
-          <div class="f1-color" style="background:${teamColor}"></div>
-          <div class="f1-info">
-            <div class="f1-name">${res.Driver.givenName} ${familyName}</div>
-            <div class="f1-sub">${res.Constructor.name} • ${res.Time?.time || res.status}</div>
-          </div>
-          <div class="f1-pts">${res.points}</div>
+      <div id="resultsList"></div>`;
+    document.getElementById('f1Back').onclick=renderF1Races;
+    document.getElementById('resultsList').innerHTML=race.Results.map(res=>{
+      const fam=res.Driver.familyName.toUpperCase();
+      const tc=TEAM_COLORS[res.Constructor.constructorId]||'#444';
+      return `<div class="f1-row">
+        <div class="f1-pos" style="color:${getPosColor(res.position)}">${res.position}</div>
+        ${renderF1Img(DRIVER_IMAGES[fam],driverInitials(res.Driver.givenName,res.Driver.familyName),tc+'33',getContrastText(tc),'center 1%')}
+        <div class="f1-color" style="background:${tc}"></div>
+        <div class="f1-info">
+          <div class="f1-name">${res.Driver.givenName} ${fam}</div>
+          <div class="f1-sub">${res.Constructor.name} · ${res.Time?.time||res.status}</div>
         </div>
-      `;
+        <div class="f1-pts">${res.points}</div>
+      </div>`;
     }).join('');
   };
 
-  const f1Tabs = document.querySelectorAll('.f1-tab');
-  f1Tabs.forEach(tab => {
-    tab.onclick = () => {
-      f1Tabs.forEach(t => t.classList.remove('active'));
+  const f1Tabs=document.querySelectorAll('.f1-tab');
+  f1Tabs.forEach(tab=>{
+    tab.onclick=()=>{
+      f1Tabs.forEach(t=>t.classList.remove('active'));
       tab.classList.add('active');
-      f1ActiveTab = tab.dataset.tab;
-      if (f1ActiveTab === 'drivers') renderF1Drivers();
-      else if (f1ActiveTab === 'constructors') renderF1Constructors();
+      f1ActiveTab=tab.dataset.tab;
+      if(f1ActiveTab==='drivers') renderF1Drivers();
+      else if(f1ActiveTab==='constructors') renderF1Constructors();
       else renderF1Races();
     };
   });
 
-  const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      renderF1Drivers();
-      observer.disconnect();
+  /* ── Next Race Banner ── */
+  const SESSION_LABELS=[
+    {key:'FirstPractice',label:'FP1'},{key:'SecondPractice',label:'FP2'},
+    {key:'ThirdPractice',label:'FP3'},{key:'Sprint',label:'Sprint'},
+    {key:'SprintShootout',label:'Sprint Shootout'},{key:'Qualifying',label:'Qualifying'}
+  ];
+  async function renderNextRaceBanner(races){
+    const now=new Date();
+    const next=races.find(r=>new Date(r.time?`${r.date}T${r.time}`:`${r.date}T00:00:00Z`)>now);
+    if(!next) return;
+    document.getElementById('nextRaceSection').style.display='block';
+    document.getElementById('nrName').textContent=next.raceName;
+    document.getElementById('nrCircuit').textContent=`${next.Circuit.circuitName}, ${next.Circuit.Location.country}`;
+    const raceUTC=new Date(next.time?`${next.date}T${next.time}`:`${next.date}T00:00:00Z`);
+    window._nextRaceUTC=raceUTC.getTime();
+    const sessions=[];
+    SESSION_LABELS.forEach(({key,label})=>{ const s=next[key]; if(s?.date&&s?.time){ sessions.push({label,utc:new Date(`${s.date}T${s.time}`),ist:utcToIST(s.date,s.time),isRace:false}); } });
+    if(next.date&&next.time) sessions.push({label:'Race',utc:raceUTC,ist:utcToIST(next.date,next.time),isRace:true});
+    const filtered=sessions.filter(s=>s.utc>new Date(now-3600000));
+    document.getElementById('nrTimes').innerHTML=filtered.map(s=>`
+      <div class="nr-session-row ${s.isRace?'highlight':''}">
+        <span class="nr-session-name">${s.label}</span>
+        <span><span class="nr-session-ist">${fmtIST(s.ist)}</span><span class="nr-session-date"> ${fmtDateShort(s.ist)}</span></span>
+      </div>`).join('');
+  }
+
+  window.scrollToF1Races=()=>{
+    document.getElementById('f1ObserverTarget').scrollIntoView({behavior:'smooth'});
+    f1Tabs.forEach(t=>t.classList.remove('active'));
+    document.querySelector('[data-tab="races"]').classList.add('active');
+    f1ActiveTab='races'; renderF1Races();
+  };
+
+  // Eager load race data for banner
+  (async()=>{
+    if(!f1Cache.races){
+      const[data,res2]=await Promise.all([fetchF1(''),fetchF1('results')]);
+      f1Cache.races=data?.MRData?.RaceTable?.Races||[];
+      (res2?.MRData?.RaceTable?.Races||[]).forEach(r=>{ f1Cache.results[r.round]=r.Results[0]?.Driver?.familyName||null; });
     }
-  }, { threshold: 0.1 });
-  observer.observe(document.getElementById('f1ObserverTarget'));
+    if(f1Cache.races.length) renderNextRaceBanner(f1Cache.races);
+  })();
 
-  /* ══ Settings ══ */
-  let bDay = null;
-  onValue(settingsRef, s => {
-    const d = s.val() || {};
-    if(d.birthDate) { bDay = new Date(d.birthDate); document.getElementById('birthDateInput').value = d.birthDate; }
-    if(d.engines) { ENGINES = { google: ENGINES.google, ...d.engines }; renderEngines(); setEngine(activeEngine); }
+  new IntersectionObserver((entries)=>{ if(entries[0].isIntersecting){ renderF1Drivers(); } },{threshold:0.05})
+    .observe(document.getElementById('f1ObserverTarget'));
+
+  /* ── Settings ── */
+  let bDay=null;
+  onValue(settingsRef,s=>{
+    const d=s.val()||{};
+    if(d.birthDate){ bDay=new Date(d.birthDate); document.getElementById('birthDateInput').value=d.birthDate; }
+    if(d.engines){ ENGINES={google:ENGINES.google,...d.engines}; renderEngines(); setEngine(activeEngine); }
   });
-  setInterval(() => {
+  setInterval(()=>{
     if(!bDay) return;
-    let diff = new Date() - bDay, years = diff / 31557600000, y = Math.floor(years), d = Math.floor((years-y)*365.25), h = Math.floor(((years-y)*365.25-d)*24), m = Math.floor((((years-y)*365.25-d)*24-h)*60), s = Math.floor(((((years-y)*365.25-d)*24-h)*60-m)*60);
-    document.getElementById('ageDisplay').textContent = `${y}y ${d}d ${h}h ${m}m ${s}s`;
-  }, 1000);
+    let diff=new Date()-bDay, years=diff/31557600000, y=Math.floor(years), d=Math.floor((years-y)*365.25), h=Math.floor(((years-y)*365.25-d)*24), m=Math.floor((((years-y)*365.25-d)*24-h)*60), s=Math.floor(((((years-y)*365.25-d)*24-h)*60-m)*60);
+    document.getElementById('ageDisplay').textContent=`${y}y ${d}d ${h}h ${m}m ${s}s`;
+  },1000);
 
-  document.getElementById('dropSettings').onclick = () => {
-    const list = document.getElementById('settingsEngineList'); list.innerHTML = '';
-    Object.entries(ENGINES).forEach(([k, e]) => {
-      if(k === 'google') return;
-      const row = document.createElement('div'); row.style = 'display:flex;justify-content:space-between;padding:8px;background:var(--surface);border-radius:8px;font-size:13px;';
-      row.innerHTML = `<span>${e.label}</span><span style="color:var(--danger);cursor:pointer;">Delete</span>`;
-      row.querySelector('span:last-child').onclick = () => { delete ENGINES[k]; document.getElementById('dropSettings').click(); };
+  document.getElementById('dropSettings').onclick=()=>{
+    document.getElementById('dropMenu').classList.remove('open');
+    const list=document.getElementById('settingsEngineList'); list.innerHTML='';
+    Object.entries(ENGINES).forEach(([k,e])=>{
+      if(k==='google') return;
+      const row=document.createElement('div'); row.style='display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface);border-radius:10px;font-size:14px;min-height:44px;';
+      row.innerHTML=`<span>${e.label}</span><span style="color:var(--danger);cursor:pointer;padding:4px 8px;">Delete</span>`;
+      row.querySelector('span:last-child').onclick=()=>{ delete ENGINES[k]; document.getElementById('dropSettings').click(); };
       list.appendChild(row);
     });
     openSheet(document.getElementById('settingsBackdrop'));
   };
-  document.getElementById('addEngineBtn').onclick = () => {
-    const name = document.getElementById('newEngineName').value.trim(), url = document.getElementById('newEngineUrl').value.trim();
-    if(name && url) { ENGINES[name.toLowerCase()] = { label: name, url: url }; document.getElementById('newEngineName').value = document.getElementById('newEngineUrl').value = ''; document.getElementById('dropSettings').click(); }
+  document.getElementById('addEngineBtn').onclick=()=>{
+    const name=document.getElementById('newEngineName').value.trim(), url=document.getElementById('newEngineUrl').value.trim();
+    if(name&&url){ ENGINES[name.toLowerCase()]={label:name,url:url}; document.getElementById('newEngineName').value=document.getElementById('newEngineUrl').value=''; showToast('Engine added'); }
   };
-  document.getElementById('settingsSave').onclick = () => { set(settingsRef, { birthDate: document.getElementById('birthDateInput').value, engines: ENGINES }); closeSheet(document.getElementById('settingsBackdrop')); };
+  document.getElementById('settingsSave').onclick=()=>{ set(settingsRef,{birthDate:document.getElementById('birthDateInput').value,engines:ENGINES}); closeSheet(document.getElementById('settingsBackdrop')); showToast('Saved'); };
 
-  /* ══ Init ══ */
-  document.getElementById('menuBtn').onclick = () => document.getElementById('dropMenu').classList.toggle('open');
-  document.getElementById('dropShortcuts').onclick = () => { scEditMode = true; grid.classList.add('edit-mode'); document.getElementById('dropMenu').classList.remove('open'); };
+  /* ── Init ── */
+  document.getElementById('menuBtn').onclick=(e)=>{ e.stopPropagation(); document.getElementById('dropMenu').classList.toggle('open'); };
+  document.addEventListener('click', e=>{
+    const menu=document.getElementById('dropMenu'), btn=document.getElementById('menuBtn');
+    if(menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('open');
+  });
   setEngine(activeEngine);
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1186616fac640d5',t:'MTc4MjQzNjkyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
