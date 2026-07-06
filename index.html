@@ -56,7 +56,7 @@
 
     /* Non-interactive areas: suppress selection */
     .page, .clock-wrapper, .section-header, .f1-row, .f1-race-card,
-    .shortcut-item, .note-card, .next-race-banner {
+    .shortcut-item, .next-race-banner {
       user-select: none;
       -webkit-user-select: none;
     }
@@ -125,16 +125,6 @@
 
     /* ── Clock ── */
     .clock-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 24px; }
-    .clock {
-      font-family: 'JetBrains Mono', monospace; font-weight: 300;
-      font-size: clamp(56px, 18vw, 88px);
-      letter-spacing: -0.04em; color: var(--text-primary);
-      text-shadow: 0 2px 8px rgba(0,0,0,0.60);
-      display: flex; align-items: baseline;
-    }
-    .clock-sep { animation: blink 1s step-start infinite; margin: 0 2px; }
-    .clock-ampm { font-size: clamp(14px, 4vw, 20px); color: var(--text-muted); margin-left: 6px; }
-    .date-label { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
     .age-display { margin-top: 3px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
 
     /* ── Search ── */
@@ -233,32 +223,6 @@
       border: 1px solid rgba(138,180,248,0.26); font-size: 12px; font-weight: 500;
     }
     .shortcuts-section.edit-mode .edit-done-btn { display: flex; }
-
-    /* ── Sticky Notes ── */
-    .notes-section { width: 100%; margin-top: 24px; }
-    .notes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .note-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 12px;
-      cursor: pointer; transition: background 0.12s, transform 0.12s;
-      display: flex; align-items: center; justify-content: center;
-      text-align: center; min-height: 44px; position: relative;
-    }
-    .note-card:active { background: var(--surface-hover); transform: scale(0.97); }
-    .note-card-title { font-size: 12px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
-    .note-edit-icon {
-      position: absolute; bottom: 0; right: 0;
-      width: 32px; height: 32px; border-radius: 10px 0 10px 0;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-dim); transition: color 0.15s;
-    }
-    .note-edit-icon:active { color: var(--text-primary); }
-    .note-add-btn {
-      border: 1.5px dashed var(--border); border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-dim); cursor: pointer; min-height: 44px;
-      font-size: 20px;
-    }
 
     /* ── Next Race Banner ── */
     .next-race-section { width: 100%; margin-top: 20px; animation: fadeUp 0.5s 0.12s cubic-bezier(0.22,1,0.36,1) both; }
@@ -425,8 +389,6 @@
 <div id="scrollRoot">
   <main class="page">
     <div class="clock-wrapper">
-      <div class="clock"><span id="hrs">12</span><span class="clock-sep">:</span><span id="mins">00</span><span class="clock-ampm" id="ampm">AM</span></div>
-      <div class="date-label" id="date"></div>
       <div class="age-display" id="ageDisplay">Set Birthday</div>
     </div>
 
@@ -450,11 +412,6 @@
         <button class="edit-done-btn" id="editDoneBtn">Done</button>
       </div>
       <div class="shortcuts-grid" id="shortcutsGrid"></div>
-    </section>
-
-    <section class="notes-section">
-      <div class="section-header"><span class="section-label">Sticky Notes</span></div>
-      <div class="notes-grid" id="notesGrid"></div>
     </section>
 
     <!-- Next Race Banner -->
@@ -530,20 +487,6 @@
   </div>
 </div>
 
-<!-- Note Sheet -->
-<div class="sheet-backdrop" id="noteBackdrop">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <p class="sheet-title" id="noteSheetTitle">Note</p>
-    <div class="sc-field"><label class="sc-label">Title</label><input class="sc-input" id="noteTitleInput" type="text" placeholder="Title"></div>
-    <div class="sc-field"><label class="sc-label">Content</label><textarea class="sc-input" id="noteTextInput" style="height:140px;resize:none;padding:14px;font-family:inherit;" placeholder="Content"></textarea></div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-danger" id="noteDelete">Delete</button>
-      <button class="btn btn-apply" id="noteSave">Save</button>
-    </div>
-  </div>
-</div>
-
 <!-- Settings Sheet -->
 <div class="sheet-backdrop" id="settingsBackdrop">
   <div class="sheet">
@@ -580,7 +523,6 @@
   const db = getDatabase(app);
   const sharedId = 'shared_dashboard';
   const shortcutsRef = ref(db, 'shortcuts/' + sharedId);
-  const notesRef     = ref(db, 'notes/' + sharedId);
   const settingsRef  = ref(db, 'settings/' + sharedId);
 
   /* ── Helpers ── */
@@ -604,13 +546,8 @@
     return `${m}m`;
   };
 
-  /* ── Clock ── */
+  /* ── Race countdown tick ── */
   const tick = () => {
-    const now = new Date(), pm = now.getHours()>=12;
-    document.getElementById('hrs').textContent = String(now.getHours()%12||12).padStart(2,'0');
-    document.getElementById('mins').textContent = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById('ampm').textContent = pm?'PM':'AM';
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
     if(window._nextRaceUTC){
       const ms = window._nextRaceUTC - Date.now();
       const el = document.getElementById('nrCountdown');
@@ -638,7 +575,7 @@
       if(dy>90) closeSheet(b);
     },{passive:true});
   };
-  ['wpBackdrop','scBackdrop','noteBackdrop','settingsBackdrop'].forEach(setupDismiss);
+  ['wpBackdrop','scBackdrop','settingsBackdrop'].forEach(setupDismiss);
 
   /* ── Wallpaper ── */
   const wpFrame = document.getElementById('wpPreviewFrame');
@@ -825,33 +762,6 @@
     enterEditMode();
     document.getElementById('dropMenu').classList.remove('open');
   };
-
-  /* ── Notes ── */
-  const nGrid=document.getElementById('notesGrid');
-  let nList=[], nIdx=-1;
-  /* Render instantly from local cache, then sync with Firebase in the background */
-  try { nList = JSON.parse(localStorage.getItem('notes_cache')) || []; } catch(e) { nList = []; }
-  onValue(notesRef, s=>{ nList=ensureArray(s.val()); localStorage.setItem('notes_cache', JSON.stringify(nList)); renderNotes(); });
-  const renderNotes=()=>{
-    nGrid.innerHTML='';
-    nList.forEach((n,i)=>{
-      const c=document.createElement('div'); c.className='note-card';
-      c.innerHTML=`<div class="note-card-title">${n.title||'Note'}</div><div class="note-edit-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>`;
-      c.onclick=()=>{ if(n.text) navigator.clipboard.writeText(n.text).then(()=>showToast('Copied!')); else showToast('Empty note'); };
-      c.querySelector('.note-edit-icon').onclick=e=>{ e.stopPropagation(); nIdx=i; document.getElementById('noteTitleInput').value=n.title; document.getElementById('noteTextInput').value=n.text; document.getElementById('noteSheetTitle').textContent='Edit Note'; openSheet(document.getElementById('noteBackdrop')); };
-      nGrid.appendChild(c);
-    });
-    const add=document.createElement('div'); add.className='note-add-btn'; add.innerHTML='+';
-    add.onclick=()=>{ nIdx=-1; document.getElementById('noteTitleInput').value=document.getElementById('noteTextInput').value=''; document.getElementById('noteSheetTitle').textContent='New Note'; openSheet(document.getElementById('noteBackdrop')); };
-    nGrid.appendChild(add);
-  };
-  renderNotes(); /* instant paint from cache, Firebase will re-render when it responds */
-  document.getElementById('noteSave').onclick=()=>{
-    const t=document.getElementById('noteTitleInput').value, x=document.getElementById('noteTextInput').value;
-    if(nIdx>=0) nList[nIdx]={title:t,text:x}; else nList.push({title:t,text:x});
-    set(notesRef,nList); closeSheet(document.getElementById('noteBackdrop'));
-  };
-  document.getElementById('noteDelete').onclick=()=>{ if(nIdx>=0) nList.splice(nIdx,1); set(notesRef,nList); closeSheet(document.getElementById('noteBackdrop')); };
 
   /* ── F1 ── */
   const TEAM_COLORS = {
