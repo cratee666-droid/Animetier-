@@ -736,7 +736,9 @@
   const scDeleteBtn = document.getElementById('scDelete'), scSheetTitle = document.getElementById('scSheetTitle');
   let scList=[], scEditMode=false, scEditingIndex=-1;
 
-  onValue(shortcutsRef, s=>{ scList=ensureArray(s.val()); renderShortcuts(); });
+  /* Render instantly from local cache, then sync with Firebase in the background */
+  try { scList = JSON.parse(localStorage.getItem('sc_cache')) || []; } catch(e) { scList = []; }
+  onValue(shortcutsRef, s=>{ scList=ensureArray(s.val()); localStorage.setItem('sc_cache', JSON.stringify(scList)); renderShortcuts(); });
 
   const updateScPreview = () => {
     let url=scUrlInput.value.trim();
@@ -802,6 +804,7 @@
     add.onclick=()=>{ if(scEditMode)return; openShortcutSheet(-1); };
     grid.appendChild(add);
   };
+  renderShortcuts(); /* instant paint from cache, Firebase will re-render when it responds */
 
   document.getElementById('scSave').onclick=()=>{
     let url=scUrlInput.value.trim(); if(!url)return;
@@ -826,7 +829,9 @@
   /* ── Notes ── */
   const nGrid=document.getElementById('notesGrid');
   let nList=[], nIdx=-1;
-  onValue(notesRef, s=>{ nList=ensureArray(s.val()); renderNotes(); });
+  /* Render instantly from local cache, then sync with Firebase in the background */
+  try { nList = JSON.parse(localStorage.getItem('notes_cache')) || []; } catch(e) { nList = []; }
+  onValue(notesRef, s=>{ nList=ensureArray(s.val()); localStorage.setItem('notes_cache', JSON.stringify(nList)); renderNotes(); });
   const renderNotes=()=>{
     nGrid.innerHTML='';
     nList.forEach((n,i)=>{
@@ -840,6 +845,7 @@
     add.onclick=()=>{ nIdx=-1; document.getElementById('noteTitleInput').value=document.getElementById('noteTextInput').value=''; document.getElementById('noteSheetTitle').textContent='New Note'; openSheet(document.getElementById('noteBackdrop')); };
     nGrid.appendChild(add);
   };
+  renderNotes(); /* instant paint from cache, Firebase will re-render when it responds */
   document.getElementById('noteSave').onclick=()=>{
     const t=document.getElementById('noteTitleInput').value, x=document.getElementById('noteTextInput').value;
     if(nIdx>=0) nList[nIdx]={title:t,text:x}; else nList.push({title:t,text:x});
@@ -1125,8 +1131,17 @@
 
   /* ── Settings ── */
   let bDay=null;
+  /* Render instantly from local cache, then sync with Firebase in the background */
+  try {
+    const cached = JSON.parse(localStorage.getItem('settings_cache'));
+    if(cached){
+      if(cached.birthDate){ bDay=new Date(cached.birthDate); document.getElementById('birthDateInput').value=cached.birthDate; }
+      if(cached.engines){ ENGINES={google:ENGINES.google,...cached.engines}; renderEngines(); setEngine(activeEngine); }
+    }
+  } catch(e) {}
   onValue(settingsRef,s=>{
     const d=s.val()||{};
+    localStorage.setItem('settings_cache', JSON.stringify(d));
     if(d.birthDate){ bDay=new Date(d.birthDate); document.getElementById('birthDateInput').value=d.birthDate; }
     if(d.engines){ ENGINES={google:ENGINES.google,...d.engines}; renderEngines(); setEngine(activeEngine); }
   });
